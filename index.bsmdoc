@@ -1,0 +1,169 @@
+﻿\config{title|feiyilin}
+\config{bsmdoc_conf|index.cfg}
+
+{!exec|firstRunOnly||unescape||{%
+def bsmdoc_emph(data, args, **kwargs):
+    return bsmdoc_tag(data, ['i'], **kwargs)
+def bsmdoc_post(data, args, **kwargs):
+    title = ""
+    if args:
+        title = args[0]
+    post = ( '<h2>'+title+'</h2>\n'
+             '<p>' + data + '</p>\n')
+    return post
+
+bsmdoc_include_raw = bsmdoc_include
+def bsmdoc_include(data, **kwargs):
+    # assume 'data' has multiple sections separated by '|', in the format of
+    # PATTERN|MAX LINE| FILENAME
+    d = data.strip().split('|')
+    if len(d) == 1:
+        # one section, return the default
+        return bsmdoc_include_raw(data, **kwargs)
+    elif len(d) == 3:
+        import re
+        # assume the last parameter is the filename
+        c = bsmdoc_include_raw(d[-1], **kwargs)
+        if not c:
+            # invalid filename
+            return c
+        lines = c.split('\n')
+        pattern = []
+        for i, l in enumerate(lines):
+            # search the PATTERN
+            if re.match(d[0], l):
+               pattern.append(i)
+            if len(pattern) == 2:
+                # return the content between the first and second instances
+                if pattern[1] - pattern[0] > int(d[1]):
+                    # too many lines, cut it
+                    pattern[1] = pattern[0] + int(d[1])
+                return '\n'.join(lines[pattern[0]+1:pattern[1]])+'\n'
+        if len(pattern) == 1:
+            return '\n'.join(lines[pattern[0]:])+'\n'
+        print(c)
+        return c
+    return None
+%}!}
+
+{!div|pure-g||
+{!div|sidebar pure-u-1 pure-u-lg-1-6||div|header||
+= 飞意林
+tq@feiyilin.com
+!}
+{!div|content pure-u-1 pre-u-lg-5-6||
+== bsmedit -- another C/C++/SystemC simulation controller
+{!div|pure-g||
+{!div|image-post pure-u-1|pure-u-lg-1-3||
+[http://bsmedit.feiyilin.com|\image{./image/bsmedit.png}]
+!}
+{!div|pure-u-1 pure-u-lg-2-3||
+=======
+#include ^(\\s)*=+|16|../bsmedit/docs/index_content.bsmdoc
+[http://bsmedit.feiyilin.com|More...]
+!}
+!}
+
+== bsmdoc -- another technical html doc generator
+{!div|pure-g||
+{!div|image-post pure-u-1|pure-u-lg-1-3||
+[http://bsmdoc.feiyilin.com|\image{./image/bsmdoc.png}]
+!}
+{!div|pure-u-1 pure-u-lg-2-3||
+=======
+#include ^(\\s)*=+|7|../bsmdoc/index_content.bsmdoc
+[http://bsmdoc.feiyilin.com|More...]
+!}
+!}
+
+== Acoustic Echo Cancellation Overview
+{!div|pure-g||
+{!div|image-post pure-u-1|pure-u-lg-1-3||
+[aec.html|\image{./image/aec_dtd.svg}]
+!}
+{!div|pure-u-1 pure-u-lg-2-3||
+=======
+#include ^(\\s)*=+|4|aec_content.bsmdoc
+[aec.html|More...]
+!}
+!}
+== Basics of Digital Signal Processing in Communications System
+- [basic_basics.html|Basics of Digital Signal Processing]
+- [tx.html|Basic transmitter blocks]
+- [basic_src.html|Sampling Rate Conversion]
+- [basic_sync.html|Synchronization]
+#== Indoor Localization
+#* L. Cheng and T. Qiao, "An indoor localization algorithm in the absence of a priori propagation information," in \emph{Proc. IEEE APS'17}, 2017.
+#* {T. Qiao and H. Liu, "Incremental anchor layout for indoor positioning," in
+#  \emph{Proc. IEEE ICC'17}, 2017.}
+#* {L. Cheng and T. Qiao, "Localization in the parking lot by parked-vehicle
+#  assistance," \emph{{IEEE} Trans. Intell. Transp. Syst.}, vol. 17, no. 12,
+#  pp. 3629--3634, Dec 2016.}
+#* {T. Qiao, Y. Zhang, and H. Liu, "Nonlinear expectation maximization estimator
+#  for {TDOA} localization," \emph{{IEEE} Wireless Commun. Lett.}, vol. 3,
+#  no. 6, pp. 637--640, Dec 2014.}
+#* {T. Qiao and H. Liu, "Improved least median of squares localization for
+#  non-line-of-sight mitigation," \emph{{IEEE} Commun. Lett.}, vol. 18, no. 8,
+#  pp. 1451--1454, Aug. 2014. ([http://hdl.handle.net/1957/54534|pdf])}
+#* {Z. Su, J.Huschle, S. Redfield, T. Qiao, H. Liu, and F. Liu, "High-speed
+#  real-time multi-channel data-acquisition unit: Challenges and results," in
+#  \emph{Proc. IEEE CCNC'14}, Jan 2014, pp. 105--112.}
+#* {T. Qiao, S. Redfield, A. Abbasi, Z. Su, and H. Liu, "Robust coarse position
+#  estimation for {TDOA} localization," \emph{{IEEE} Wireless Commun. Lett.},
+#  vol. 2, no. 6, pp. 623--626, December 2013.}
+#* {T. Qiao and H. Liu, "An improved method of moments estimator for {TOA} based
+#  localization," \emph{{IEEE} Commun. Lett.}, vol. 17, no. 7, pp. 1321--1324,
+#  2013. ([http://hdl.handle.net/1957/42645|pdf])}
+
+
+== Small tools
+- {[https://github.com/tianzhuqiao/tikz_export|tikz_export]:
+generate pdf/svg/eps file from tikzpicture.
+}
+- {[pinyin2hanzi.html|Pinyin to Hanzi.]
+A online tool to convert pinyin to hanzi.
+}
+- { [progarg.html|Console program arguments processing utility.]
+Simple C functions to easily process the console program arguments.
+}.
+#- {[bin2txt.html | data converter.]
+#ascii-int, ascii-double, 二进制数据文件转换
+#}
+#{!post|{[systemc_tips.html | SystemC tips]}||
+#!}
+#{!post|{[tx_modules.html | TX-Modules]}||
+#这个库包含了一些可用于构建systemc仿真程序的基本模块，以期减少重复劳动。如果和 [http://bsmedit.feiyilin.com/| bsmedit] 联合起来使用，会更加方便。
+#!}
+#{!post|{[downloads/autotool.pdf | 如何用automake, autoconf编译工程(ver 0.16)]}||
+#!}
+#{!div|posts||
+#= Communications tutorial
+#{!post|{[scss_1.html | 通信系统仿真概述-发射端]}||
+#!}
+#{!post|{[src_fraction.html | 分数倍频率转换]}||
+#!}
+#{!post|{[bpsk_str.html |BPSK定时同步]}||
+#!}
+#{!post|{[filter_lut.html | 用look up table来实现高倍采样信号的滤波]}||
+#!}
+#{!post|{[psk_dem.html | PSK 解调--简述频率同步和采样同步]}||
+#!}
+#{!post|{[./downloads/ofdm.pdf| OFDM系统各种偏差]}||
+#!}
+#{!post|{[./downloads/aec_tut.pdf | Acoustic Echo Cancellation Overview(draft)]}||
+# !}
+#{!post|{[./downloads/fft_tut.pdf| Real FFT tutorial]}||
+#!}
+#{!post|{[viterbi.html | Viterbi算法--一个例子]}||
+#!}
+#{!post|{[euclidean.html | Euclidean算法解码BCH--一个例子]}||
+#!}
+#{!post|{[bcjr.html | BCJR算法--一个例子]}||
+#!}
+#{!post|{[sum_product.html| Sum-product算法--一个例子]}||
+#!}
+#!} # communication tutorial
+
+
+!}
+!}

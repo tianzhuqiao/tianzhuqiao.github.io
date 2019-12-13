@@ -1,0 +1,57 @@
+\config{title|拼音转汉字}
+\config{doctitle|拼音转汉字}
+\config{head_tag|1}
+\config{head_tag_start|2}
+#\config{bsmdoc_conf|bsmdoc.cfg}
+{!config||{%
+[html]
+begin = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh" lang="zh">
+end= </html>
+
+[header]
+begin = <head>
+    <meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+end = <title>%(TITLE)s</title>
+    </head>
+content = <link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+          processClass: "mathjax",
+          ignoreClass: "tex2jax_ignore|nomathjax"
+      });
+      MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+    </script>
+    <script type="text/javascript" language="javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+    <script src="js/bsmdoc.js"></script>
+    <link rel="stylesheet" href="css/menu.css" type="text/css" />
+[body]
+begin = <body class="nomathjax">
+    <div id="layout" class="">
+end = </div>
+    <script src="js/menu.js"></script>
+    </body>
+
+[footer]
+begin = <div class="footer">
+end = </div>
+content = <div class="footer-text"> Last updated %(UPDATED)s, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a> %(SOURCE)s | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+%}!}
+说明：
+* 这个拼音转汉字程序的灵感来自 Laurence Gonsalves 的 [http://xenomachina.com/toys/pinyin2hanzi.html |  Hanyu Pinyin to Hanzi converter]
+* 汉字字库来源于：[http://lingua.mtsu.edu/chinese\-computing/statistics/char/list.php?Which\=TO | 汉字单字字频总表]
+* 词库来源于：[http://ngcg.dyndns.org:2222/ngcgwl.htm |现代汉语常用词表（草案)]
+
+{%
+<textarea id="Inputs" wrap="virtual" style="height: 300px; width: 500px; margin-top : 5px; margin-bottom : 0px" maxlength=500></textarea>
+
+<div name="comments" id="hanzi" wrap="virtual" style="height: 150px; width: 500px; margin-top : 5px; margin-bottom : 0px;display:none;" maxlength=500 readonly="readonly"></div>
+<script type="text/javascript" language="javascript" src="js/hanzilist.js"></script>
+<script type="text/javascript" language="javascript" src="js/pinyin2chinese.js"></script>
+%}

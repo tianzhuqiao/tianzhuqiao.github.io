@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<link rel="stylesheet" href="css/menu.css" type="text/css">
+<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/javascript" language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
+<script type="text/javascript" language="javascript" src="js/menu.js"></script>
+<title>Synchronization</title>
+</head>
+<body class="nomathjax">
+<div id="layout" class="">
+
+<div class="menu">
+<ul>
+<li><a href="#sec-1">1 Synchronization</a> 
+<ul>
+<li><a href="#sec-1-1">1.1 Frequency Synchronization</a></li>
+<li><a href="#sec-1-2">1.2 Clock Synchronization</a></li>
+</ul></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+Synchronization
+</div>
+<div class="content">
+<h1 id="sec-1">1 Synchronization</h1>
+<p>Synchronization is critical to communications system. It helps the system to establish a shared sense of time and frequency between transmitter and receiver. In this section, we will introduce some basic ideas. As we mentioned in all the other sections, we will not plan to list all the algorithms (how could that even be possible?), instead, we will show some basic ideas and wish you will know how to start when you need to deal with a real problem. The code used in this section can be found <a href="https://github.com/tianzhuqiao/basic/blob/master/sync.py">here</a>.</p>
+<h2 id="sec-1-1">1.1 Frequency Synchronization</h2>
+<p>We will use a QPSK signal as an example to show the basic idea of frequency synchronization. The transmitted signal can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+x(t) &= \Re(s(t) e^{j2\pi f_ct + \phi})\nonumber\\
+    &= \Re\left((s_r(t) + js_i(t)) (\cos(2\pi f_ct + \phi)+j\sin(2\pi f_ct + \phi))\right)\nonumber\\
+    &= s_r(t)\cos(2\pi f_ct + \phi) - s_i(t)\sin(2\pi f_ct + \phi),
+    \label{eqn:sync_tx}
+\end{align}
+$$
+</div>
+<p>where $f_c$ is the carrier frequency, $\phi$ is an arbitrary phase (unknown to the receiver side), $s(t) = s_r(t) + js_i(t)$ is the signal, and $\Re(.)$ is the operator to take the real part. 
+At the receiver side, the signal is demodulated with carrier ($f_c^\prime$)<a name="footnote_src-1" href="#footnote-1"><sup>1</sup></a></p>
+<div class="mathjax">
+$$
+\begin{align}
+y(t) &= x(t) \times 2e^{j(-2\pi f_c^\prime t)}\nonumber \\
+    &= 2\left(s_r(t)\cos(2\pi f_ct + \phi) - s_i(t)\sin(2\pi f_ct + \phi)\right)e^{j(-2\pi f_c^\prime t)}\nonumber\\
+    &= \left(s_r(t)(e^{j(2\pi f_ct + \phi)}+e^{j(-2\pi f_ct - \phi)}) - \frac{s_i(t)}{j}(e^{j(2\pi f_ct + \phi)}-e^{j(-2\pi f_ct - \phi)})\right)e^{j(-2\pi f_c^\prime t)}\nonumber\\
+    &= (s_r(t)+js_i(t))e^{j(2\pi(f_c - f_c^\prime)t + \phi)} + (s_r(t)-js_i(t))e^{j(-2\pi (f_c + f_c^\prime)t -\phi)}\nonumber\\
+    &= s(t)e^{j(2\pi(f_c - f_c^\prime)t + \phi)} + (s_r(t)-js_i(t))e^{j(-2\pi (f_c + f_c^\prime)t -\phi)},
+\end{align}
+$$
+</div>
+<p>where the center frequency of the second item is usually much higher than the first item. Thus, it can be easily filtered with a low pass filter, that is, after filtering, only the first item will be left</p>
+<div class="mathjax">
+$$
+\begin{align}
+r(t) &= s(t)e^{j(2\pi (f_c-f_c^\prime)t + \phi)}.
+\label{eqn:sync_rx}
+\end{align}
+$$
+</div>
+<p>Don't be scared of the complicated equations above. The procedure is actually straightforward, as shown in Fig. <a href="#img-sync_phase_fc">1</a>.</p>
+<figure id="img-sync_phase_fc" class="figure">
+<img src="./image/sync_phase_fc.svg" alt="./image/sync_phase_fc.svg">
+<figcaption class="caption"><span class="tag">Fig.1.</span> Demodulation with carrier frequency $f_c$.</figcaption>
+</figure>
+<p>If $f_c = f_c^\prime$, such system is called zero IF (intermediate frequency) system. It may suffer from IQ imbalance problem. In particular, since the reference signal $e^{-j(2\pi f_c^\prime)}$ is complex signal, and usually the analog circuit needs to generate the real and image part, respectively. Any imbalance (e.g., phase, frequency and amplitude) between its real and image parts will distort the signal. To overcome such problem, many application use a non-zero IF. In other words, after demodulation, the signal is centered at a non-zero IF (e.g., $f_c^\prime = f_c - f_{\textrm{if}}$).</p>
+<p>In this case, the demodulation can be done with the real part of the above reference signal (i.e., $\cos(2\pi f_c^\prime t)$)</p>
+<div class="mathjax">
+$$
+\begin{align}
+y(t) &= x(t) \times 2\cos(-2\pi f_c^\prime t)\nonumber \\
+    &= 2\left(s_r(t)\cos(2\pi f_ct + \phi) - s_i(t)\sin(2\pi f_ct + \phi)\right)\cos(-2\pi f_c^\prime t)\nonumber\\
+    &= s_r(t) \cos(2\pi (f_c - f_c^\prime)t + \phi) - s_i(t) \sin(2\pi (f_c - f_c^\prime)t - \phi) + \nonumber\\
+       &\qquad s_r(t) \cos(2\pi (f_c + f_c^\prime)t + \phi) - s_i(t) \sin(2\pi (f_c + f_c^\prime)t + \phi).
+\end{align}
+$$
+</div>
+<p>It is easy to see the last two items can be filtered by a low pass filter. Thus, after filtering, only the first two items will be left</p>
+<div class="mathjax">
+$$
+\begin{align}
+r(t) &= s_r(t) \cos(2\pi (f_c - f_c^\prime)t + \phi) + s_i(t) \sin(2\pi (f_c - f_c^\prime)t + \phi)\nonumber\\
+    &= s_i(t)\cos(2\pi f_{\textrm{if}} t + \phi) - s_i(t)\sin(2\pi f_{\textrm{if}} t + \phi).
+\label{eqn:sync_rx_if}
+\end{align}
+$$
+</div>
+<p>You may have noticed the similarity between Eqs. (\ref{eqn:sync_rx_if}) and (\ref{eqn:sync_tx}). What we achieve so far is to down-shift the signal from $f_c$ to $f_{\textrm{if}}$.</p>
+<div class="info">
+Can $f_{\textrm{if}}$ be chosen arbitrarily? What's the requirement of $f_{\textrm{if}}$?
+</div>
+<p>The procedure is shown in Fig. <a href="#img-sync_phase_if">2</a>.</p>
+<figure id="img-sync_phase_if" class="figure">
+<img src="./image/sync_phase_if.svg" alt="./image/sync_phase_if.svg">
+<figcaption class="caption"><span class="tag">Fig.2.</span> Demodulation with non-zero IF.</figcaption>
+</figure>
+<p>As shown in Fig. <a href="#img-sync_phase_adc">3</a>, now it is time to bring the signal to discrete domain, where Eq. (\ref{eqn:sync_rx_if}) is written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+r[n] &= s_r[n]\cos(2\pi \frac{f_{\textrm{if}}}{f_s}n  + \phi) - s_i[n]\sin(2\pi \frac{f_{\textrm{if}}}{f_s}n + \phi).
+\label{eqn:sync_rx_discrete}
+\end{align}
+$$
+</div>
+<p>where $f_s$ is the sampling frequency.</p>
+<figure id="img-sync_phase_adc" class="figure">
+<img src="./image/sync_phase_adc.svg" alt="./image/sync_phase_adc.svg">
+<figcaption class="caption"><span class="tag">Fig.3.</span> IF signal in discrete domain.</figcaption>
+</figure>
+<p>Then, a digital mixer is applied to bring the IF signal to baseband</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_m[n] &= r[n] \times 2e^{j(-2\pi \frac{f_{\textrm{if}}^\prime}{f_s}n)}\nonumber \\
+    &= s[n]e^{j(2\pi \frac{f_{\textrm{if}} - f_{\textrm{if}}^\prime}{f_s}n + \phi)} + (s_r[n]-js_i[n])e^{j(-2\pi \frac{f_{\textrm{if}} + f_{\textrm{if}}^\prime}{f_s}-\phi)}.
+\label{eqn:sync_rx_discrete2}
+\end{align}
+$$
+</div>
+<p>Again, the center frequency of the second item is much higher than the first item, which can be filtered out easily with an digital low pass filter (Fig. <a href="#img-sync_phase_base">4</a>). Thus, the baseband signal after low pass filter can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_b[n] &= s[n]e^{j(2\pi \frac{f_{\textrm{if}} - f_{\textrm{if}}^\prime}{f_s}n + \phi)}.
+\label{eqn:sync_rx_baseband}
+\end{align}
+$$
+</div>
+<figure id="img-sync_phase_base" class="figure">
+<img src="./image/sync_phase_base.svg" alt="./image/sync_phase_base.svg">
+<figcaption class="caption"><span class="tag">Fig.4.</span> Baseband signal after IF demodulation in discrete domain.</figcaption>
+</figure>
+<p>In ideal case, $\phi=0$ and $f_{\textrm{if}}^\prime = f_{\textrm{if}}$, where Eq. (\ref{eqn:sync_rx_baseband}) is simplified as</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_b[n] &= s[n],
+\end{align}
+$$
+</div>
+<p>which is same as the transmitted data (Fig. <a href="#img-sync_tx">5</a>).</p>
+<figure id="img-sync_tx" class="figure">
+<img src="./image/sync_rx_ideal.svg" alt="./image/sync_rx_ideal.svg">
+<figcaption class="caption"><span class="tag">Fig.5.</span> Ideal received signal after demodulation.</figcaption>
+</figure>
+<p>When the phase error is not zero (i.e., $\phi\neq 0$), and frequency error is zero (i.e., $f_{\textrm{if}}^\prime = f_{\textrm{if}}$), Eq. (\ref{eqn:sync_rx}) is written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_b[n] &= s[n]e^{j\phi}.
+\end{align}
+$$
+</div>
+<p>The constellation is rotated by $\phi$.</p>
+<figure id="img-sync_phi" class="figure">
+<img src="./image/sync_rx_phi.svg" alt="./image/sync_rx_phi.svg">
+<figcaption class="caption"><span class="tag">Fig.6.</span> Received signal after demodulation with phase error.</figcaption>
+</figure>
+<p>When the frequency offset is not zero, the received constellation will not contain 4 points any more, instead, the received signal can be located anywhere on the unit circle. In Fig. <a href="#img-sync_df">7</a>, the received constellation looks like 4 clusters. It is because we only show a small amount of data; otherwise, it will be a circle, as the phase error ($2\pi\frac{f_{\textrm{if}} - f_{\textrm{if}}^\prime}{f_s}+\phi$) will increase as $n$ increases.</p>
+<figure id="img-sync_df" class="figure">
+<img src="./image/sync_rx_df.svg" alt="./image/sync_rx_df.svg">
+<figcaption class="caption"><span class="tag">Fig.7.</span> Received signal after demodulation with frequency error.</figcaption>
+</figure>
+<p>We have seen the impact of the frequency and/or phase error to the signal constellation. The next question is how to fix it? There are generally two steps</p>
+<ol>
+<li><p><b>Estimate the phase error.</b> 
+For example, Fig. <a href="#img-sync_phase_error">8</a> shows the received and the estimated signals. In some systems, the estimated signal can be the true signal ($s[n]$, e.g., preamble symbols known at the receiver side). In some systems, it may be from the estimation (e.g., maximum likelihood estimation). Then the phase error is the phase difference between the received and estimated signals</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_b[n]s[n]^{*} &= \left\Vert s[n]\right\Vert^2e^{j\phi_e}\nonumber \\
+    &= e^{j\phi_e}
+\end{align}
+$$
+</div>
+<p>where $s[n]^{*} = s_r[n] - js_i[n]$ is the conjugate of $s[n]$. Then the phase error can be estimated as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\angle(r_b[n]s[n]^{*}) = \phi_e.
+\end{align}
+$$
+</div>
+<figure id="img-sync_phase_error" class="figure">
+<img src="./image/sync_rx_phase_error.svg" alt="./image/sync_rx_phase_error.svg">
+<figcaption class="caption"><span class="tag">Fig.8.</span> Phase error estimation.</figcaption>
+</figure>
+<p>How to calculate the angle/phase? For software simulation (e.g., matlab, scilab, scipy), there is always some function available, which may not be true for real hardware implementation.</p>
+<p><b>Look-up Table.</b> One straightforward way is to use a look-up table, that is, storing the phase corresponding to each point on the unit circle (i.e., $a+jb$, and $a^2+ b^2=1$). Generally we need the phase within range $[-\pi, \pi]$; however, there is no need for the look-up table to cover the whole range, since <b>$\sin$</b> and <b>$\cos$</b> are symmetric. For example, since</p>
+<div class="mathjax">
+$$
+\begin{align}
+\cos(-\alpha) &= \cos(\alpha),\nonumber\\
+\sin(-\alpha) &= -\sin(\alpha),
+\end{align}
+$$
+</div>
+<p>the look-up table may only store the positive phase. That is, for a complex value $a+jb$, if $b\geq 0$, $\alpha = \alpha_l$, where $\alpha_l$ is the value in look-up table (indexed with $a+jb$); otherwise ($b&lt;0$), $\alpha=-\alpha_l$, where $\alpha_l$ corresponds to $a-bj$ in the look-up table. Thus, there is no need to worry about the negative phase ($[-\pi, 0]$). Furthermore, for phase in $[0, \pi]$, since</p>
+<div class="mathjax">
+$$
+\begin{align}
+\cos(\pi-\alpha) &= -\cos(\alpha),\nonumber\\
+\sin(\pi-\alpha) &= \sin(\alpha),
+\end{align}
+$$
+</div>
+<p>it only needs to store the phase in $[0, \pi/2]$, where the phase in $[\pi/2, \pi]$ can be derived easily. In summary, to look up the phase of $a+jb$,</p>
+<ol>
+<li>find the phase corresponding to $|a| + j|b|$, denote it as $\alpha_l$;</li>
+<li>if $a\geq 0$ and $b\geq 0$, the phase is in the first quadrant, i.e., $\alpha=\alpha_l$;</li>
+<li>if $a &lt; 0$ and $b \geq 0$, the phase is in the second quadrant, i.e., $\alpha=\pi -\alpha_l$;</li>
+<li>if $a &lt; 0$ and $b &lt; 0$, the phase is in the third quadrant, i.e., $\alpha=\alpha_l-\pi$;</li>
+<li>if $a\geq 0$ and $b &lt;0$, the phase is in the forth quadrant, i.e., $\alpha=-\alpha_l$;</li>
+</ol>
+<p>It is not bad as we shrink the look up table by a factor of 4 by simple math. Actually if the look up table size is the bottle neck, we can do even better. Considering a phase in $[0, \pi/2]$, we have</p>
+<div class="mathjax">
+$$
+\begin{align}
+\cos(\alpha) &= \sin(\pi/2 - \alpha),\nonumber\\
+\sin(\alpha) &= \cos(\pi/2 - \alpha).
+\end{align}
+$$
+</div>
+<p>It means that the look up table only needs to cover $[0, \pi/4]$. To find the phase of $a+jb$ in first quadrant (i.e., $a\geq 0$, $b\geq 0$) (the other quadrants can be got as mentioned above)</p>
+<ol>
+<li>calculate $a_m = \max(a, b)$, and $b_m = \min(a, b)$;</li>
+<li>find the phase $\alpha_l$ correspond to $a_m + jb_m$;</li>
+<li>if $a_m = a$, then the phase is in $[0, \pi/4]$, i.e., $\alpha = \alpha_l$;</li>
+<li>if $a_m = b$, then the phase is in $[\pi/4, \pi/2]$, i.e., $\alpha = \pi/2 - \alpha_l$.</li>
+</ol>
+<p>In practice, the complex value may not be on the unit circle. In this case, before searching the phase in the look-up table, it is helpful to normalized it first</p>
+<div class="mathjax">
+$$
+\begin{align}
+a_n &= \frac{a}{\sqrt{a^2+b^2}},\nonumber\\
+b_n &= \frac{b}{\sqrt{a^2+b^2}}.
+\end{align}
+$$
+</div>
+<p>Apparently, $\angle(a_n+b_nj)$ is same as $\angle(a+jb)$, since scaling a complex value wil not change its direction (angle).</p>
+<p><b>Phase Approximation.</b> If the phase error $\phi_e$ is small,</p>
+<div class="mathjax">
+$$
+\begin{align}
+e^{j\phi_e} &= \cos(\phi_e) + j\sin(\phi_e)\nonumber\\
+    &\approx 1 + \phi_e.
+\end{align}
+$$
+</div>
+<p>Thus, the phase error can be estimated by the image part of $r[n]s[n]^{*}$, that is</p>
+<div class="mathjax">
+$$
+\phi_e \approx \Im(r_b[n]s[n]^{*}),
+$$
+</div>
+<p>where $\Im(.)$ is the operator to take the image part of a complex value.</p>
+<figure id="img-sync_phase_error_approx" class="figure">
+<img src="./image/sync_rx_phase_error_approx.svg" alt="./image/sync_rx_phase_error_approx.svg">
+<figcaption class="caption"><span class="tag">Fig.9.</span> Phase error estimation when $\phi_e$ is small.</figcaption>
+</figure>
+<p>Such assumption may be true once the frequency synchronization converges. Thus, it can be used to simplify the operation. However, it is definitely not true for the initialization period of the frequency synchronization, since the phase offset can be arbitrary. As mentioned above, we need a better approximation in $[0, \pi/4]$.</p>
+<p>As described in [<a id="cite-1-1" href="#reference-1">1</a>], a phase in $[0,\pi/4]$ can be approximated as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\alpha = \frac{b/a}{1+0.28125(b/a)^2}.
+\label{eqn:sync_phase_est}
+\end{align}
+$$
+</div>
+<p>As shown in Fig. <a href="#img-sync_clk_phase_est">10</a>, the maximum estimation error is roughly 0.28 degree.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">alpna</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">alpha_e</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="o">/</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.2815</span><span class="o">*</span><span class="p">(</span><span class="n">b</span><span class="o">/</span><span class="n">a</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">alpha</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="p">(</span><span class="n">alpha</span><span class="o">-</span><span class="n">alpha_e</span><span class="p">)</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;angle (in degree)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;estimation error (in degree)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure id="img-sync_clk_phase_est" class="figure">
+<img src="./image/sync_clk_phase_est.png" alt="./image/sync_clk_phase_est.png">
+<figcaption class="caption"><span class="tag">Fig.10.</span> Phase error of the estimation from Eq. (\ref{eqn:sync_phase_est}).</figcaption>
+</figure>
+</div>
+<p><b>CORDIC Algorithm.</b> The CORDIC (COordinate Rotation DIgital Computer) algorithm [<a id="cite-2-1" href="#reference-2">2</a>] is an iterative method to estimate the phase. Generally, a phase $\alpha$ in $[0, \pi/4]$ can be decoupled as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\alpha = \pi/8 + d_1\pi/16 + d_2\pi/32 + \cdots,
+\end{align}
+$$
+</div>
+<p>where $d_i = \pm 1$. In other words, if we rotate a complex value by $\pi/8$ (clockwise), then $d_1\pi/16$, $d_2\pi/32$, $\cdots$, eventually, the phase of the resulting value will approach zero. 
+So one general idea to estimate a phase in $[0, \pi/4]$ could be</p>
+<ol>
+<li>rotate (clockwise) with a phase $\pi/8$,</li>
+<li>if the resulting value is still in first quadrant, rotate (clockwise) with a phase of $\pi/16$; 
+<ol>
+<li>otherwise, rotate (counterclockwise) with a phase of $\pi/16$.</li>
+</ol></li>
+<li>if the resulting value is in first quadrant, rotate (clockwise) with a phase $\pi/32$, 
+<ol>
+<li>otherwise, rotate (counterclockwise) with a phase of $\pi/32$.</li>
+</ol></li>
+<li>$\cdots$</li>
+</ol>
+<p>To rotate a complex value $a+jb$ by a phase $\alpha$ (counterclockwise),</p>
+<div class="mathjax">
+$$
+\begin{align}
+a^\prime &= a\cos(\alpha) - b\sin(\alpha),\nonumber\\
+b^\prime &= b\cos(\alpha) + a\sin(\alpha).
+\label{eqn:sync_rotate}
+\end{align}
+$$
+</div>
+<p>Thus, we can store all the $\cos(\pi/8)$, $\sin(\pi/8)$, $\cos(\pi/16)$, $\sin(\pi/16)$, $\cdots$, and follow the above procedure to estimate the phase. However, such procedure is computational complicated, since at each step it needs 4 multiplications and 2 additions. CORDIC algorithm simplifies such procedure. Eq. (\ref{eqn:sync_rotate}) can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+a^\prime &= \cos(\alpha)(a - b\tan(\alpha)),\nonumber\\
+b^\prime &= \cos(\alpha)(b + a\tan(\alpha)).
+\label{eqn:sync_rotate2}
+\end{align}
+$$
+</div>
+<p>If $\alpha$ is chosen such that $\tan(\alpha)= d_k 2^{-k}$, where $d_k$ is the rotation direction, then Eq. (\ref{eqn:sync_rotate2}) can be simplified as</p>
+<div class="mathjax">
+$$
+\begin{align}
+a^\prime &= \cos(\alpha)(a - bd_k 2^{-k}),\nonumber\\
+b^\prime &= \cos(\alpha)(b + ad_k 2^{-k}).
+\label{eqn:sync_rotate3}
+\end{align}
+$$
+</div>
+<p>Since we only care about the phase and not the amplitude, the phase of $a^\prime/\cos(\alpha)+jb^\prime/\cos(\alpha)$ is same as $a^\prime+jb^\prime$. Thus, $\cos(\alpha)$ can be ignored</p>
+<div class="mathjax">
+$$
+\begin{align}
+a^\prime &= a - bd_k 2^{-k},\nonumber\\
+b^\prime &= b + ad_k 2^{-k}.
+\label{eqn:sync_rotate4}
+\end{align}
+$$
+</div>
+<p>In this case, Eq. (\ref{eqn:sync_rotate4}) can be easily implemented by shifting and addition. The algorithm is summarized as</p>
+<div class="mathjax">
+$$
+\begin{align}
+a_{k+1} &= a_k- b_k d_k 2^{-k},\nonumber\\
+b_{k+1} &= b_k+ a_k d_k 2^{-k},\nonumber\\
+\alpha_{k+1} &= \alpha_k - d_k \arctan(2^{-k}),
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\begin{align}
+d_k = \begin{cases} 1 & \textrm{if } b_k&lt;0\\
+    -1 & \textrm{otherwise}
+    \end{cases}.
+\end{align}
+$$
+</div>
+<p>For the phase in $[0, \pi/4]$, the iteration may look like</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">_cordic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    return the phase of complex value a+jb</span>
+
+<span class="sd">    the phase must be in [0, pi/4]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">atan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mf">2.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iteration</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iteration</span><span class="p">):</span>
+        <span class="n">a_n</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="o">*</span><span class="n">d</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">b_n</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="n">a</span><span class="o">*</span><span class="n">d</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">-</span> <span class="n">d</span> <span class="o">*</span> <span class="n">atan</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">b_n</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a_n</span><span class="p">,</span> <span class="n">b_n</span>
+    <span class="k">return</span> <span class="n">alpha</span>
+</pre></div>
+</div>
+<p>Then, the arbitrary phase ($[-\pi, \pi]$) can be got by applying the symmetric properties mentioned above</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">cordic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    return the phase of complex value a+jb</span>
+
+<span class="sd">    return the phase (-pi, pi]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
+    <span class="n">b_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">_cordic</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">b_m</span><span class="p">,</span> <span class="n">iteration</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a_m</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">alpha</span>
+    <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">alpha</span>
+    <span class="k">elif</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="k">elif</span> <span class="n">a</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="o">-</span><span class="n">alpha</span>
+    <span class="k">return</span> <span class="n">alpha</span>
+</pre></div>
+</div>
+<p>Fig. <a href="#img-sync_cordic_est">11</a> shows the maximum estimation errors from the CORDIC algorithm. The error is smaller with more iterations, as expected.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">alpha_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span>
+<span class="o">...</span>     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+<span class="o">...</span>     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">alpha</span><span class="p">):</span>
+<span class="o">...</span>         <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cordic</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">iteration</span><span class="p">)</span>
+<span class="o">...</span>     <span class="n">alpha_err</span><span class="p">[</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">alpha</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="n">alpha_err</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;iterations&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;max estimation error (in degree)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure id="img-sync_cordic_est" class="figure">
+<img src="./image/sync_cordic_est.svg" alt="./image/sync_cordic_est.svg">
+<figcaption class="caption"><span class="tag">Fig.11.</span> Maximum estimation error of the CORDIC algorithm.</figcaption>
+</figure>
+</div></li>
+<li><p><b>Compensate Phase Error.</b> 
+The estimated error is used to adjust the system such that the phase error is decreased. For example, the phase error will be sent to a PI (proportional and integral) controller (Fig. <a href="#img-sync_pi">12</a>)</p>
+<div class="mathjax">
+$$
+\begin{align}
+e[n] &= e_p[n] + e_i[n],
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\begin{align}
+e_p[n] &= g_p\phi_e[n]\nonumber\\
+e_i[n] &= e_i[n-1] + g_i\phi_e[n].
+\end{align}
+$$
+</div>
+<figure id="img-sync_pi" class="figure">
+<img src="./image/sync_pi.svg" alt="./image/sync_pi.svg">
+<figcaption class="caption"><span class="tag">Fig.12.</span> Structure of a PI controller.</figcaption>
+</figure>
+<p>For example, as shown in Fig. <a href="#img-sync_phase_comp">13</a>, $e[n]$ is sent to the block that generates $f_c^\prime$ or to the block that generates $f_{\textrm{if}}^\prime$<a name="footnote_src-2" href="#footnote-2"><sup>2</sup></a>. In our example, frequency down-shifting with $f_c^\prime$ is done in analog domain. Thus, $e[n]$ needs to send to a DAC block to generate the analog signal (e.g., $e(t)$) before sending to $f_c^\prime$. Such process brings more cost. However, it makes sure that the analog LPF block works in ideal condition when the frequency synchronization converges. Otherwise, if $f_{\textrm{if}}$ is too far away from $f_{\textrm{if}}^\prime$, the signal band may not be in the passband of the analog low pass filter, which causes distortion to the signal.</p>
+<figure id="img-sync_phase_comp" class="figure">
+<img src="./image/sync_phase_comp.svg" alt="./image/sync_phase_comp.svg">
+<figcaption class="caption"><span class="tag">Fig.13.</span> Structure of phase error compensation.</figcaption>
+</figure>
+<p>On the other side, compensating $e[n]$ at $f_{if}^\prime$ is much easier, since both the error signal $e[n]$ and the NCO (numerically controlled oscillator) are in digital domain. 
+The NCO block generates the reference signal for frequency down-shifting to get the baseband signal (by multiplying $e^{j\phi_{\textrm{nco}}}$), where</p>
+<div class="mathjax">
+$$
+\begin{align}
+\phi_{\textrm{nco}}[n] = \phi_{\textrm{nco}}[n-1] - 2\pi\frac{f_{\textrm{if}}^\prime}{f_s} - e[n].
+\end{align}
+$$
+</div>
+<p>In Fig. <a href="#img-sync_phase_comp">13</a>, the phase error ($e[n]$) is sent to the NCO for frequency synchronization. Thus, there is a delay ($D$) between phase error estimation and compensation (e.g., the delay from the digital LPF). If the delay is large, it may limit the maximal frequency offset the system can deal with. For example, at time $n$, the estimated phase error is positive, while at time $n+D$, the phase error may be negative due some large frequency offset. If we use $e[n]$ to compensate for the phase error of sample $n+D$, the system may diverge. Thus, in some system, to minimize the delay $D$, we may put a phase rotation block right before the decision block (Fig. <a href="#img-sync_phase_comp2">14</a>).</p>
+<figure id="img-sync_phase_comp2" class="figure">
+<img src="./image/sync_phase_comp2.svg" alt="./image/sync_phase_comp2.svg">
+<figcaption class="caption"><span class="tag">Fig.14.</span> Structure of phase error compensation to minimize the delay $D$.</figcaption>
+</figure></li>
+</ol>
+<p>In the following example, we will show how to do the frequency synchronization for a QPSK signal (Fig. <a href="#img-sync_tx">5</a>). First, let us define some parameters. 
+The signal bandwidth is 1 MHz (centered at 2 MHz IF) with sampling rate 8 MHz.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># parameters</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fsym</span> <span class="o">=</span> <span class="mf">1e6</span> <span class="c1"># symbol rate</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">UPS</span> <span class="o">=</span> <span class="mi">8</span> <span class="c1"># up-sampling factor</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fif</span> <span class="o">=</span> <span class="mf">2e6</span> <span class="c1"># IF frequency</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># IF frequency delta at receiver side with frequency error</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fif_prime</span> <span class="o">=</span> <span class="n">Fif</span> <span class="o">+</span> <span class="mf">20e3</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fif_phi</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fs</span> <span class="o">=</span> <span class="n">Fsym</span><span class="o">*</span><span class="n">UPS</span> <span class="c1"># sampling frequency</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">SNR</span> <span class="o">=</span> <span class="mi">30</span> <span class="c1"># awgn (dB)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># Modulation</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">MODE</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">PHASE_OFFSET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">MODE</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># the maximum phase error without bit error</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">PHASE_SPACE</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">MODE</span><span class="o">/</span><span class="mi">2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1">#mapping table for hard decision</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">PHASE</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># True --&gt; hard decision; False --&gt; use tx data</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">DECISION</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+<p>Generate the random QPSK symbols at 1 MHz, which are up-sampled to 8 MHz by inserting zero. Then, the result signal is low-pass filtered to suppress mirrors.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># generate the PSK signal</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">symbol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">MODE</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10000</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1j</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">MODE</span><span class="o">*</span><span class="n">symbol</span> <span class="o">+</span> <span class="n">PHASE_OFFSET</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># tx shaping filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fir_tx</span> <span class="o">=</span> <span class="n">rcosdesign</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">UPS</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">UPS</span><span class="o">-</span><span class="mi">1</span><span class="p">]))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">fir_tx</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># remove the filter delay</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[(</span><span class="nb">len</span><span class="p">(</span><span class="n">fir_tx</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">:]</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure id="img-sync_demo_tx" class="figure">
+<img src="./image/sync_demo_tx.png" alt="./image/sync_demo_tx.png">
+<figcaption class="caption"><span class="tag">Fig.15.</span> Frequency response of the up-sampled signal.</figcaption>
+</figure>
+</div>
+<p>Up-shift the baseband signal to IF to simulate a received signal after ADC.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># rx</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># modulation with IF to simulate a received signal after ADC</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1j</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">Fif</span><span class="o">/</span><span class="n">Fs</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span><span class="o">+</span><span class="n">Fif_phi</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># add AWGN</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">noise</span> <span class="o">*=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">SNR</span><span class="o">/</span><span class="mi">20</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="n">r</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">UPS</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">r</span> <span class="o">+=</span> <span class="n">noise</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure id="img-sync_demo_rx" class="figure">
+<img src="./image/sync_demo_rx.png" alt="./image/sync_demo_rx.png">
+<figcaption class="caption"><span class="tag">Fig.16.</span> Frequency response of the received signal after ADC.</figcaption>
+</figure>
+</div>
+<p>Before we start the frequency synchronization loop, let us define some variables.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># match filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fir_rx</span> <span class="o">=</span> <span class="n">rcosdesign</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">UPS</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">r_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fir_rx</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># frequency synchronization</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">UPS</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">q_est</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">UPS</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">freq_est</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># estimated error</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ph_nco</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">Fif_prime</span><span class="p">)</span><span class="o">/</span><span class="n">Fs</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">freq_err</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">freq_err_i</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">freq_err_d</span> <span class="o">=</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+<p><b>fir_rx</b> is the coefficients for the low pass filter after down shifting ($f_{\textrm{if}}^\prime$). Now we can do the actual frequency recovery loop.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># down sampling by a factor of UPS, then estimate the frequency error,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># assume no clock error and sampling at best phase</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)):</span>
+<span class="o">...</span>     <span class="c1"># step 1: NCO for frequency synchronization &amp; frequency error compensation</span>
+<span class="o">...</span>     <span class="n">ph_nco</span> <span class="o">=</span> <span class="n">ph_nco</span> <span class="o">-</span> <span class="n">freq_err</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">Fif_prime</span><span class="p">)</span><span class="o">/</span><span class="n">Fs</span>
+<span class="o">...</span>     <span class="k">if</span> <span class="n">ph_nco</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+<span class="o">...</span>         <span class="n">ph_nco</span> <span class="o">-=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="o">...</span>     <span class="k">elif</span> <span class="n">ph_nco</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+<span class="o">...</span>         <span class="n">ph_nco</span> <span class="o">+=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="o">...</span>     <span class="c1"># step 2: down shift</span>
+<span class="o">...</span>     <span class="n">r_b</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1j</span><span class="o">*</span><span class="n">ph_nco</span><span class="p">)</span>
+<span class="o">...</span>     <span class="c1"># step 3: filtering</span>
+<span class="o">...</span>     <span class="n">r_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">r_buf</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="o">...</span>     <span class="n">r_buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_b</span>
+<span class="o">...</span>     <span class="n">r_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">r_buf</span><span class="o">*</span><span class="n">fir_rx</span><span class="p">)</span>
+<span class="o">...</span>     <span class="c1"># step 4: down-sampling by a factor of 8</span>
+<span class="o">...</span>     <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fir_rx</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="ow">and</span> <span class="n">i</span><span class="o">%</span><span class="n">UPS</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<span class="o">...</span>         <span class="c1"># step 5: received signal</span>
+<span class="o">...</span>         <span class="n">z_in</span> <span class="o">=</span> <span class="n">r_b</span>
+<span class="o">...</span>         <span class="n">q_est</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">z_in</span>
+<span class="o">...</span>         <span class="c1"># step 6: decision</span>
+<span class="o">...</span>         <span class="k">if</span> <span class="n">DECISION</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<span class="o">...</span>             <span class="n">q_h</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+<span class="o">...</span>         <span class="k">else</span><span class="p">:</span>
+<span class="o">...</span>             <span class="c1"># find the closest point on constellation</span>
+<span class="o">...</span>             <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">q_est</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">q_est</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+<span class="o">...</span>             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p</span><span class="o">-</span><span class="n">PHASE</span><span class="p">))</span>
+<span class="o">...</span>             <span class="n">q_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1j</span><span class="o">*</span><span class="n">PHASE</span><span class="p">[</span><span class="n">b</span><span class="p">])</span>
+<span class="o">...</span>         <span class="c1"># step 7: estimate frequency error</span>
+<span class="o">...</span>         <span class="c1"># remove the signal phase</span>
+<span class="o">...</span>         <span class="n">q</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">q_est</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">q_h</span><span class="p">)</span>
+<span class="o">...</span>         <span class="c1"># phase error ~ [-pi, pi]</span>
+<span class="o">...</span>         <span class="n">phi_e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+<span class="o">...</span>         <span class="c1"># step 8: PI controller</span>
+<span class="o">...</span>         <span class="n">freq_err_i</span> <span class="o">=</span> <span class="n">freq_err_i</span> <span class="o">+</span> <span class="n">phi_e</span><span class="o">*</span><span class="mf">0.01</span><span class="o">/</span><span class="n">UPS</span>
+<span class="o">...</span>         <span class="n">freq_err_d</span> <span class="o">=</span> <span class="n">phi_e</span><span class="o">*</span><span class="mf">0.2</span><span class="o">/</span><span class="n">UPS</span>
+<span class="o">...</span>         <span class="n">freq_err</span> <span class="o">=</span> <span class="n">freq_err_i</span> <span class="o">+</span> <span class="n">freq_err_d</span>
+<span class="o">...</span>         <span class="n">freq_est</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">freq_err</span>
+<span class="o">...</span>         <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>As shown in the above code</p>
+<ul>
+<li><b>Step 1.</b> Calculate the phase for down-shifting the IF signal to baseband. The phase includes two items: one from $f_{\textrm{if}}^\prime$, and the other from the estimated phase error. It is a good idea to limit the phase in $[-\pi, \pi]$. Otherwise, when the phase becomes very big, the round error from float/double value will be unacceptable.</li>
+<li><b>Step 3.</b> For simplicity, the LPF is done with naive implementation. You should never do this for real.</li>
+<li><b>Step 4.</b> For simplicity, we assume the system does not have clock error (i.e., the transmitter and receives have the exact same clock rate, which is not true in practice.). And we also manually find the best sampling phase, which should be recovered by the clock synchronization in real.</li>
+<li><p><b>Step 6.</b> There are generally two ways to get the hard value of the received signal. In some systems (e.g., 802.11a), the system may send some preamble, which is known at the receiver side. In this case, the hard value is the true value of the transmitted preamble signal. In some systems, such preamble is not available (e.g., too expensive). In this case, the point on the constellation that is closest to the received signal may be viewed as the hard value. Such method has some obvious drawbacks. For example, as shown in Fig. <a href="#img-sync_phase_error_large">17</a>, since the system has a large phase error $\phi_e$, the point on the constellation that is closest to the received signal is the orange point, instead of the blue point. Then, the estimated error will be $\hat{\phi}_e$, rather than $\phi_e$.</p>
+<figure id="img-sync_phase_error_large" class="figure">
+<img src="./image/sync_rx_phase_error_large.svg" alt="./image/sync_rx_phase_error_large.svg">
+<figcaption class="caption"><span class="tag">Fig.17.</span> Illustration of large phase error.</figcaption>
+</figure></li>
+</ul>
+<p>Figs. <a href="#img-sync_demo_scatter">18</a> and <a href="#img-sync_demo_err">19</a> show the simulation result. With 20 kHz frequency offset, the signals without frequency synchronization show as a blue circle on the constellation, as expected; while after frequency synchronization, the signals converges to a QPSK constellation.</p>
+<figure id="img-sync_demo_scatter" class="figure">
+<img src="./image/sync_demo_scatter.png" alt="./image/sync_demo_scatter.png">
+<figcaption class="caption"><span class="tag">Fig.18.</span> Signals with and without frequency synchronization.</figcaption>
+</figure>
+<p>And the estimated phase error $e[n]$ converges to a constant which is close to $-2\pi\frac{20e3}{8e6} = -0.0157$.</p>
+<figure id="img-sync_demo_err" class="figure">
+<img src="./image/sync_demo_err.png" alt="./image/sync_demo_err.png">
+<figcaption class="caption"><span class="tag">Fig.19.</span> Estimated phase error.</figcaption>
+</figure>
+<h2 id="sec-1-2">1.2 Clock Synchronization</h2>
+<p>The main purpose of clock synchronization (or clock/timing recovery, symbol synchronization) is to find the optimal sampling phase and rate. Let's start with the simplest BPSK case. For example, Fig. <a href="#img-sync_clk_bpsk">20</a> shows 2 possible sampling phases. It is obvious that the sampling phase indicated by the blue dash line is better than the red one, where the signal is stronger, suffers less from ISI and is more robust to random noise.</p>
+<figure id="img-sync_clk_bpsk" class="figure">
+<img src="./image/sync_clk_bpsk.svg" alt="./image/sync_clk_bpsk.svg">
+<figcaption class="caption"><span class="tag">Fig.20.</span> Sampling phases of BPSK signal.</figcaption>
+</figure>
+<p>For BPSK signal, one way to achieve clock synchronization is to check the time when the signal crosses zero. The zero-crossing position may correspond to a sample which is either zero (i.e., $r[n]=0$), or changes sign/phase from its previous sample (i.e., $r[n]r[n-1]&lt;0$). For example, as shown in Fig. <a href="#img-sync_clk_bpsk_tr">21</a>, the blue dash line shows the optimal sampling phase, and the up-sampling rate is 24. Then the optimal sampling timing will be roughly 12 samples (0.5 symbols) from any zero crossing position (indicated by the red dots). So one straightforward algorithm is to check the distance between the last sampling position and adjacent zero crossing point. If the distance is not 12 samples (0.5 symbols), update the next sampling phase accordingly.</p>
+<figure id="img-sync_clk_bpsk_tr" class="figure">
+<img src="./image/sync_clk_bpsk_tr.svg" alt="./image/sync_clk_bpsk_tr.svg">
+<figcaption class="caption"><span class="tag">Fig.21.</span> Timing recovery for BPSK signal.</figcaption>
+</figure>
+<p>It is easy to see such algorithm suffers from long run 1 or -1. The red dots in Fig. <a href="#img-sync_clk_bpsk_tr1">22</a> shows the expected zero-crossing positions, which are apparently not close to zero since there is no phase change between adjacent symbols. In this case, the algorithm won't be able to update the sampling phase during that long run 1 or -1 period. In practice, such long run 1 or -1 should be avoided, for example, by the scramble block in the transmitter or modulation schemes (e.g., bi-phase).</p>
+<figure id="img-sync_clk_bpsk_tr1" class="figure">
+<img src="./image/sync_clk_bpsk_tr1.svg" alt="./image/sync_clk_bpsk_tr1.svg">
+<figcaption class="caption"><span class="tag">Fig.22.</span> Timing recovery for BPSK signal.</figcaption>
+</figure>
+<p>The zero-crossing algorithm works well for 'clean' signal. However, if the signal suffers from noise, the zero-crossing position will not occur once between two adjacent symbols (with phase change). Instead, it may occur multiple times within a symbol, or the cross-zero position will not be one sample, but a region. Thus, it will be difficult to determine the phase error.</p>
+<p>Another widely used algorithm is called early-late gate method. For each symbol, we will get three samples (Fig. <a href="#img-sync_clk_bpsk_opt">23</a>)</p>
+<ol>
+<li>one at the estimated optimal sampling time ($r_{on}$);</li>
+<li>one before the estimated optimal sampling time ($r_{early}$);</li>
+<li>one after the estimated optimal sampling time ($r_{late}$).</li>
+</ol>
+<p>Don't be confused. Here the estimated optimal sampling time may be far away from the optimal sampling time. Usually, the distance between samples $r_{on}$ and $r_{early}$ is chosen to be same as the one between $r_{on}$ and $r_{late}$. 
+The algorithm adjusts the sampling phase dynamically by comparing these three samples. 
+The goal of the clock synchronization is to minimize $|r_{late}-r_{early}|$ (Fig. <a href="#img-sync_clk_bpsk_opt">23</a>).</p>
+<figure id="img-sync_clk_bpsk_opt" class="figure">
+<img src="./image/sync_clk_bpsk_opt.svg" alt="./image/sync_clk_bpsk_opt.svg">
+<figcaption class="caption"><span class="tag">Fig.23.</span> Optimal sampling phase for the early-late gate method.</figcaption>
+</figure>
+<p><b>Sampling too early.</b> Fig. <a href="#img-sync_clk_bpsk_early">24</a> shows the early sampling case, where the estimated sampling phase is before the optimal one. In this special case, $r_{late}$ is larger than $r_{early}$, which can be used to adjust the sampling phase of the next samples (e.g., delay the sampling time).</p>
+<figure id="img-sync_clk_bpsk_early" class="figure">
+<img src="./image/sync_clk_bpsk_early.svg" alt="./image/sync_clk_bpsk_early.svg">
+<figcaption class="caption"><span class="tag">Fig.24.</span> Early sampling for the early-late gate method.</figcaption>
+</figure>
+<p><b>Sampling too late.</b> Similarly, Fig. <a href="#img-sync_clk_bpsk_late">25</a> shows the late sampling case, where $r_{late}$ is smaller than $r_{early}$. Thus, the next samples need to be sampled early.</p>
+<figure id="img-sync_clk_bpsk_late" class="figure">
+<img src="./image/sync_clk_bpsk_late.svg" alt="./image/sync_clk_bpsk_late.svg">
+<figcaption class="caption"><span class="tag">Fig.25.</span> Late sampling for the early-late gate method.</figcaption>
+</figure>
+<p>We will use an example with BPSK signal to show how to achieve clock synchronization with the early-late gate method<a name="footnote_src-3" href="#footnote-3"><sup>3</sup></a>. As usual, we first define some parameters used in the simulation. The data/symbol rate is very small (~1 kHz), thus the sampling rate can be relatively high (e.g., 128 times of the data/symbol rate).</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># parameters</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fs</span> <span class="o">=</span> <span class="mi">152000</span> <span class="c1"># sample frequency(Hz)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fd</span> <span class="o">=</span> <span class="mf">1187.5</span> <span class="c1"># data rate(Hz)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">CLK_OFFSET</span> <span class="o">=</span> <span class="mf">200e-6</span> <span class="c1"># (+/-200ppm)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">SNR</span> <span class="o">=</span> <span class="mi">7</span> <span class="c1"># in dB</span>
+</pre></div>
+</div>
+<p>We prepend a PN (pseudo-noise) sequence in front of the message bits, so that at the receiver side we can easily find the start of the message bits with a correlation to calculate the BER (bit error rate). The 127 bits PN sequence is generated with an LFSR (linear-feedback shift register). We also append some zeros at the end of the message bits, just to push all the data bits through the filters.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">msg_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># add PN sequence for frame synchronization</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">pn</span> <span class="o">=</span> <span class="n">sync_lfsr</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">msg_cyc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">pn</span><span class="p">,</span> <span class="n">msg_bits</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>Then, we add a differential encoding, such that the system can tolerate 180 phase ambiguity (e.g., as mentioned in the frequency synchronization section).</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># differential encoding</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">bit_p</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">msg_cyc</span><span class="p">)):</span>
+<span class="o">...</span>     <span class="n">msg_cyc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_xor</span><span class="p">(</span><span class="n">bit_p</span><span class="p">,</span> <span class="n">msg_cyc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="o">...</span>     <span class="n">bit_p</span> <span class="o">=</span> <span class="n">msg_cyc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Its encoding and decoding schemes are shown in Tables. <a href="#tbl-sync_bpsk_diff_encode">1</a> and <a href="#tbl-sync_bpsk_diff_decode">2</a>, respectively.</p>
+<table id="tbl-sync_bpsk_diff_encode">
+<caption><span class="tag">Table.1.</span> Differential encoding.</caption>
+ <thead>
+<tr>
+<th>Prev output</th><th>Current input</th><th>Current output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>0</td><td>1</td><td>1</td>
+</tr>
+<tr>
+<td>1</td><td>0</td><td>1</td>
+</tr>
+<tr>
+<td>1</td><td>1</td><td>0</td>
+</tr>
+</tbody>
+</table>
+<p>The potential drawback of differential coding is the 'error propagation'. As shown in Table. <a href="#tbl-sync_bpsk_diff_decode">2</a>, the current decoding output relies on both the current input and the previous input. If the previous input is wrong, the decoding output may be wrong too.</p>
+<table id="tbl-sync_bpsk_diff_decode">
+<caption><span class="tag">Table.2.</span> Differential decoding.</caption>
+ <thead>
+<tr>
+<th>Prev input</th><th>Current input</th><th>Current output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>0</td><td>1</td><td>1</td>
+</tr>
+<tr>
+<td>1</td><td>0</td><td>1</td>
+</tr>
+<tr>
+<td>1</td><td>1</td><td>0</td>
+</tr>
+</tbody>
+</table>
+<p>The next step is shaping filter, which is defined as</p>
+<div class="mathjax">
+$$
+\begin{align}
+H_{T}(f)=\begin{cases}
+\cos\frac{\pi ft_{d}}{4} & 0\leq f\leq\frac{2}{t_d}\\
+0 & f&gt;\frac{2}{t_d}\end{cases}
+\end{align}
+$$
+</div>
+<p>where $t_d = \frac{1}{f_d}$. 
+Its frequency and impulse responses are shown in Fig. <a href="#img-sync_clk_bpsk_shaping">26</a>.</p>
+<figure id="img-sync_clk_bpsk_shaping" class="figure">
+<img src="./image/sync_clk_bpsk_shaping.svg" alt="./image/sync_clk_bpsk_shaping.svg">
+<figcaption class="caption"><span class="tag">Fig.26.</span> The frequency and impulse response of the shaping filter.</figcaption>
+</figure>
+<p>To generate the filter coefficients, we first build the filter in frequency domain, then convert it to time domain with IFFT.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># BPSK modulation</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># in real case this may be replaced by a lookup table, rather than a filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># generate the shaping filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">UP_SAMP</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Fs</span><span class="o">/</span><span class="n">Fd</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">UP_BASE</span> <span class="o">=</span> <span class="n">UP_SAMP</span><span class="o">/</span><span class="mi">2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">UP_SAMP</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="n">UP_BASE</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hf</span><span class="p">[:</span><span class="n">UP_BASE</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">UP_BASE</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">hf</span><span class="p">,</span> <span class="n">hf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ht</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">hf</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ht</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">ht</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ht</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:],</span> <span class="n">ht</span><span class="p">[</span><span class="mi">0</span><span class="p">:(</span><span class="nb">len</span><span class="p">(</span><span class="n">ht</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">]))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># hard coded here, 401 taps around center, just for simulation</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ht</span> <span class="o">=</span> <span class="n">ht</span><span class="p">[</span><span class="mi">2048</span><span class="o">-</span><span class="mi">200</span><span class="p">:</span><span class="mi">2048</span><span class="o">+</span><span class="mi">201</span><span class="p">]</span><span class="o">.</span><span class="n">real</span>
+</pre></div>
+</div>
+<p>Before applying the shaping filter, the signal bits are up-sampled by a factor of 2. In particular, <b>1</b> and <b>0</b> is replaced with $[1, -1]$ and $[-1, 1]$, respectively. The waveforms after shaping filter are shown in Fig. <a href="#img-sync_clk_bpsk_biphase">27</a>. It is easy to see that there is always a zero-crossing within each symbol. Such fact can be used for clock synchronization with the zero-crossing method mentioned above.</p>
+<figure id="img-sync_clk_bpsk_biphase" class="figure">
+<img src="./image/sync_clk_bpsk_biphase.svg" alt="./image/sync_clk_bpsk_biphase.svg">
+<figcaption class="caption"><span class="tag">Fig.27.</span> The biphase waveforms for bit 1 and 0, respectively.</figcaption>
+</figure>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># generate bi-phase symbol</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">msg_biphase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">msg_cyc</span><span class="o">*</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># shaping filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">UP_BASE</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">msg_shaping</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">ht</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">msg_biphase</span><span class="p">,</span> <span class="n">u</span><span class="p">))</span><span class="o">*</span><span class="n">UP_BASE</span>
+</pre></div>
+</div>
+<p>Now it's time to add clock error and noise.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># add clock error</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">msg_signal</span> <span class="o">=</span> <span class="n">rx_src</span><span class="p">(</span><span class="n">msg_shaping</span><span class="p">,</span> <span class="n">Fs</span><span class="p">,</span> <span class="n">Fs</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">CLK_OFFSET</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># add noise</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">gain</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">msg_signal</span><span class="o">*</span><span class="n">msg_signal</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">msg_signal</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">Fs</span><span class="o">/</span><span class="n">Fd</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">msg_signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gain</span><span class="p">)</span><span class="o">*</span><span class="n">msg_signal</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg_signal</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">noise</span> <span class="o">*=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">SNR</span><span class="o">/</span><span class="mi">20</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">msg_signal</span><span class="o">*</span><span class="n">msg_signal</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">UP_BASE</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">msg_signal</span> <span class="o">+=</span> <span class="n">noise</span>
+</pre></div>
+</div>
+<p>The clock error is added with function <a href="https://github.com/tianzhuqiao/basic/blob/master/sync.py">rx_src</a>. When implementing <b>rx_src</b>, we need to make sure it works as intended.To do that, we can use a sinusoid signal for testing. For example, the following code adds 100 ppm offset to the sampling frequency (e.g., 24 MHz) of a sinusoid signal (e.g., 1 MHz). Since the signal length is 10000, the result signal will have roughly 1 (10000*100e-6) additional sample. As shown in Fig. <a href="#img-sync_rx_src_test">28</a>, at the beginning $n\approx 0$, two signals matched with each other very well; while $n\approx 10000$, compared to the original signal, (<b>s</b>) the result signal (<b>s2</b>) is roughly 'delayed' by 1 sample. In other words, within a period of roughly 10000 samples, <b>s2</b> has one more samples than <b>s</b>, as expected.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mf">24e6</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10000</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">rx_src</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mf">24e6</span><span class="p">,</span> <span class="mf">24e6</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">100e-6</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure id="img-sync_rx_src_test" class="figure">
+<img src="./image/sync_rx_src_test.svg" alt="./image/sync_rx_src_test.svg">
+<figcaption class="caption"><span class="tag">Fig.28.</span> Frequency response of the up-sampled signal.</figcaption>
+</figure>
+</div>
+<p>Another test we can do is to apply the <b>rx_srcs</b> twice to get the signal at the original frequency. The result should be as close to the original signal as possible.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="n">rx_src</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="mf">24e6</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">100e-6</span><span class="p">),</span> <span class="mf">24e6</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">100</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">)]</span><span class="o">-</span><span class="n">s3</span><span class="p">[</span><span class="mi">100</span><span class="p">:]))</span>
+<span class="mf">2.317595919540503e-05</span>
+</pre></div>
+</div>
+<p>The received signal is then down-sampled by a factor of 8, so the clock synchronization is done at sampling rate of $152/8=19$ kHz (or 16 times of the symbol rate). Such choice is kind of 'arbitrary', and should base on the application. Generally, the higher the sampling rate, the better the clock synchronization performance.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># BSKP demodulation</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># down sampling by factor 8</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">rx_sig</span> <span class="o">=</span> <span class="n">msg_signal</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fir_ds8</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">firwin2</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">4750.</span><span class="o">/</span><span class="p">(</span><span class="n">Fs</span><span class="p">),</span> <span class="mf">14250.</span><span class="o">/</span><span class="p">(</span><span class="n">Fs</span><span class="p">),</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">rx_sig</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">fir_ds8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">rx_sig</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">rx_sig</span> <span class="o">=</span> <span class="n">rx_sig</span><span class="p">[::</span><span class="mi">8</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The down-sampled signal is then sent to a matching filter, which has the same shape as the waveform shown in Fig. <a href="#img-sync_clk_bpsk_biphase">27</a> (except the sampling rate).</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># generate the matching filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hf8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">UP_SAMP</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="n">UP_BASE</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hf8</span><span class="p">[:</span><span class="n">UP_BASE</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">UP_BASE</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hf8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">hf8</span><span class="p">,</span> <span class="n">hf8</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ht8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">hf8</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ht8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">ht8</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ht8</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ht8</span><span class="p">[:(</span><span class="nb">len</span><span class="p">(</span><span class="n">ht8</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">]))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># filter the signal from bit &#39;1&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ht8</span><span class="p">))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fir_match</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">ht8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fir_match</span> <span class="o">=</span> <span class="n">fir_match</span><span class="p">[</span><span class="mi">246</span><span class="p">:</span><span class="mi">285</span><span class="p">]</span><span class="o">.</span><span class="n">real</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># match filtering</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">rx_sig</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">fir_match</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">rx_sig</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now it is time for clock synchronization and BPSK demodulation</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># Timing recovery and BPSK demodulation</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">rx_bits</span><span class="p">,</span> <span class="n">smp_time</span> <span class="o">=</span> <span class="n">sync_clk_bpsk</span><span class="p">(</span><span class="n">rx_sig</span><span class="p">,</span> <span class="n">UP_SAMP</span><span class="o">/</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Function <b>sync_clk_bpsk</b> implements the early-late gate method for clock synchronization. For each symbol, three samples are compared to adjust the sampling phase of the next symbol. For simplicity, in the demo, we directly apply the estimated error to the sampling phase. In some application, it may be helpful to send the estimated error to a PI controller first. The implementation find the 'best' phase in all the 16 possible phases. In other words, the performance is only 'optimal' within these 16 phases. If the optimal phase is beyond these 16 phases, there is no way to find the optimal one. Thus, the higher the sampling rate, the better the performance. In the next example, we will show how to use interpolation to approach the optimal sampling phase without requiring a high sampling frequency. For this demo, 16 phases is enough to get a good result.</p>
+<p>Here, the 'early' and 'late' samples are the neighbours of the 'on' sample, that is the distance between the 'early' (or 'late') sample and the 'on' sample is 1 sample. You may try different values to compare the performance<a name="footnote_src-4" href="#footnote-4"><sup>4</sup></a>.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">sync_clk_bpsk</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">ups</span><span class="p">,</span> <span class="n">dis</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">PERIOD</span> <span class="o">=</span> <span class="n">ups</span>  <span class="c1"># upsample factor</span>
+    <span class="n">sample_ins</span> <span class="o">=</span> <span class="n">dis</span> <span class="o">+</span> <span class="mi">8</span> <span class="c1">#initial sample position</span>
+    <span class="c1"># output</span>
+    <span class="n">smp_tm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">PERIOD</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">PERIOD</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">ds_cnt</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># down-sampling counter</span>
+    <span class="n">sym_cnt</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># current symbol index after down-sampling</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)))</span><span class="o">-</span><span class="n">dis</span><span class="p">)):</span>
+        <span class="n">ds_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">ds_cnt</span> <span class="o">&gt;=</span> <span class="n">sample_ins</span><span class="p">:</span>
+            <span class="n">ds_cnt</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">s_early</span><span class="p">,</span> <span class="n">s_on</span><span class="p">,</span> <span class="n">s_late</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[[</span><span class="n">i</span><span class="o">-</span><span class="n">dis</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">dis</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">s_on</span> <span class="o">-</span> <span class="n">s_early</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">s_on</span> <span class="o">-</span> <span class="n">s_late</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># on time sampling</span>
+                <span class="n">sample_ins</span> <span class="o">=</span> <span class="n">PERIOD</span>
+            <span class="k">elif</span> <span class="n">s_on</span><span class="o">*</span><span class="p">(</span><span class="n">s_on</span> <span class="o">-</span> <span class="n">s_early</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">s_on</span><span class="o">*</span><span class="p">(</span><span class="n">s_on</span> <span class="o">-</span> <span class="n">s_late</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># early sampling, delay the next one</span>
+                <span class="n">sample_ins</span> <span class="o">=</span> <span class="n">PERIOD</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">s_on</span><span class="o">*</span><span class="p">(</span><span class="n">s_on</span> <span class="o">-</span> <span class="n">s_early</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">s_on</span><span class="o">*</span><span class="p">(</span><span class="n">s_on</span> <span class="o">-</span> <span class="n">s_late</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># late sampling, advance the next one</span>
+                <span class="n">sample_ins</span> <span class="o">=</span> <span class="n">PERIOD</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">smp_tm</span><span class="p">[</span><span class="n">sym_cnt</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="c1"># decision slicer</span>
+            <span class="n">msg</span><span class="p">[</span><span class="n">sym_cnt</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="n">sym_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">smp_tm</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure id="img-sync_clk_bpsk_sampling" class="figure">
+<img src="./image/sync_clk_bpsk_sampling.png" alt="./image/sync_clk_bpsk_sampling.png">
+<figcaption class="caption"><span class="tag">Fig.29.</span> Estimated sampling phase.</figcaption>
+</figure>
+</div>
+<p>Fig. <a href="#img-sync_clk_bpsk_sampling">29</a> shows the signal after matched filter and the estimated sampling time (indicated by the orange dots). After several symbols, the sampling phases are converged to the peaks or valleys, which means the clock synchronization algorithm works well.</p>
+<p>After that, it is trivial to find the frame head with a correlation, so that we can calculate the BER. With the setup shown above, you should see zero bit error.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># differential decoding</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">rx_bits_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_xor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="mi">0</span><span class="p">],</span> <span class="n">rx_bits</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])),</span> <span class="n">rx_bits</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># frame synchronization</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">sync_corr</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">rx_bits_diff</span><span class="o">*</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">pn</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sync_corr</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<span class="o">...</span>     <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Frame Header error!&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">else</span><span class="p">:</span>
+<span class="o">...</span>     <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Frame Header: </span><span class="si">%d</span><span class="s1"> at </span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">sync_corr</span><span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="o">...</span>     <span class="n">msg_rx</span> <span class="o">=</span> <span class="n">rx_bits_diff</span><span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+<span class="o">...</span>     <span class="n">lenmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">msg_bits</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg_rx</span><span class="p">))</span>
+<span class="o">...</span>     <span class="n">err</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">msg_bits</span><span class="p">[:</span><span class="n">lenmin</span><span class="p">]</span> <span class="o">-</span> <span class="n">msg_rx</span><span class="p">[:</span><span class="n">lenmin</span><span class="p">]))</span>
+<span class="o">...</span>     <span class="k">print</span><span class="p">(</span><span class="s1">&#39;BER: </span><span class="si">%f</span><span class="s1"> (</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="o">/</span><span class="n">lenmin</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">lenmin</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The methods discussed above require multiple samples per symbol. Thus, it is suitable for the low symbol rate system; while for the high symbol rate system, the required sampling rate may be too large to be feasible. Fortunately, there are algorithms that can work on symbols directly. 
+One famous timing recovery algorithm is Mueller-Muller algorithm [<a id="cite-3-1" href="#reference-3">3</a>]. For example, Fig. <a href="#img-sync_clk_mm">30</a> shows the sampling phase and ISI of a system, where $f$ is the total channel response (e.g., from the shaping filter). Apparently, the sampling phase is delayed by $\tau$ from the optimal sampling. It causes ISI to the previous symbol (e.g., $\propto f(\tau-1)]$), and to the next symbol (e.g., $\propto f(\tau+1)$). MM method tries to minimize $|f(\tau-1)-f(\tau+1)|$.</p>
+<figure id="img-sync_clk_mm" class="figure">
+<img src="./image/sync_clk_mm.svg" alt="./image/sync_clk_mm.svg">
+<figcaption class="caption"><span class="tag">Fig.30.</span> Illustration of Mueller-Muller algorithm.</figcaption>
+</figure>
+<p>The phase error can be written as [<a id="cite-3-2" href="#reference-3">3</a>]</p>
+<div class="mathjax">
+$$
+\begin{align}
+e[n] = r[n]\bar{r}[n-1] - r[n-1]\bar{r}[n],
+\end{align}
+$$
+</div>
+<p>where $r[n]$ is the received signal, i.e.,</p>
+<div class="mathjax">
+$$
+\begin{align}
+r[n] = \sum_{k=-\infty}^{\infty}{f(\tau+k)\bar{r}[n-k]},
+\end{align}
+$$
+</div>
+<p>$\bar{r}[n]$ is the corresponding true value. Then</p>
+<div class="mathjax">
+$$
+\begin{align}
+E(e[n]) &= E(r[n]\bar{r}[n-1] - r[n-1]\bar{r}[n])\nonumber\\
+ &=  E\left(\bar{r}[n-1] \sum_{k=-\infty}^{\infty}{f(\tau+k)\bar{r}[n-k]} - \bar{r}[n] \sum_{k=-\infty}^{\infty}{f(\tau+k)\bar{r}[n-1-k]}\right)\nonumber\\
+ &= f(\tau+1)E(\bar{r}[n-1]^2) - f(\tau-1)E(\bar{r}[n]^2).
+\end{align}
+$$
+</div>
+<p>The second equation comes from the fact that $\bar{r}[l]$ and $\bar{r}[m]$ ($l \neq m$) are uncorrelated (i.e., $E(\bar{r}[l]\bar{r}[m])=0$). 
+If $\bar{r}[n]^2$ is constant (e.g., 1), then</p>
+<div class="mathjax">
+$$
+\begin{align}
+E(e(n)) =  f(\tau+1) -  f(\tau-1).
+\end{align}
+$$
+</div>
+<p>It is easy to understand the algorithm with examples. Here we assume everything is ideal, except the sampling clock (e.g., phase, rate):</p>
+<p><b>Optimal sampling.</b> Fig. <a href="#img-sync_clk_mm_optimal">31</a> shows the ideal case. We sample the data at $n=\cdots, -1, 0, 1, \cdots$, where the ISI is zero. The estimated error with MM algorithm is also zero</p>
+<div class="mathjax">
+$$
+\begin{align}
+E(e) &= 0-0 = 0.
+\end{align}
+$$
+</div>
+<figure id="img-sync_clk_mm_optimal" class="figure">
+<img src="./image/sync_clk_mm_optimal.svg" alt="./image/sync_clk_mm_optimal.svg">
+<figcaption class="caption"><span class="tag">Fig.31.</span> Optimal sampling.</figcaption>
+</figure>
+<p><b>Sampling too late.</b> As shown in Fig. <a href="#img-sync_clk_mm_late">32</a>, the sampling interval is same as the previous case. However, the sampling phase is offset by 0.25 symbol period from the optimal case. The estimated error is</p>
+<div class="mathjax">
+$$
+\begin{align}
+E(e) &= -0.14 - 0.28\nonumber\\
+  &= -0.42.
+\end{align}
+$$
+</div>
+<figure id="img-sync_clk_mm_late" class="figure">
+<img src="./image/sync_clk_mm_late.svg" alt="./image/sync_clk_mm_late.svg">
+<figcaption class="caption"><span class="tag">Fig.32.</span> Late sampling.</figcaption>
+</figure>
+<p><b>Sampling too early.</b> As shown in Fig. <a href="#img-sync_clk_mm_early">33</a>, the sampling interval is same as the previous case. However, the sampling phase is offset by 0.25 symbol period to the left from the optimal case. The estimated error is</p>
+<div class="mathjax">
+$$
+\begin{align}
+E(e) &= 0.28 - (-0.14)\nonumber\\
+  &= 0.42
+\end{align}
+$$
+</div>
+<figure id="img-sync_clk_mm_early" class="figure">
+<img src="./image/sync_clk_mm_early.svg" alt="./image/sync_clk_mm_early.svg">
+<figcaption class="caption"><span class="tag">Fig.33.</span> Early sampling.</figcaption>
+</figure>
+<p><b>Sampling too fast.</b> As shown in Fig. <a href="#img-sync_clk_mm_fast">34</a>, the sampling interval is smaller than the optimal case. When the previous sample is sampled at optimal phase, the current sample is sampled too early. In this case,</p>
+<div class="mathjax">
+$$
+\begin{align}
+E(e) &= 0.28 - 0\nonumber\\
+  &= 0.28.
+\end{align}
+$$
+</div>
+<figure id="img-sync_clk_mm_fast" class="figure">
+<img src="./image/sync_clk_mm_fast.svg" alt="./image/sync_clk_mm_fast.svg">
+<figcaption class="caption"><span class="tag">Fig.34.</span> Sampling too fast.</figcaption>
+</figure>
+<p><b>Sampling too slow.</b> As shown in Fig. <a href="#img-sync_clk_mm_slow">35</a>, the sampling interval is same as the previous case. However, the sampling phase is offset by 0.25 symbol period to the left from the optimal case. In this case,</p>
+<div class="mathjax">
+$$
+\begin{align}
+E(e) &= -0.14 - 0\nonumber\\
+  &= -0.14.
+\end{align}
+$$
+</div>
+<figure id="img-sync_clk_mm_slow" class="figure">
+<img src="./image/sync_clk_mm_slow.svg" alt="./image/sync_clk_mm_slow.svg">
+<figcaption class="caption"><span class="tag">Fig.35.</span> Sampling too slow.</figcaption>
+</figure>
+<p>In the above examples, the signal is assumed to be real. For complex signal (i.e., $r[n]=r_r[n]+r_i[n]$), the timing error can be estimated as $e[n] = e_r[n] + e_i[n]$, where</p>
+<div class="mathjax">
+$$
+\begin{align}
+e_r[n] &= r_r[n]\bar{r}_r[n-1] - r_r[n-1]\bar{r}_r[n],\nonumber\\
+e_i[n] &= r_i[n]\bar{r}_i[n-1] - r_i[n-1]\bar{r}_i[n].
+\end{align}
+$$
+</div>
+<p>It is equivalent to</p>
+<div class="mathjax">
+$$
+\begin{align}
+e[n] &= \Re(r[n]^*\bar{r}[n-1] - r[n-1]^*\bar{r}[n]).
+\end{align}
+$$
+</div>
+<p>Same as the frequency synchronization case, the estimated error is sent to a PI controller before compensation (Fig. <a href="#img-sync_pi">12</a>). The next question is how to compensate the estimated timing error? For example, Fig. <a href="#img-sync_clk_cmp">36</a> shows that the we need a sample at time $\tau$ (indicated by a red line), but the previous block only gives us sample at time $\cdots, -2, -1, 0, 1, 2, \cdots$.</p>
+<figure id="img-sync_clk_cmp" class="figure">
+<img src="./image/sync_clk_cmp.svg" alt="./image/sync_clk_cmp.svg">
+<figcaption class="caption"><span class="tag">Fig.36.</span> Illustration of timing error compensation.</figcaption>
+</figure>
+<p>One obvious solution is to apply the timing error to the previous block, such that it changes its sampling phase and output the sample at the right phase. For example, we may delay the sampling phase of a ADC block by $\tau$.</p>
+<p>Another solution is to use interpolation with the existing samples. For example, if $\tau$ is a rational number (e.g., 1/4), then as mentioned in the <b>Sampling Rate Conversion</b> section, the sample at $\tau$ can be got by</p>
+<ol>
+<li>up-sampling the system by a factor of 4;</li>
+<li>low pass filtering;</li>
+<li>retrieve the sample at time $\tau$ (equivalent to align the center filter coefficient (e.g. $f(0)$) at time $\tau$ as shown in Fig. <a href="#img-sync_clk_cmp2">37</a>).</li>
+</ol>
+<p>The procedure is illustrated in Fig. <a href="#img-sync_clk_cmp2">37</a>, that is</p>
+<div class="mathjax">
+$$
+\begin{align}
+r[\tau] = \sum_{k}f(-\tau+k)r[k],
+\end{align}
+$$
+</div>
+<p>where $f$ is the filter coefficients, $k$ is integer. As shown in <b>Sampling Rate Conversion</b> section, if the up-sampling factor (e.g., 4) is known in advance, we can design a filter at 4 times the sampling rate, such that $f(-1/4+k)$ is available. However, for timing synchronization case, $\tau$ may be arbitrary. And even if it is a rational number, its corresponding denominator may be too large to pre-design a filter. In this case, it is preferred to design a sampling rate conversion filter at a reasonably high sampling rate, then use interpolation to estimate the filter coefficient if there is no one for a certain phase.</p>
+<figure id="img-sync_clk_cmp2" class="figure">
+<img src="./image/sync_clk_cmp2.svg" alt="./image/sync_clk_cmp2.svg">
+<figcaption class="caption"><span class="tag">Fig.37.</span> Illustration of timing error compensation with interpolation.</figcaption>
+</figure>
+<p>Now we have all the blocks for clock synchronization, its structure may look like</p>
+<figure id="img-sync_clk_comp" class="figure">
+<img src="./image/sync_clk_comp.svg" alt="./image/sync_clk_comp.svg">
+<figcaption class="caption"><span class="tag">Fig.38.</span> Structure of clock synchronization.</figcaption>
+</figure>
+<div class="info">
+The timing error estimation is done in symbol rate. However, the compensation SRC may run at a higher sampling rate.
+</div>
+<p>In the following example, we will show how to do the clock synchronization for a QPSK signal (Fig. <a href="#img-sync_tx">5</a>). The signal bandwidth is 1 MHz (centered at 2 MHz IF) with sampling rate 8 MHz. In this demo, we assume the sampling clock at the receiver side is not exactly same as the transmitter (e.g., with 100 ppm offset).</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">Fsym</span> <span class="o">=</span> <span class="mf">1e6</span> <span class="c1"># symbol rate</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">UPS</span> <span class="o">=</span> <span class="mi">8</span> <span class="c1"># up sampling factor</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fs</span> <span class="o">=</span> <span class="n">Fsym</span><span class="o">*</span><span class="n">UPS</span> <span class="c1"># tx sampling rate</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Fs_rx</span> <span class="o">=</span> <span class="n">Fs</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">100e-6</span><span class="p">)</span> <span class="c1"># rx sampling rate with clock offset</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">DECISION</span> <span class="o">=</span> <span class="bp">False</span> <span class="c1"># True --&gt; hard decision, False --&gt; use true signal</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">SNR</span> <span class="o">=</span> <span class="mi">30</span> <span class="c1"># awgn (dB)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># Modulation</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">MODE</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">PHASE_OFFSET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">MODE</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># the maximum phase error without bit error</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">PHASE_SPACE</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">MODE</span><span class="o">/</span><span class="mi">2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1">#mapping table for hard decision</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">PHASE</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The QPSK signal at 1 MHz is up-sampled by a factor of 8 (insert 0).</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">symbol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">MODE</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10000</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1j</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">MODE</span><span class="o">*</span><span class="n">symbol</span> <span class="o">+</span> <span class="n">PHASE_OFFSET</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># tx shaping filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fir_tx</span> <span class="o">=</span> <span class="n">rcosdesign</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">UPS</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">UPS</span><span class="o">-</span><span class="mi">1</span><span class="p">]))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">fir_tx</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># remove the filter delay</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[(</span><span class="nb">len</span><span class="p">(</span><span class="n">fir_tx</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">:]</span>
+</pre></div>
+</div>
+<p>At the receiver side, the signal is sampled with clock <b>Fs_rx</b>, which is achieved by function <a href="https://github.com/tianzhuqiao/basic/blob/master/sync.py">rx_src</a>.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># rx</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># add timing error</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="n">rx_src</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">Fs</span><span class="p">,</span> <span class="n">Fs_rx</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># add AWGN</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">noise</span> <span class="o">=</span> <span class="n">noise</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1j</span><span class="o">*</span><span class="n">noise</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">noise</span> <span class="o">*=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">SNR</span><span class="o">/</span><span class="mi">20</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">r</span><span class="p">))</span><span class="o">.</span><span class="n">real</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">UPS</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">r</span> <span class="o">+=</span> <span class="n">noise</span>
+</pre></div>
+</div>
+<p>If we down-sample the received signal without clock synchronization, the signal will look like the one shown in Fig. <a href="#img-sync_clk_demo_r">39</a>. It is even very difficult to tell the signal is from a QPSK constellation.</p>
+<figure id="img-sync_clk_demo_r" class="figure">
+<img src="./image/sync_clk_demo_r.png" alt="./image/sync_clk_demo_r.png">
+<figcaption class="caption"><span class="tag">Fig.39.</span> Received symbols without clock synchronization.</figcaption>
+</figure>
+<p>Then the received signal is filtered with the matched filter. For simplicity, in this demo, we apply the clock synchronization after the matched filter. The risk is if the offset between the transmitter and receiver clocks is large, it will cause ISI even if the offset is compensated later perfectly, since the matched filter is not working in ideal case. Thus, in some application, the clock offset may be compensated before the matched filter; however, in this case, it will introduce more delay between the timing error estimation and compensation.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># match filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fir_rx</span> <span class="o">=</span> <span class="n">rcosdesign</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">UPS</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">z</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">fir_rx</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># remove the filter delay</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="p">[(</span><span class="nb">len</span><span class="p">(</span><span class="n">fir_rx</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">:]</span>
+</pre></div>
+</div>
+<p>The last thing before we run the clock synchronization loop is to define some variables. In this demo, we estimate the timing error at symbol rate (1 MHz), and the error is compensated at sampling rate ($\approx$ 8 MHz). Thus, the poly-phase filter is run at sampling rate, while its coefficients is designed at 20 times the sampling rate.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># estimated error</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">timing_err</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">timing_err_p</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">timing_err_i</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># hard &amp; soft values and phase error of previous symbol</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">z_h_p</span><span class="p">,</span> <span class="n">z_s_p</span><span class="p">,</span> <span class="n">ph_e_p</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># index &amp; counter for down-sampling by a factor of UPS</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ds_idx</span><span class="p">,</span> <span class="n">ds_cnt</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">UPS</span><span class="o">-</span><span class="mi">1</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># timing recovery parameters</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ORDER</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1">#the filter order in Fs sampling rate</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># up sampling factor</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">N</span> <span class="o">=</span> <span class="n">M</span> <span class="c1"># down sampling factor</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">flt</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">firwin2</span><span class="p">(</span><span class="n">ORDER</span><span class="o">*</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">/</span><span class="n">M</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># only saving the right half coefficients</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">flt</span> <span class="o">=</span> <span class="n">flt</span><span class="p">[</span><span class="n">ORDER</span><span class="o">*</span><span class="n">M</span><span class="o">/</span><span class="mi">2</span><span class="p">:]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">flt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">flt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># timing recovery block initialize value</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">M</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">z_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ORDER</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ORDER</span><span class="o">/</span><span class="mi">2</span><span class="p">):</span>
+<span class="o">...</span>     <span class="n">z_buf</span><span class="p">[</span><span class="n">ORDER</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now we have everything to run the clock synchronization loop. As shown in Fig. <a href="#img-sync_clk_comp">38</a>, it generally has two components: timing error compensation and estimation.</p>
+<p>The timing error compensation is done with an SRC (sampling rate conversion) block, as shown in the first <b>while</b> loop. The code is familiar to us, except the section to generate the coefficients. Besides a fixed step, the sampling phase is also dynamically adjusted by the estimation error (<b>timing_err</b>). Since the poly-phase filter is designed at 20 times of the sampling rate at the receiver side, there are 20 phases available. However, the estimated timing error may align the filter arbitrary with the input samples. In some cases, the filter phase may not be available for filtering. In such case, linear interpolation is applied to estimate the filter coefficient (for example, phase 10.2 may be estimated with phase 10 and 11 with linear interpolation).</p>
+<p>The timing error estimation is done in the second <b>while</b> loop. It basically down-samples the output from the previous SRC loop by a factor of 8 to get the symbol, then estimates the error with MM algorithm. The error is filtered with a PI controller before sent to the previous SRC loop.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ORDER</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">)):</span>
+<span class="o">...</span>     <span class="c1"># shift in one data for timing recovery</span>
+<span class="o">...</span>     <span class="n">z_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">z_buf</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="o">...</span>     <span class="n">z_buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="o">...</span>     <span class="c1"># update the alpha</span>
+<span class="o">...</span>     <span class="n">alpha</span> <span class="o">-=</span> <span class="n">M</span>
+<span class="o">...</span>     <span class="c1"># timing recovery</span>
+<span class="o">...</span>     <span class="k">while</span> <span class="n">alpha</span> <span class="o">&lt;=</span> <span class="n">M</span><span class="p">:</span>
+<span class="o">...</span>         <span class="n">output</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="o">...</span>         <span class="c1"># left side</span>
+<span class="o">...</span>         <span class="n">delta</span> <span class="o">=</span> <span class="n">M</span> <span class="o">-</span> <span class="n">alpha</span>
+<span class="o">...</span>         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ORDER</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+<span class="o">...</span>             <span class="n">delta_i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">delta</span><span class="o">+</span><span class="n">k</span><span class="o">*</span><span class="n">M</span><span class="p">)</span>
+<span class="o">...</span>             <span class="n">delta_f</span> <span class="o">=</span> <span class="n">delta</span><span class="o">+</span><span class="n">k</span><span class="o">*</span><span class="n">M</span> <span class="o">-</span> <span class="n">delta_i</span>
+<span class="o">...</span>             <span class="n">coeff_k</span> <span class="o">=</span> <span class="n">flt</span><span class="p">[</span><span class="n">delta_i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">delta_f</span><span class="p">)</span> <span class="o">+</span> <span class="n">flt</span><span class="p">[</span><span class="n">delta_i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">delta_f</span>
+<span class="o">...</span>             <span class="n">output</span> <span class="o">+=</span> <span class="n">coeff_k</span><span class="o">*</span><span class="n">z_buf</span><span class="p">[</span><span class="n">ORDER</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">k</span><span class="p">]</span>
+<span class="o">...</span>         <span class="c1"># right side</span>
+<span class="o">...</span>         <span class="n">delta2</span> <span class="o">=</span> <span class="n">M</span><span class="o">-</span><span class="n">delta</span>
+<span class="o">...</span>         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ORDER</span><span class="o">/</span><span class="mi">2</span><span class="p">):</span>
+<span class="o">...</span>             <span class="n">delta_i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">delta2</span><span class="o">+</span><span class="n">k</span><span class="o">*</span><span class="n">M</span><span class="p">)</span>
+<span class="o">...</span>             <span class="n">delta_f</span> <span class="o">=</span> <span class="n">delta2</span><span class="o">+</span><span class="n">k</span><span class="o">*</span><span class="n">M</span> <span class="o">-</span> <span class="n">delta_i</span>
+<span class="o">...</span>             <span class="n">coeff_k</span> <span class="o">=</span> <span class="n">flt</span><span class="p">[</span><span class="n">delta_i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">delta_f</span><span class="p">)</span> <span class="o">+</span> <span class="n">flt</span><span class="p">[</span><span class="n">delta_i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">delta_f</span>
+<span class="o">...</span>             <span class="n">output</span> <span class="o">+=</span> <span class="n">coeff_k</span><span class="o">*</span><span class="n">z_buf</span><span class="p">[</span><span class="n">ORDER</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">k</span><span class="p">]</span>
+<span class="o">...</span>         <span class="c1">#output</span>
+<span class="o">...</span>         <span class="n">z2</span><span class="p">[</span><span class="n">idx_tr</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">*</span><span class="n">M</span>
+<span class="o">...</span>         <span class="n">idx_tr</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="o">...</span>         <span class="c1"># next output position</span>
+<span class="o">...</span>         <span class="n">alpha</span> <span class="o">+=</span> <span class="n">N</span>
+<span class="o">...</span>         <span class="c1"># compensate the timing error</span>
+<span class="o">...</span>         <span class="n">alpha</span> <span class="o">+=</span> <span class="n">timing_err</span>
+<span class="o">...</span>     <span class="c1"># down sampling by factor UPS, calculate the timing error,</span>
+<span class="o">...</span>     <span class="k">while</span> <span class="n">idx_tr_p</span> <span class="o">&lt;</span> <span class="n">idx_tr</span><span class="p">:</span>
+<span class="o">...</span>         <span class="c1"># new input from the sampling rate conversion block</span>
+<span class="o">...</span>         <span class="n">z_in</span> <span class="o">=</span> <span class="n">z2</span><span class="p">[</span><span class="n">idx_tr_p</span><span class="p">]</span>
+<span class="o">...</span>         <span class="n">idx_tr_p</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="o">...</span>         <span class="n">ds_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="o">...</span>         <span class="c1"># sampling for hard decision and timing error estimation</span>
+<span class="o">...</span>         <span class="k">if</span> <span class="n">ds_cnt</span> <span class="o">&gt;=</span> <span class="n">UPS</span><span class="p">:</span>
+<span class="o">...</span>             <span class="n">ds_cnt</span> <span class="o">-=</span> <span class="n">UPS</span>
+<span class="o">...</span>             <span class="c1"># hard decision</span>
+<span class="o">...</span>             <span class="k">if</span> <span class="n">DECISION</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<span class="o">...</span>                 <span class="n">z_h</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">ds_idx</span><span class="p">]</span>
+<span class="o">...</span>             <span class="k">else</span><span class="p">:</span>
+<span class="o">...</span>                 <span class="n">ph</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">z_in</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">z_in</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+<span class="o">...</span>                 <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ph</span><span class="o">-</span><span class="n">PHASE</span><span class="p">))</span>
+<span class="o">...</span>                 <span class="n">z_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1j</span><span class="o">*</span><span class="n">PHASE</span><span class="p">[</span><span class="n">b</span><span class="p">])</span>
+<span class="o">...</span>             <span class="c1"># timing error calculating</span>
+<span class="o">...</span>             <span class="n">e_c</span> <span class="o">=</span> <span class="n">z_in</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">z_h</span><span class="p">)</span>
+<span class="o">...</span>             <span class="n">ph_e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">e_c</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">e_c</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+<span class="o">...</span>             <span class="c1"># calibrate</span>
+<span class="o">...</span>             <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ph_e_p</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">PHASE_SPACE</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ph_e</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">PHASE_SPACE</span><span class="p">:</span>
+<span class="o">...</span>                 <span class="n">tmer</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="o">...</span>             <span class="k">else</span><span class="p">:</span>
+<span class="o">...</span>                 <span class="n">tmerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">z_h_p</span><span class="p">)</span><span class="o">*</span><span class="n">z_in</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">z_h</span><span class="p">)</span><span class="o">*</span><span class="n">z_s_p</span><span class="p">)</span>
+<span class="o">...</span>             <span class="c1"># for next symbol</span>
+<span class="o">...</span>             <span class="n">z_s_p</span><span class="p">,</span> <span class="n">z_h_p</span><span class="p">,</span> <span class="n">ph_e_p</span> <span class="o">=</span> <span class="n">z_in</span><span class="p">,</span> <span class="n">z_h</span><span class="p">,</span> <span class="n">ph_e</span>
+<span class="o">...</span>             <span class="c1"># PI controller</span>
+<span class="o">...</span>             <span class="n">timing_err_i</span> <span class="o">+=</span> <span class="n">tmerr</span><span class="o">*</span><span class="mf">0.001</span>
+<span class="o">...</span>             <span class="n">timing_err_p</span> <span class="o">=</span> <span class="n">tmerr</span><span class="o">*</span><span class="mf">0.09</span>
+<span class="o">...</span>             <span class="n">timing_err</span> <span class="o">=</span> <span class="n">timing_err_i</span> <span class="o">+</span> <span class="n">timing_err_p</span>
+<span class="o">...</span>             <span class="n">ds_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Figs. <a href="#img-sync_clk_demo_err">40</a> and <a href="#img-sync_clk_demo_sym">41</a> show the results from the demo. The estimated error converges to 0.002 (100e-6*20) quickly. And the estimated symbols are converged to QPSK constellation well.</p>
+<figure id="img-sync_clk_demo_err" class="figure">
+<img src="./image/sync_clk_demo_err.png" alt="./image/sync_clk_demo_err.png">
+<figcaption class="caption"><span class="tag">Fig.40.</span> Estimated timing error.</figcaption>
+</figure>
+<figure id="img-sync_clk_demo_sym" class="figure">
+<img src="./image/sync_clk_demo_sym.png" alt="./image/sync_clk_demo_sym.png">
+<figcaption class="caption"><span class="tag">Fig.41.</span> Symbol after clock synchronization.</figcaption>
+</figure>
+</div>
+</div>
+
+<div class="reference">
+<ol>
+<li><div id="reference-1">
+Richard G. Lyons, "Understanding Digital Signal Processing", Pearson Education; 3rd edition (November 11, 2010) <a href="#cite-1-1">&#8617;</a>
+</div></li>
+<li><div id="reference-2">
+Andraka, Ray, "A survey of CORDIC algorithms for FPGA based computers" (<a href="http://www.andraka.com/files/crdcsrvy.pdf">PDF</a>). ACM. North Kingstown, RI, USA: Andraka Consulting Group, Inc. 0-89791-978-5/98/01. Retrieved 2016-05-08 <a href="#cite-2-1">&#8617;</a>
+</div></li>
+<li><div id="reference-3">
+Mueller, K. H., and M. S. Muller, "Timing Recovery in Digital Synchronous Data Receivers," IEEE Transactions on Communications, Vol. COM-24, May 1976, pp. 516-531 <a href="#cite-3-1">&#8617;</a> <a href="#cite-3-2">&#8617;</a>
+</div></li>
+</ol>
+</div>
+
+<div class="footer">
+<div class="footnote">
+<ol>
+<li><div id="footnote-1">
+Here we ignore the amplitude, which will be handled by AGC (automatic gain control) or Equalizer. <a href="#footnote_src-1">&#8617;</a>
+</div></li>
+<li><div id="footnote-2">
+They may also be called mixer in literature. <a href="#footnote_src-2">&#8617;</a>
+</div></li>
+<li><div id="footnote-3">
+If you are familiar with FM RDS modulation, you will appreciate that the demo is a simplified RDS signal demodulation. <a href="#footnote_src-3">&#8617;</a>
+</div></li>
+<li><div id="footnote-4">
+You may also need to change the compensation step accordingly. <a href="#footnote_src-4">&#8617;</a>
+</div></li>
+</ol>
+</div>
+
+<div class="footer-text"> Last updated 2019-12-11 20:58:33 Pacific Standard Time, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+</body>
+</html>

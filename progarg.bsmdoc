@@ -1,0 +1,74 @@
+\config{head_tag_start|2}
+\config{head_tag|1}
+\config{title|Program arguments processing utility}
+\config{doctitle|Program arguments processing utility}
+\config{bsmdoc_conf|bsmdoc.cfg}
+\config{source|1}
+
+[downloads/progarg.zip| Download V1.2]
+
+Simple C functions to easily process the console program arguments.
+
+
+== Usage
+By using the utility, the call to your program may look like
+
+{!div|bs-example||pre||{%
+ your_exe -options value0 value1 -argf args.txt ...
+    your_exe : your program
+    -options : first argument
+    value0   : the first value of argument '-options'
+    value1   : the second value of argument '-options'
+    -argf    : load the arguments from the file
+    args.txt : the file contians the arguments
+    .......
+%}!}
+
+And your \tag{code|main} function may look like
+
+{!div|bs-example||highlight|c++||{%
+// Step 1: include the utility header
+#include "progarg.h"
+// Step 2: define the optional helper text
+ static char Utxt[] = {...};
+// Step 3: define the optional arguments list. If not defined, all arguments will be accepted. Otherwise, the utility will terminate the exe if it sees any un-excepted argument.
+static char *Arguments[] = {...};
+// Step 4: define the optional alias for the argument values, for example "true"==0
+alias_ps alias_g[] = {...}
+
+int main(int argc, char *argv[])
+{
+    // configurations
+    SetUsageHint(Utxt);
+    SetAlias(3,alias_g);
+    SetArgumentTable(5,Arguments);
+    SetSwitchChar("-");
+
+    // Initialize the utility, it must be called before calling any other utility functions
+    InitProg(argc,argv);
+
+    // have access to the arguments
+    GetIntArg(...)
+    GetStrArg(...)
+    GetDoubleArg(...)
+    GetFlagArg(...)
+    .....
+}
+%}!}
+
+The utility can also read the arguments from a configuration file. Then, call your exe with arguments "\tag{code|-argf file_path}". The configuration file may look like:
+{!div|bs-example||highlight|python||{%
+-itype Bin
+-ibyte 2
+-BigEndian
+#strArg has 1 value: stringargument
+-strArg stringargument
+#strArg1 has 1 value: string argument
+-strArg1 "string argument"
+#strArg2 has 2 values , 1-->string ,2--> argument
+-strArg2 string argument
+#strArg3 has 1 value: string * # argument
+-srtArg3 "string * # argument"
+%}!}
+
+For any line, text after symbol "\tag{code|\#}" is comment and will be ignored.

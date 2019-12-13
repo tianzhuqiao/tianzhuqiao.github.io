@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<link rel="stylesheet" href="css/menu.css" type="text/css">
+<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/javascript" language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
+<script type="text/javascript" language="javascript" src="js/menu.js"></script>
+<title>Sampling Rate Conversion</title>
+</head>
+<body class="nomathjax">
+<div id="layout" class="">
+
+<div class="menu">
+<ul>
+<li><a href="#sec-sample_rate_convert">1 Sampling Rate Conversion</a> 
+<ul>
+<li><a href="#sec-1-1">1.1 Integral Down-Sampling</a></li>
+<li><a href="#sec-1-2">1.2 Integral Up-Sampling</a></li>
+<li><a href="#sec-1-3">1.3 Fractional SRC</a></li>
+</ul></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+Sampling Rate Conversion
+</div>
+<div class="content">
+<h1 id="sec-sample_rate_convert">1 Sampling Rate Conversion</h1>
+<p>As suggested by the name, sampling rate conversion (SRC) is to change the sampling rate without distorting the signal. There are several purpose to do that. For example, the ADC at the receiver may always working in a certain sampling frequency, while the digital processing block may work in a different frequency. Thus, an SRC block is needed to fill the gap between the ADC and the following digital blocks. I once worked on a project for a communication chip. The chip belongs to a big family, which shares the same ADC. So that it will be easy to integrate multiple chips into a big one later. However, it also means that you can not choose the ideal ADC clock for each chip. Instead, you choose the one that is 'optimal' for the whole family in certain sense, and use digital SRC to adapt to each chip.</p>
+<p>There is a very good description about the sampling rate conversion in this book [<a id="cite-1-1" href="#reference-1">1</a>]. Here we shortly describe how it work (refer to the book for more details).</p>
+<p>There are two kinds of sampling rate conversation: down-sampling (or decimation) and up-sampling (or interpolation).</p>
+<h2 id="sec-1-1">1.1 Integral Down-Sampling</h2>
+<p>Integral down-sampling is not difficult to achieve,</p>
+<ol>
+<li><p>Make sure the signal after down-sampling still meets the Nyquist sampling theorem, that is</p>
+<div class="mathjax">
+$$
+F_o = \frac{Fi}{N} &gt; 2B
+$$
+</div>
+<p>where $F_i$ is the sampling rate of the input signal, $F_o$ is the sampling rate of the output signal, and $B$ is the signal bandwidth.</p></li>
+<li><p>Filter the noise before down-sampling. 
+Otherwise, after down-sampling, the noise between frequency band $\frac{F_i}{N} \sim F_i$ will be folded into the signal band.</p></li>
+<li>Down-sampling the signal, that is, keep one of very $N$ samples after filtering.</li>
+</ol>
+<p>The majority of the computational complexity comes from the filtering before the down-sampling. However, if we apply the filtering to all input samples, many filtering output will be useless as they will be discarded in the down-sampling period. So a better solution is to only calculate the filtering output for the samples that survive after the down-sampling. For example, to down-sample the signal by a factor of 3</p>
+<div class="mathjax">
+$$
+\begin{align}
+H(z) &= h[0] + h[1]z^{-1} + h[2]z^{-2} + h[3]z^{-3} + \cdots \nonumber\\
+    & = H_0(z^3) + H_1(z^3)z^{-1} + H_2(z^3)z^{-2},
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\begin{align}
+H_0(z^3)&= h[0] + H[3]z^{-3} + H[6]z^{-6}+\cdots\nonumber\\
+H_1(z^3)&= h[1] + H[4]z^{-3} + H[7]z^{-6}+\cdots\nonumber\\
+H_2(z^3)&= h[2] + H[5]z^{-3} + H[8]z^{-6}+\cdots.\nonumber
+\end{align}
+$$
+</div>
+<p>Fig. <a href="#img-filter_fir_polyphase_down">1</a> shows the structure of the down-sampling process by a factor of 3.</p>
+<figure id="img-filter_fir_polyphase_down" class="figure">
+<img src="./image/filter_fir_polyphase_down.svg" alt="./image/filter_fir_polyphase_down.svg">
+<figcaption class="caption"><span class="tag">Fig.1.</span> Structure of a poly-phase filter for down-sampling by a factor of 3.</figcaption>
+</figure>
+<p>For example,</p>
+<ul>
+<li>at time $n=0$, the input $x[0]$ is connected to $H_2$, and its output is added to $y$;</li>
+<li>at time $n=1$, the input $x[1]$ is connected to $H_1$, and its output is added to $y$;</li>
+<li>at time $n=2$, the input $x[2]$ is connected to $H_0$, and its output is added to $y$;</li>
+<li>send $y$ to output as $y[0]$, and reset $y=0$;</li>
+<li>at time $n=3$, the input $x[4]$ is connected to $H_2$, and its output is added to $y$;</li>
+<li>at time $n=4$, the input $x[5]$ is connected to $H_1$, and its output is added to $y$;</li>
+<li>at time $n=5$, the input $x[6]$ is connected to $H_0$, and its output is added to $y$;</li>
+<li>send $y$ to output as $y[1]$, and reset $y=0$;</li>
+<li>...</li>
+</ul>
+<h2 id="sec-1-2">1.2 Integral Up-Sampling</h2>
+<p>Integral up-sampling (e.g., by a factor of $M$, that is $f_o = Mf_i$) is very close to integral down-sampling,</p>
+<ol>
+<li><p>Up-sampling the signal, that is, insert $M-1$ zeros between each two adjacent input samples. For example,</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># signal parameters</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="mf">20e3</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fs</span> <span class="o">=</span> <span class="mf">1e6</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># generage the sinusoid signal</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">f</span><span class="o">/</span><span class="n">fs</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># plot the signal</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">))</span><span class="o">/</span><span class="n">fs</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;t(ms)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># plot the frequency response</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fs</span><span class="o">/</span><span class="mf">1e3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span> <span class="mi">20</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">s</span><span class="p">))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$f$ (kHz)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Magnitude (dB)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure class="figure">
+<img src="./image/up_sampling_demo_signal.svg" alt="./image/up_sampling_demo_signal.svg">
+</figure>
+</div>
+<p>The signal is a sinusoid with frequency 20kHz, which can be seen from its frequency response. The integral up-sampling (e.g., by a factor of 3) is achieved by inserting zeros (e.g., 2 zeros) after each input sample. That is</p>
+<div class="mathjax">
+$$
+\begin{align}
+y[n]=\begin{cases}
+    x[n/3], & \textrm{if } n\%3=0\\
+    0, & \textrm{otherwise}
+\end{cases}.
+\end{align}
+$$
+</div>
+<p>Its frequency response can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+Y(\omega) &= \sum_{n=-\infty}^{\infty}y[n]e^{-j\omega n}\nonumber\\
+    &= \sum_{n=-\infty, n\%3 = 0}^{\infty}x[n/3]e^{-j\omega n}\nonumber\\
+    &= \sum_{n=-\infty}^{\infty}x[n]e^{-j3\omega n}\nonumber\\
+    &= X(3\omega).
+    \label{eqn:up_sampling_3}
+\end{align}
+$$
+</div>
+<p>Eq. (\ref{eqn:up_sampling_3}) shows that $Y(\omega)$ ($0\leq\omega\leq 2\pi$) contains 3 copies of $X(\omega)$ ($0\leq\omega\leq 2\pi$) (compressed in $\omega$ axis), that is</p>
+<ol>
+<li>$0\leq\omega\leq 2\pi/3$</li>
+<li>$2\pi/3\leq\omega\leq 4\pi/3$</li>
+<li>$4\pi/3\leq\omega\leq 2\pi$</li>
+</ol>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># the new sampling frequency</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fo</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">fs</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># up-sampling</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># plot the signal after up-sampling</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">fo</span><span class="p">)</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="o">/</span><span class="n">fs</span><span class="o">*</span><span class="mf">1e3</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;t(ms)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fo</span><span class="o">/</span><span class="mf">1e3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span> <span class="mi">20</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">s3</span><span class="p">))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$f$ (kHz)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Magnitude (dB)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure class="figure">
+<img src="./image/up_sampling_demo_fo.svg" alt="./image/up_sampling_demo_fo.svg">
+</figure>
+</div></li>
+<li><p>Filter the mirror. 
+As we see above, after up-sampling, there will be multiple mirror signals within the frequency $[-f_o/2, f_o/2]$.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># design a low-pass filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">21</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">firwin</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">fs</span><span class="o">/</span><span class="n">fo</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># filtering</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s3</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># plot the signal after filtering</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">))</span><span class="o">/</span><span class="n">fs</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="s1">&#39;ro&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">-</span><span class="n">N</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">fo</span><span class="p">)</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">N</span><span class="o">/</span><span class="mi">2</span><span class="p">:],</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="o">/</span><span class="n">fs</span><span class="o">*</span><span class="mf">1e3</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;t(ms)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;original signal&#39;</span><span class="p">,</span> <span class="s1">&#39;up-sampling by a factor of 3&#39;</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fo</span><span class="o">/</span><span class="mf">1e3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span> <span class="mi">20</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">y</span><span class="p">))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$f$ (kHz)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Magnitude (dB)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure class="figure">
+<img src="./image/up_sampling_demo_filter.svg" alt="./image/up_sampling_demo_filter.svg">
+</figure>
+</div>
+<p>After the filtering, the <b>mirror</b> signal is significantly suppressed. And the filter output follows the original well.</p>
+<p>Note that after filtering <code>scipy.signal.lfilter</code>, the output is multiplied by 3. Otherwise, the amplitude of the filter output will be roughly $1/3$ of the original signal. Why? For the above example, the average power of the original signal is $1/2$. Thus, after up-sampling (inserting zeros), the average power becomes $1/2/3=1/6$. Then, at the filtering stage, we filter the mirror signal at frequency 1MHz ($f_s$) and 2MHz ($2f_s$). Thus, the average power after filtering becomes $1/6/3=1/18$. Compared to the original signal, the average power decreases by a factor of 9. Therefore, the filter output is multiplied by 3 to make its average power same as the original signal. In practice, such <b>gain</b> may be embedded in the filter coefficients.</p>
+<p>As mentioned before, the filtering procedure will introduce a delay (in the above example, the delay is $(21-1)/2 =10$). When plotting the filter output and the original signal in the same diagram, it may be helpful to remove the delay from the filter.</p></li>
+</ol>
+<p>For the discussion so far, the up-sampling is implemented by inserting zeros after each original signal sample. In some implementation, it may also be achieved by duplicating the original signal sample (it may also be called <b>insert 1</b>). For example</p>
+<div class="bsm-example-src">
+<pre>insert 0: x[0]   0    0  x[1]   0    0  x[2]   0    0  ...
+insert 1: x[0] x[0] x[0] x[1] x[1] x[1] x[2] x[2] x[2] ...</pre>
+</div>
+<p>What's the relationship between <b>insert 0</b> and <b>insert 1</b> up-sampling? You can implement the <b>insert 1</b> up-sampling by duplicating the original signal $x[n]$. Or you can filter the output of <b>insert 0</b> up-sampling with filter coefficients $[1, 1, 1]$ (i.e., all one filter) (convince yourself it is true). In other words, compared to <b>insert 0</b>, <b>insert 1</b> has an additional low pass filter.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># the new sampling frequency</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># plot the signal after up-sampling</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">fo</span><span class="p">)</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="o">/</span><span class="n">fs</span><span class="o">*</span><span class="mf">1e3</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;t(ms)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fo</span><span class="o">/</span><span class="mf">1e3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span> <span class="mi">20</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">s3</span><span class="p">))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">freqz</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">w</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">fo</span><span class="o">/</span><span class="mf">1e3</span><span class="p">,</span> <span class="mi">20</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">h</span><span class="p">)))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$f$ (kHz)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Magnitude (dB)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;up-sampling output&#39;</span><span class="p">,</span> <span class="s1">&#39;filter [1, 1, 1]&#39;</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure class="figure">
+<img src="./image/up_sampling_insert1.svg" alt="./image/up_sampling_insert1.svg">
+</figure>
+</div>
+<p>Thus, one potential advantage of <b>insert 1</b> up-sampling is that it may simplify the following low pass filter (the filter to suppress the mirror). However, as shown in the above diagram, the frequency response of the additional all one filter (e.g., $[1,1,1]$) is not constant. That is, if the signal bandwidth is large, such filter may cause distortion to the signal (e.g., different gain for different frequency components). Thus, <b>insert 1</b> up-sampling is usually only for narrow-band signal (thus, the frequency response in that narrow band can be viewed as constant). In some implementation, the following low pass filter may also compensate the distortion. For example, its frequency response may not be constant in signal bandwidth, instead, it may be the inverse of corresponding frequency response of the all one filter (e.g., $[1, 1, 1]$). For the following section, we will focus on <b>insert 0</b> up-sampling.</p>
+<p>For the <b>insert 0</b> up-sampling, during the filtering procedure, many inputs to the filter is zero. There is no need to calculate the multiplications between the filter coefficients and these zero inputs. For example, to up-sample a signal by a factor of 3, the low pass filter to suppress the mirror signal can be split into three sub-filters</p>
+<div class="mathjax">
+$$
+\begin{align}
+H(z) &= h[0] + h[1]z^{-1} + h[2]z^{-2} + h[3]z^{-3} + \cdots \nonumber\\
+    & = H_0(z^3) + H_1(z^3)z^{-1} + H_2(z^3)z^{-2},
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\begin{align}
+H_0(z^3)&= h[0] + H[3]z^{-3} + H[6]z^{-6}+\cdots\nonumber\\
+H_1(z^3)&= h[1] + H[4]z^{-3} + H[7]z^{-6}+\cdots\nonumber\\
+H_2(z^3)&= h[2] + H[5]z^{-3} + H[8]z^{-6}+\cdots.\nonumber
+\end{align}
+$$
+</div>
+<p>It is easy to see that at any time, only one of three sub-filters $H_0(z)$, $H_1(z)$ and $H_2(z)$ outputs non-zero value. Thus, there is no need to calculate the other two sub-filters. It is called poly-phase filter.</p>
+<figure id="img-filter_fir_polyphase_up" class="figure">
+<img src="./image/filter_fir_polyphase_up.svg" alt="./image/filter_fir_polyphase_up.svg">
+<figcaption class="caption"><span class="tag">Fig.2.</span> Structure of a poly-phase filter for up-sampling by a factor of 3.</figcaption>
+</figure>
+<p>For example,</p>
+<ul>
+<li>at time $n=0$ (at $f_i$), the input $x[0]$ is connected to $H_0$, $H_1$ and $H_2$, and the output from $H_0$ is sent to output $y[0]$;</li>
+<li>at time $n=1/3$, the output from $H_1$ is sent to output $y[1]$;</li>
+<li>at time $n=2/3$, the output from $H_2$ is sent to output $y[2]$;</li>
+<li>at time $n=1$, the input $x[1]$ is connected to $H_0$, $H_1$ and $H_2$, and the output from $H_0$ is sent to output $y[3]$;</li>
+<li>at time $n=4/3$, the output from $H_1$ is sent to output $y[4]$;</li>
+<li>at time $n=5/3$, the output from $H_2$ is sent to output $y[5]$;</li>
+<li>...</li>
+</ul>
+<h2 id="sec-1-3">1.3 Fractional SRC</h2>
+<p>If we want to change the sampling rate by a factor of $\frac{M}{N}$, one straightforward way is</p>
+<ol>
+<li>up-sampling the signal by a factor of $M$ (e.g., insert $M-1$ zero after each sample),</li>
+<li>low pass filter to suppress the mirror signal,</li>
+<li>low pass filter to filter the noise,</li>
+<li>down-sampling the signal by a factor of $N$ (e.g., keep one of every $N$ samples).</li>
+</ol>
+<p>Obviously, the two low pass filters may be combined together. However, there are still several problems with such scheme</p>
+<ol>
+<li>Since there is a down-sampling following immediately the up-sampling, many outputs from the up-sampling are discarded. Thus, it is a waste to calculate such outputs.</li>
+<li>If both $M$ and $N$ are large (mutual prime), the inter sampling rate may be too large to be realistic.</li>
+</ol>
+<p>Thus, the general idea is to ignore all the calculation for the internal samples that will be discarded in the down-sampling period.</p>
+<p>In the following example, we will show how to use the ploy-phase filter to change the sampling frequency of an audio signal from 76kHz to 48kHz. First step, we need to determine the up-sampling and downsampling factors. It is easy to see that $48/76=12/19$. Thus, the input audio signal needs to be up-sampled by a factor of 12, which is further down-sampled by a factor of 19.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># load data</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">loadmat</span><span class="p">(</span><span class="s1">&#39;./left.mat&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fi</span> <span class="o">=</span> <span class="mf">76e3</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fo</span> <span class="o">=</span> <span class="mf">48e3</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># 48kHz/76kHz = 12/19 = M/N</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># so N=19, M=12</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">12</span> <span class="c1">#up sampling factor</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">19</span> <span class="c1">#down sampling factor</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure class="figure">
+<img src="./image/fsrc_signal.svg" alt="./image/fsrc_signal.svg">
+</figure>
+</div>
+<p>It is easy to see that the bandwidth of the audio signal is around 20kHz, so the 48kHz sampling frequency still meets the requirement of sampling theorem (i.e., 48kHz&gt;2*20kHz).</p>
+<p>The low pass filter can be designed as</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># poly-phase filter</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">NF</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1">#the filter order in fi (e.g.,76kHz) sampling rate</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">flt</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">firwin</span><span class="p">(</span><span class="n">NF</span><span class="o">*</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">N</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">delay</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">flt</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure class="figure">
+<img src="./image/fsrc_flt.svg" alt="./image/fsrc_flt.svg">
+</figure>
+</div>
+<p>In this example, the filter has a duration of 10 sample intervals at 76kHz sampling frequency. Its passband is around 24kHz to suppress both the mirror signal from up-sampling and the noise that will be folded into the signal band during the down-sampling period.</p>
+<p>The naive way looks like</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># the traditional processing, for later comparison</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># up-sampling by a factor of 12</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d12</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">M</span><span class="o">-</span><span class="mi">1</span><span class="p">]))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># filtering</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d12f</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">flt</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d12</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># down-sampling by a factor of 19, and compensate for the average power loss from upsampling</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d48k</span> <span class="o">=</span> <span class="n">d12f</span><span class="p">[</span><span class="n">delay</span><span class="p">::</span><span class="n">N</span><span class="p">]</span><span class="o">*</span><span class="n">M</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure class="figure">
+<img src="./image/fsrc_out.svg" alt="./image/fsrc_out.svg">
+</figure>
+</div>
+<p>As mentioned before, it is a waste to calculate the samples that will be discarded in the down-sampling process. The poly-phase filter can efficiently ignore such samples. First let's initialize some variables used in the poly-phase filtering.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># only saving the right half coefficients, since it is symmetric</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fltp</span> <span class="o">=</span> <span class="n">flt</span><span class="p">[</span><span class="n">delay</span><span class="p">:]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># append zeros to avoid index overflow</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">fltp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">fltp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">M</span><span class="p">))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># allocate the memory for poly-phase filtering</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d48kp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">/</span><span class="n">N</span><span class="o">*</span><span class="n">M</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># initialization</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># alpha is the # of samples (@ 76k*M Hz) since last output sample (@76k*M/N Hz)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># for each input (@76kHz Hz), alpha += M, since @76k*M, it is equivalent to</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># have 1 input sample and M-1 zero samples.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># if alpha &gt;= N, it means there are at least N samples since the last output.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># Thus, it needs to output one sample, and alpha-N is the phase. Then alpha</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># needs to be updated as alpha -= N.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">N</span><span class="o">-</span><span class="n">M</span> <span class="c1"># so we want to keep the first input sample</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># delay line for input at 76kHz</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">bufIn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">NF</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">NF</span><span class="o">/</span><span class="mi">2</span><span class="p">):</span>
+<span class="o">...</span>     <span class="n">bufIn</span><span class="p">[</span><span class="n">NF</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Here we define $\alpha$ as the number of samples (at 76k*12 Hz) 'received' since last output sample (at 48k Hz). In the above example, $N=19$, thus, the sample corresponding to $\alpha=N$ will be kept and sent to the output. All the samples corresponding to other $\alpha$ values will be discarded.</p>
+<p>With $\alpha$ defined, there is no need to actually generate the up-sampled sequence (i.e., insert 0). For each original input sample $x[n]$ (at 76kHz Hz), after up-sampling, the filtering block will receive $x[n]$ and $M-1$ zeros. Thus, $\alpha$ should be updated as  $\alpha \mathrel{+}= M$. In other words, 12 additional samples are received from the up-sampling block. If $\alpha &gt;= N$, it means there are at least $N$ samples since the last output. Thus, it needs to output one sample, and $\alpha-N$ is the phase. Then $\alpha$ needs to be updated as $\alpha \mathrel{-}= N$. We will show the procedure with an example shortly.</p>
+<p>As we know, to filter the signal, we need to use a delay line to store the signals (same length as the filter, e.g., 121 in above example) as shown in Fig. <a href="#img-fsrc_step0">3</a>. Since the filter is applied after up-sampling (insert 0), most signals in the delay line are zeros. Thus, there is no need to store them. Thus only the signals from the original input are needed to be stored (e.g., $d[0] \sim d[10]$).</p>
+<div class="info">
+As shown above, the designed filter has a duration of 10 samples at the sampling frequency of original input (76kHz). However, the delay line should have room for 11 samples as shown in Fig. <a href="#img-fsrc_step0">3</a>. You will see why shortly.
+</div>
+<figure id="img-fsrc_step0" class="figure">
+<img src="./image/fsrc_step0.svg" alt="./image/fsrc_step0.svg">
+<figcaption class="caption"><span class="tag">Fig.3.</span> Signal after up-sampling (insert 0)</figcaption>
+</figure>
+<p>Let's assume at this time, $\alpha = N$ (Fig. <a href="#img-fsrc_step1">4</a>). Since $\alpha&gt;=N$ ($\delta = \alpha-N=0$), we need to output one sample. What does the $\alpha=N$ (or $\delta =0$) really mean? In our case, it actually means there are $N$ input samples since the last output, and to calculate the output the center filter coefficient aligns with the center of the delay line (e.g., $n=60$ or $d[5]$) as shown in Fig. <a href="#img-fsrc_step1">4</a>.</p>
+<figure id="img-fsrc_step1" class="figure">
+<img src="./image/fsrc_step1.svg" alt="./image/fsrc_step1.svg">
+<figcaption class="caption"><span class="tag">Fig.4.</span> $\alpha=N$ means the center filter coefficient aligns with the center of the delay line (i.e., $n=60$ or $d[5]$).</figcaption>
+</figure>
+<p>Since most input signals are zeros, the corresponding multiplications can be ignored. As shown in Fig. <a href="#img-fsrc_step2">5</a>, we only need to calculate the multiplications between the filter coefficients (indicated by the green square) with the corresponding original signals (indicated by blue circles) (i.e., $d[0]\sim d[11]$).</p>
+<figure id="img-fsrc_step2" class="figure">
+<img src="./image/fsrc_step2.svg" alt="./image/fsrc_step2.svg">
+<figcaption class="caption"><span class="tag">Fig.5.</span> $\alpha=0$ means the center filter coefficient aligns with $d[4]$.</figcaption>
+</figure>
+<p>After calculating the filter output, the last thing is to</p>
+<ol>
+<li>update the last output time to $d[5]$ as indicated by the red dash line in Fig. <a href="#img-fsrc_step2_2">6</a>;</li>
+<li>update $\alpha = \alpha-19 = 0$.</li>
+</ol>
+<figure id="img-fsrc_step2_2" class="figure">
+<img src="./image/fsrc_step2_2.svg" alt="./image/fsrc_step2_2.svg">
+<figcaption class="caption"><span class="tag">Fig.6.</span> $\alpha=0$ means the center filter coefficient aligns with $d[4]$.</figcaption>
+</figure>
+<p>Now, we have finished the current sample. There is no need to do anything until new original sample $d[11]$ arrives. Fig. <a href="#img-fsrc_step3">7</a> tells us a lot of things.</p>
+<ul>
+<li>The new sample from the original signal (i.e., $d[11]$) enters the delay line, while $d[0]$ is discarded.</li>
+<li>The red dash line indicates the time of the last output as mentioned above;</li>
+<li>The green dash line is the current time as usual;</li>
+<li>Update the distance between the current time and the last output. Since each original sample (at $f_i$) is equivalent to 12 samples at $Mf_i$, thus $\alpha= \alpha + 12 = 12$ (that is there are 12 samples between the green and red dash lines);</li>
+<li>Since $\alpha=12 \lt 19$, there is no need to calculate filter output.</li>
+</ul>
+<figure id="img-fsrc_step3" class="figure">
+<img src="./image/fsrc_step3.svg" alt="./image/fsrc_step3.svg">
+<figcaption class="caption"><span class="tag">Fig.7.</span> New sample ($d[11]$) arrives.</figcaption>
+</figure>
+<p>We have finished all the calculation for receiving $d[11]$ and wait for the next original sample (i.e., $d[12]$). Fig. <a href="#img-fsrc_step4">8</a> shows the delay line status after receiving $d[12]$</p>
+<ul>
+<li>$\alpha=\alpha + 12 = 24$ (24 samples between the green and red dash lines);</li>
+<li>Since $\alpha=24 \gt 19$, it needs to calculate the filter output.</li>
+</ul>
+<figure id="img-fsrc_step4" class="figure">
+<img src="./image/fsrc_step4.svg" alt="./image/fsrc_step4.svg">
+<figcaption class="caption"><span class="tag">Fig.8.</span> Delay line and $\alpha$ after sample ($d[12]$) arrives.</figcaption>
+</figure>
+<p>Where should we align the filter coefficient with delay line? To answer this question, we need to find the position which is corresponding to 19 samples delay since the last output (remember the last output is at the position indicated by the red line, and the next output is 19 samples away.). As shown in Fig. <a href="#img-fsrc_step5">9</a>, since there are $\alpha=24$ samples between the last output (indicated by red dash line ) and the current center sample in delay line (indicated by green dash line), the position corresponding to 19 samples delay sits between them, as indicated by the blue dash line. In particular, the distance between the blue dash line and the green dash line is $\delta = \alpha -19 = 5$. Thus, the center filter coefficients should align with the blue line. Again, there is no need to calculate the multiplications between the zero inputs and the filter coefficients. In other words, we only need to calculate the multiplications between the original samples (e.g., $d[2]\sim d[11$) and the corresponding coefficients (indicated by green squares).</p>
+<figure id="img-fsrc_step5" class="figure">
+<img src="./image/fsrc_step5.svg" alt="./image/fsrc_step5.svg">
+<figcaption class="caption"><span class="tag">Fig.9.</span> Filtering after sample ($d[12]$) arrives.</figcaption>
+</figure>
+<p>After the calculation, we need to update the position of the last output and $\alpha$. Obviously, the position indicated by the blue dash line in Fig. <a href="#img-fsrc_step5">9</a> becomes the last output position. Correspondingly, the $\alpha=\alpha-19 = 5$ (Fig. <a href="#img-fsrc_step6">10</a>).</p>
+<figure id="img-fsrc_step6" class="figure">
+<img src="./image/fsrc_step6.svg" alt="./image/fsrc_step6.svg">
+<figcaption class="caption"><span class="tag">Fig.10.</span> $\alpha$ after the filtering when sample ($d[12]$) arrives.</figcaption>
+</figure>
+<p>We repeat the above process for all the following input samples. Although it looks complicated, the code for filtering is very short.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">idx48k</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">NF</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)):</span>
+<span class="o">...</span>     <span class="c1"># shift in one data</span>
+<span class="o">...</span>     <span class="n">bufIn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">bufIn</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="o">...</span>     <span class="n">bufIn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="o">...</span>     <span class="c1"># update the alpha</span>
+<span class="o">...</span>     <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">M</span>
+<span class="o">...</span>     <span class="c1"># need output?</span>
+<span class="o">...</span>     <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;=</span> <span class="n">N</span><span class="p">:</span>
+<span class="o">...</span>         <span class="n">delta</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">-</span> <span class="n">N</span>
+<span class="o">...</span>         <span class="n">output</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="o">...</span>         <span class="c1"># left side</span>
+<span class="o">...</span>         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">NF</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+<span class="o">...</span>             <span class="n">output</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="n">fltp</span><span class="p">[</span><span class="n">delta</span><span class="o">+</span><span class="n">k</span><span class="o">*</span><span class="n">M</span><span class="p">]</span><span class="o">*</span><span class="n">bufIn</span><span class="p">[</span><span class="n">NF</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">k</span><span class="p">]</span>
+<span class="o">...</span>         <span class="c1"># right side</span>
+<span class="o">...</span>         <span class="n">delta2</span> <span class="o">=</span> <span class="n">M</span><span class="o">-</span><span class="n">delta</span>
+<span class="o">...</span>         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">NF</span><span class="o">/</span><span class="mi">2</span><span class="p">):</span>
+<span class="o">...</span>             <span class="n">output</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="n">fltp</span><span class="p">[</span><span class="n">delta2</span><span class="o">+</span><span class="n">k</span><span class="o">*</span><span class="n">M</span><span class="p">]</span><span class="o">*</span><span class="n">bufIn</span><span class="p">[</span><span class="n">NF</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">k</span><span class="p">]</span>
+<span class="o">...</span>         <span class="c1"># output</span>
+<span class="o">...</span>         <span class="n">d48kp</span><span class="p">[</span><span class="n">idx48k</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span>
+<span class="o">...</span>         <span class="n">idx48k</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="o">...</span>         <span class="n">alpha</span> <span class="o">-=</span> <span class="n">N</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1">#amplitude compensation for up-sampling by a factor of 12</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d48kp</span> <span class="o">=</span> <span class="n">d48kp</span><span class="o">*</span><span class="n">M</span>
+</pre></div>
+</div>
+<p>One thing to note is that since the filter coefficients are symmetric, we only need to store roughly half filter coefficients. Then, we need to process the data at the right and left sides of the center filter coefficients slightly differently.</p>
+<p>As shown above, for some outputs (e.g., Fig. <a href="#img-fsrc_step2">5</a>), it needs to calculate 11 multiplications, while for some outputs (e.g., Fig. <a href="#img-fsrc_step5">9</a>), it only needs to calculated 10 multiplications (the filter coefficient for $d[12]$ is zero). For simplicity, in the above code, we append $M$ zeros to the filter coefficients, and always calculate 11 multiplications.</p>
+<p>Fig. <a href="#img-fsrc_cmp">11</a> shows that the results from the poly-phase filtering and the naive filtering are exactly same.</p>
+<div class="bs-demo">
+<div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">d48k</span><span class="p">))</span><span class="o">/</span><span class="n">fo</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">d48k</span> <span class="o">-</span><span class="n">d48kp</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">d48k</span><span class="p">)])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;t (ms)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;diff between classical and poly-phase filtering&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="bs-demo-rst">
+<figure id="img-fsrc_cmp" class="figure">
+<img src="./image/fsrc_cmp.svg" alt="./image/fsrc_cmp.svg">
+<figcaption class="caption"><span class="tag">Fig.11.</span> Difference between the naive filting and the poly-phase filtering.</figcaption>
+</figure>
+</div>
+<p><b>Case $M&gt;N$.</b> So far, we discuss the case $M&lt;N$. In this case, for each original input (at $f_i$), there is zero or one output sample (at $Mf_i/N$). How about $M&gt;N$? It simply means for each original input (at $f_i$), there are one or more output samples (at $Mf_i/N$). For example, for case $M=12$, $N=5$ and $\alpha=0$, when next original arrive, $\alpha = \alpha + 12 = 12$, it needs to calculate two outputs $\delta_1 = \alpha - 5 = 7$ and $\delta_2 = \alpha - 10 = 2$, as show in Fig. <a href="#img-fsrc_step7">12</a>.</p>
+<figure id="img-fsrc_step7" class="figure">
+<img src="./image/fsrc_step7.svg" alt="./image/fsrc_step7.svg">
+<figcaption class="caption"><span class="tag">Fig.12.</span> Two outputs (at $Mf_i/N$) for single input (at $f_i$)).</figcaption>
+</figure>
+<p><b>Filter coefficients interpolation.</b> For the above example, $M=12$, which is not very large so that we can generate the filter coefficients at the exact internal sampling frequency $Mf_i$. However, if $M$ is very large (e.g., $100$), it may waste a lot of space to store the filter coefficients at relatively high internal sampling frequency ($Mf_i$) as the adjacent coefficients are very close to each other. Instead, we may design and store the filter coefficients at at lower sampling frequency (e.g., $16f_i$). In this case, when calculating the multiplication, there may be no exact filter coefficients (in other words, there are 100 possible filter phases while the stored filter only has 16 phases). For example, as shown in Fig. <a href="#img-fsrc_step8">13</a>, there is no exact filter coefficient available for $d[5]$. However, we know its corresponding filter coefficient is between $f[18]$ and $f[19]$. Thus, we may use interpolation to get the approximation, e.g., with linear regression $(2f[18] + f[19])/3$.</p>
+<figure id="img-fsrc_step8" class="figure">
+<img src="./image/fsrc_step8.svg" alt="./image/fsrc_step8.svg">
+<figcaption class="caption"><span class="tag">Fig.13.</span> Illustration of filter coefficient interpolation.</figcaption>
+</figure>
+</div>
+</div>
+
+<div class="reference">
+<ol>
+<li><div id="reference-1">
+Richard G. Lyons, "Understanding Digital Signal Processing", Pearson Education; 3rd edition (November 11, 2010) <a href="#cite-1-1">&#8617;</a>
+</div></li>
+</ol>
+</div>
+
+<div class="footer">
+<div class="footer-text"> Last updated 2018-09-29 23:29:10 Pacific Daylight Time, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+</body>
+</html>

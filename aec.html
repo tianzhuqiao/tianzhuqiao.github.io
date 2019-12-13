@@ -1,0 +1,517 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+<script src="js/bsmdoc.js"></script>
+<link rel="stylesheet" href="css/menu.css" type="text/css" />
+<title>Acoustic Echo Cancellation Overview</title>
+</head>
+<body class="nomathjax">
+<div id="layout" class="">
+
+<div class="menu">
+<ul>
+<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-2">2 LMS Algorithm</a></li>
+<li><a href="#sec-3">3 Double Talk Detector</a></li>
+<li><a href="#sec-4">4 Far-end Talk Detector</a></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+Acoustic Echo Cancellation Overview
+</div>
+<div class="content">
+<h1 id="sec-1">1 Introduction</h1>
+<p>In acoustic transmission system, there are two important components: the speaker and the microphone. If the speaker and the microphone are totally separated, there will be no echo from the speaker to the microphone. Then, there is no need for acoustic echo cancellation.</p>
+<p>However, in practice, the speaker and the microphone is almost always not totally separated. For example, when you are calling your friend A, you are the <b>near end</b> user and your friend A is the <b>far end</b> user. The speech from your friend A will come out from the speaker of your phone, which may also be collected by the microphone of your phone and sent back to your friend A.</p>
+<p>As shown in Fig. <a href="#img-aec_problem">1</a>, In this case, the <b>far end</b> user will hear his/her own voice with some delay. Such phenomena is recognized as <b>acoustic echo</b>. Although in this case most likely the far end and near end users may still be able to understand what the other is talking, it is very annoying and will reduce the communication quality dramatically. Thus, there is a need for acoustic echo cancellation (AEC).</p>
+<figure id="img-aec_problem" class="figure">
+<img src="./image/aec_problem.svg" alt="./image/aec_problem.svg">
+<figcaption class="caption"><span class="tag">Fig.1.</span> Illustration of the echo in acoustic transmission system.</figcaption>
+</figure>
+<p>The goal of AEC is to remove the echo from the speaker collected by the microphone before sending to the <b>far end</b> user. The echo depends on a lot of conditions, for example the relative position of the speaker and the microphone, the way the near end user holds the phone, the other objects around the near end users (e.g., furnitures), etc. It is difficult to determine the echo (i.e., magnitude, phase, delay) in advance. However, for each specific talk between the far end and near end users, the channel between the near end speaker and the near end microphone (e.g., $H$ in Fig. <a href="#img-aec_problem">1</a>) is almost fixed or slowly varying, since during the talk, the environment mentioned above that will affect the channel $H$ may not change dramatically.</p>
+<p>Thus, we have a simpler problem to solve: estimate the fixed (or slowly varying) and unknown $H$.</p>
+<p>Since $H$ is not deterministic, we needs to find some ways to adaptively estimate the channel from the speaker to the microphone. When channel is precisely estimated, the echo can be easily removed from the signal collected by the microphone.</p>
+<figure id="img-aec_comp" class="figure">
+<img src="./image/aec_comp.svg" alt="./image/aec_comp.svg">
+<figcaption class="caption"><span class="tag">Fig.2.</span> Structure of the acoustic echo cancellation.</figcaption>
+</figure>
+<p>As shown in Fig. <a href="#img-aec_comp">2</a>, signal from the near end microphone ($y(n)$) contains 3 components</p>
+<ul>
+<li>$d(n)$ is the echo (from the near end speaker to near end microphone),</li>
+<li>$s(n)$ is the near end speech (the only signal that needs to be sent to the far end user),</li>
+<li>$n(n)$ is the other noise besides the echo $d(n)$ (e.g., from environment).</li>
+</ul>
+<p>An adaptive filter is used to estimate the echo ($d^\prime(n)$), which is subtracted from the microphone signal $y(n)$ before sent to the far end user. 
+After cancellation, the signal to the far end user can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+e(n) &= y(n)-d^\prime(n)\nonumber\\
+& = d(n) - d^\prime(n) + s(n) + n(n)
+\label{eqn:aec_error}
+\end{align}
+$$
+</div>
+<h1 id="sec-2">2 LMS Algorithm</h1>
+<p>Fig. <a href="#img-aec_comp">2</a> shows the structure of the acoustic echo cancellation. And Eq. (\ref{eqn:aec_error}) shows the signal sent to the far end user after processing. If $d(n)\approx d^\prime(n)$, then the output will be</p>
+<div class="mathjax">
+$$
+\begin{align}
+e(n) &= d(n) - d^\prime(n) + s(n) + n(n)\nonumber\\
+  &\approx s(n) + n(n)
+\label{eqn:aec_output}
+\end{align}
+$$
+</div>
+<p>In this case, besides the noise (e.g. from environment), the only signal sent to the far end user is the near end speech ($s(n)$).</p>
+<p>So the next question is how to estimate $d(n)$, such that $d^\prime(n)\approx d(n)$. One classical way is LMS (least mean square) algorithm. 
+In this section, we briefly introduce the LMS algorithm [<a id="cite-1-1" href="#reference-1">1</a>].</p>
+<p><b>Wiener Solution.</b> 
+Suppose we want to estimated the desired signal ($d(n)$) from inputs ($x(n)$) with a linear filter by minimizing its mean square error (MSE),</p>
+<div class="mathjax">
+$$
+\begin{align}
+  d^\prime(n) = \sum_{k=0}^{N-1}w_k^*x(n-k),
+\end{align}
+$$
+</div>
+<p>where $N$ is the order of the adaptive filter, $w_k = a_k + jb_k$ is the filter coefficients<a name="footnote_src-1" href="#footnote-1"><sup>1</sup></a>. 
+And,</p>
+<div class="mathjax">
+$$
+\begin{align}
+   e(n) = d(n) - d^\prime(n).
+\end{align}
+$$
+</div>
+<p>The MSE cost function can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+  J &= E[e(n)e^*(n)]\nonumber\\
+  &= E\left[\left(d(n) - \sum_{k=0}^{N-1}w_k^*x(n-k)\right)*\left(d(n)- \sum_{k=0}^{N-1}w_k^*x(n-k)\right)^*\right].
+\end{align}
+$$
+</div>
+<p>Here we ignore the near end speech $s(n)$ and noise $n(n)$ for simplicity. Someone claims that they will not affect $J$ beyond a constant. Under what assumptions, does such claim hold? You may find it helpful to include $s(n)$ and $n(n)$ in $J$.</p>
+<p>When $J$ achieves its minimum, its first derivative is zero for all $w_k$, in particular</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \frac{\partial J}{\partial w_k} &= \frac{\partial J}{\partial a_k}+j\frac{\partial J}{\partial b_k}\nonumber\\
+   &= E[\frac{\partial e(n)}{\partial a_k}e^*(n)+j\frac{\partial e(n)}{\partial b_k}e^*(n)\nonumber\\
+   &\quad +\frac{\partial e^*(n)}{a_k}e(n)+j\frac{\partial e^*(n)}{\partial b_k}e(n)]\nonumber\\
+  &= -2E[x(n-k)e^*(n)].
+\end{align}
+$$
+</div>
+<p>Thus, the optimal solution satisfies</p>
+<div class="mathjax">
+$$
+\begin{align}
+  E[x(n-k)e^*(n)]=0,
+  \label{eqn:wiener}
+\end{align}
+$$
+</div>
+<p>where $ k= 0,1,2,\dots,N-1$.</p>
+<p>Define the correction matrix:</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{R} = \begin{bmatrix} r(0) & r(1) & \cdots & r(N-1) \\r^*(1) & r(0) & \cdots & r(N-2) \\ \vdots & \vdots & \ddots & \vdots\\r^*(N-1) & r^*(N-2) & \cdots & r(0) \end{bmatrix},
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\begin{align}
+  r(k) = E[x(n)x^*(n-k)].
+\end{align}
+$$
+</div>
+<p>Similarly, define the cross-correlation vector between the input ($x(n)$) and the desired signal ($d(n)$),</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{p} =\begin{bmatrix}p(0) &p(1)&\cdots&p(N-1)\end{bmatrix}^T,
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\begin{align}
+  p(k) = E[x(n-k)d^*(n)].
+\end{align}
+$$
+</div>
+<p>And, let</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{w} = \begin{bmatrix} w_0, w_1, w_2,\dots w_{N-1} \end{bmatrix}^T
+\end{align}
+$$
+</div>
+<p>Thus Eq. (\ref{eqn:wiener}) can be written in matrix form as</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{Rw} = \boldsymbol{p}.
+  \label{eqn:wiener2}
+\end{align}
+$$
+</div>
+<p>If $\boldsymbol{ R}$ is invertible, the Wiener solution could be written as,</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{w} = \boldsymbol{ R^{-1}p}.
+  \label{eqn:wiener3}
+\end{align}
+$$
+</div>
+<p><b>Steepest Decent Algorithm.</b> 
+To calculate the optimal filter from Wiener solution with Eq. (\ref{eqn:wiener3}), we need to calculate the matrix inverse $\boldsymbol{ R^{-1}}$. In practice, such operation is is expensive. Fortunately, it can be approximated by the steepest decent algorithm, which updates the filter coefficients iteratively.</p>
+<p>Let us define the gradient of the cost function as</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{g} = \frac{\partial J(\boldsymbol{ w})}{\partial \boldsymbol{ w}}.
+\end{align}
+$$
+</div>
+<p>And update the filter coefficients with</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{w}(n+1) = \boldsymbol{w}(n)-\frac{1}{2}\mu \boldsymbol{g}(n),
+  \label{eqn:steeps}
+\end{align}
+$$
+</div>
+<p>where $\mu$ is the positive step size.</p>
+<p>With first-order Taylor series expansion, we get,</p>
+<div class="mathjax">
+$$
+\begin{align}
+  J(\boldsymbol{w}(n+1)) & \approx J(\boldsymbol{w}(n)) + \boldsymbol{ g}^H(n)(\boldsymbol{ w}(n+1)-\boldsymbol{ w}(n))\nonumber\\
+ & = J(\boldsymbol{ w}(n)) - \frac{1}{2} \mu \begin{Vmatrix} \boldsymbol{ g}(n) \end{Vmatrix}^2.
+\end{align}
+$$
+</div>
+<p>Thus, $J(\boldsymbol{w}(n))$ decreases after each iteration and Eq. (\ref{eqn:steeps}) approaches the optimal solution as $n\rightarrow\infty$. 
+Following the same way in Wiener solution, we get,</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{g} & = \frac{\partial J(\boldsymbol{w})}{\boldsymbol{w}}\nonumber\\
+  & =  -2(\boldsymbol{p}-\boldsymbol{Rw}(n)).
+  \label{eqn:steeps2}
+\end{align}
+$$
+</div>
+<p>With Eqs. (\ref{eqn:steeps2}) and (\ref{eqn:steeps}), we have,</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{w}(n+1) = \boldsymbol{ w}(n)+\mu[\boldsymbol{p}- \boldsymbol{ Rw}(n)].
+  \label{eqn:steeps3}
+\end{align}
+$$
+</div>
+<p><b>LSM Algorithm.</b> 
+Eq. (\ref{eqn:steeps3}) needs to know <i>a priori</i> statistics information about the input ($x(n)$) and desired signal ($d(n)$). For most practical cases, it is not realistic (e.g., such statistics information may vary over time). One solution is to replace the statistics information with instantaneous estimation. That's exactly what LSM algorithm does</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \hat {\boldsymbol{g}} & =  -2\left({ \boldsymbol{x}(n)d^*(n)}-\boldsymbol{x}(n)\boldsymbol{x}^H(n)\boldsymbol{w}(n)\right)\nonumber\\
+  & = -2\boldsymbol{x}(n)\left(d^*(n) - \boldsymbol{u}^{H}(n)\boldsymbol{w}(n)\right)\nonumber\\
+  & = -2\boldsymbol{x}(n)e^*(n),
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{x}(n) = \begin{bmatrix}x(n) &x(n-1)&\cdots&x(n-N+1)\end{bmatrix}^T.
+\end{align}
+$$
+</div>
+<p>Thus, Eq. (\ref{eqn:steeps3}) can be simplified as</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{w}(n+1) = \boldsymbol{ w}(n)+\mu\boldsymbol{x}(n)e^*(n).
+  \label{eqn:lms}
+\end{align}
+$$
+</div>
+<p>This is the iterative equation for LMS algorithm.</p>
+<p><b>Block LMS.</b> 
+Besides the above LMS method, there are many <a href="http://ruder.io/optimizing-gradient-descent/">variants</a>. 
+For block LMS (it is also called mini-batch LMS), as suggested by its name, the coefficients will not be updated at every input sample; instead, the coefficients are kept fixed until $L$ samples are received. This algorithm is less sensitive to the noise in single input, while may need more time for convergence.</p>
+<div class="mathjax">
+$$
+\begin{align}
+  \boldsymbol{w}(n+L) = \boldsymbol{ w}(n)+\frac{\mu}{L}\sum_{m=0}^{L-1}{\boldsymbol{x}(n+m)e^*(n+m)}.
+  \label{eqn:blms}
+\end{align}
+$$
+</div>
+<p>And the filter coefficients are kept unchanged</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{w}(n+m) = \boldsymbol{w}(n), \forall m = 1,2,\cdots, L-1.
+\end{align}
+$$
+</div>
+<p>and</p>
+<div class="mathjax">
+$$
+\begin{align}
+e(n+m) = d(n+m) - \boldsymbol{w}^T(n)\boldsymbol{x}(n+m).
+\end{align}
+$$
+</div>
+<p><b>Normalized LMS.</b> 
+As shown in Eq. (\ref{eqn:lms}), at each step, the correction of $\boldsymbol{w}$ depends on input $x(n)$. If the power of $x$ changes over time, it will affect the convergence. For example, if $x(n)$ is very small, it may take longer to converge. To mitigate such effect, in normalized LMS algorithm, the step size is normalized by the energy of the input signal. And it converge fast than LMS algorithm</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mu_{\textrm{NLMS}}(n) = \frac{\mu}{\sigma + \boldsymbol{x}^T(n)\boldsymbol{x}(n)},
+\end{align}
+$$
+</div>
+<p>where $\sigma$ is a small number to avoid division by zero.</p>
+<h1 id="sec-3">3 Double Talk Detector</h1>
+<p>In theory, as shown above, $e(n)$ can be used to update the filter coefficients.</p>
+<div class="mathjax">
+$$
+\begin{align}
+e(n) &= y(n)-d^\prime(n)\nonumber\\
+& = d(n) - d^\prime(n) + s(n) + n(n)
+\end{align}
+$$
+</div>
+<p>Once the filter converges, the echo will be cancelled from the microphone signal. One problem we haven't talked about so far is when will $e(n)$ contain useful information to update the filter coefficients ($H^\prime$)? Obviously, if the far end speech is off (e.g., $x(n) = 0$), $d(n) = d^\prime(n) = 0$, no matter what the actual channel between the speaker and microphone is. In this case, the $e(n)$ does not contain useful information to update the filter coefficients.</p>
+<p>Even when the far end speech ($x(n)$) is on, $e(n)$ may still not be useful to update the filter coefficients. 
+For example, when the near end speech is on (e.g., $s(n)\neq 0)$), the calculated error $e(n)$ will include the near end speech $s(n)$. In theory, if $s(n)$ is uncorrelated to the input $x(n)$, the LMS algorithm will still converge well. However, in this application, the near end speech $s(n)$ is almost always much larger than the far end speech echo $d(n)$ (e.g., in practice, the microphone is placed to collect the near end speech much better than to collect the signal from the speaker), which will cause a large variation to the error $e(n)$. Thus, if the step size $\mu$ is larger, the noise from $s(n)$ may cause the algorithm to diverge. If $\mu$ is smaller (smaller than the case when $s(n)=0$ ), the algorithm will take longer to converge.</p>
+<p>Thus, as shown in Fig. <a href="#img-aec_dtd">3</a>, a block is added to detect the near-end speech (in some literature, it is also called double-talk detector. Since if the far end speech is off, there is always no need to update the filter coefficients. Thus, the only case we need to detect is both far end and near end speech are on.). Once detected, we will stop updating the filter coefficients. In other words, the filter coefficients are kept constant (the echo is still estimated and canceled, but the filter coefficients are not updated).</p>
+<figure id="img-aec_dtd" class="figure">
+<img src="./image/aec_dtd.svg" alt="./image/aec_dtd.svg">
+<figcaption class="caption"><span class="tag">Fig.3.</span> Structure of the acoustic echo cancellation with double talk detector.</figcaption>
+</figure>
+<p>The next question is how to detect that the near-end speech is on? Most algorithms are based on the heuristics.</p>
+<p><b>Giegel algorithm.</b> 
+This algorithm is based on the assumption that the power of the far end speech $x(n)$ is much smaller than the near end speech $s(n)$. Thus, it compares the current received sample from microphone with the maximum amplitude of the far end speech signal (within the recent $L_{\textrm{DT}}$ samples).</p>
+<div class="mathjax">
+$$
+\begin{align}
+\textrm{DT}(n) = \left| \frac{y(n)}{max([|x(n)|, |x(n-1)|, \cdots, |x(n-L_{\textrm{DT}})|])}\right|
+\end{align}
+$$
+</div>
+<p>And $\textrm{DT}(n)$ is compared with a pre-defined threshold to determine whether the near end speech is on or not.</p>
+<div class="mathjax">
+$$
+\begin{align}
+\begin{cases}\textrm{DT}(n)\ge\textrm{Thrd}, & \textrm{near-end speech is on} \\
+             \textrm{DT}(n)&lt;\textrm{Thrd}, & \textrm{near-end speech is off}
+\end{cases}
+\end{align}
+$$
+</div>
+<p>This algorithm is easy to implement since it only depends on the input signals $x(n)$ and $y(n)$, but not the estimated signals, e.g., $e(n)$ and $d^\prime(n)$.</p>
+<p><b>Variance Impulse Response Algorithm [<a id="cite-2-1" href="#reference-2">2</a>].</b> 
+When the algorithm (e.g., LMS algorithm) converges after some period, the estimated $\boldsymbol{w}(n)$ will converge to the actual $\boldsymbol{w}_o(n)$. And the echoes are supposed to be stable (or pseudo-stable), which means that $\boldsymbol{w}_o(n)$ will not change dramatically. So if we detect any large change of the estimated  $\boldsymbol{w}(n)$, we could say that it doesn't come from the change of the channel, but from the near end speech. 
+With that said, this algorithm calculates the variance of the maximum filter coefficient of the adaptive filter.</p>
+<div class="mathjax">
+$$
+\begin{align}
+\sigma_w^2(n) &= \textrm{var}({w_{\textrm{max}}(n)})\nonumber\\
+    &= \frac{1}{N}\sum_{i=1}^{n}(w_{\textrm{max}}(i)- \bar{w}_{\textrm{max}}(i))^2,
+\end{align}
+$$
+</div>
+<p>where $\bar{w}_{\textrm{max}}(i) = \frac{1}{i}\sum_{l=1}^i{w_{\textrm{max}}(l)}$, and $w_{\textrm{max}}(i) = \mathop{\mathrm{arg\,max}}_k \left(w_k(i)\right)$.</p>
+<p>In practice, the estimation can be approximated with iteration</p>
+<div class="mathjax">
+$$
+\begin{align}
+\sigma_w^2(n)&=\lambda_\sigma \sigma_w^2(n-1) + (1-\lambda_\sigma)(w_{\textrm{max}}(n) - \bar{w}_{\textrm{max}}(n))^2\\
+\bar{w}_{\textrm{max}}(n) &= \lambda_w \bar{w}_{\textrm{max}}(n-1) + (1-\lambda_w) w_{\textrm{max}}(n),
+\end{align}
+$$
+</div>
+<p>where $\lambda_\sigma$ and $\lambda_w$ are forgetting factors. It can be seen from the above equations that the algorithm depends on the correct estimation of $\boldsymbol{w}(n)$. The adaptive filter should be given some time to converge before applying the above algorithm to detect the near end speech.</p>
+<p><b>Normalized Cross Correlation</b> [<a id="cite-3-1" href="#reference-3">3</a>] [<a id="cite-4-1" href="#reference-4">4</a>]. 
+The variance of signal $y$ can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\sigma_y^2 &= E(y^2)\nonumber\\
+    &= E(\boldsymbol{w}_o^T\boldsymbol{x}(\boldsymbol{w}_o^T\boldsymbol{x})^T) + E(s^2)\nonumber\\
+    &= \boldsymbol{w}_o^T\boldsymbol{R}_{xx}\boldsymbol{w}_o + \sigma_s^2,
+\end{align}
+$$
+</div>
+<p>where $\boldsymbol{R}_{xx} = E(\boldsymbol{x}\boldsymbol{x}^T)$.</p>
+<p>And the covariance between signals $\boldsymbol{x}$ and $y$ can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{R}_{xy} &= E(\boldsymbol{x}y)\nonumber\\
+    &= E(\boldsymbol{x}(\boldsymbol{w}_o^T\boldsymbol{x} + s))\nonumber\\
+    &= \boldsymbol{R}_{xx}\boldsymbol{w}_o.
+\end{align}
+$$
+</div>
+<p>Then, the decision matrix is defined as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\textrm{DT} &= \sqrt{\frac{\boldsymbol{w}_o^T\boldsymbol{R}_{xy}}{\sigma_y^2}}\nonumber\\
+    &= \sqrt{\frac{\boldsymbol{w}_o^T\boldsymbol{R}_{xx}\boldsymbol{w}_o}{\boldsymbol{w}_o^T\boldsymbol{R}_{xx}\boldsymbol{w}_o+\sigma_s^2}}.
+    \label{eqn:ncc}
+\end{align}
+$$
+</div>
+<p>Thus, if the near end speech is off, $\sigma_s^2=0$, and $\textrm{DT}$ will be close to 1. Otherwise, since $ \sigma_s^2 \gg \boldsymbol{w}_o^T\boldsymbol{R}_{xx}\boldsymbol{w}_o$, $\textrm{DT}$ will be close to 0.</p>
+<p>Eq. (\ref{eqn:ncc}) shows that we need to know the optimal solution $\boldsymbol{w}_o$, which is generally not the case. As describe in [<a id="cite-4-2" href="#reference-4">4</a>], the algorithm can be approximated by replacing $\boldsymbol{w}_o$ with $\boldsymbol{w}(n)$ (ignore the $n(n)$ here for simplicity)</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_{ey} &= E(ey)\nonumber\\
+    &= E((s+\boldsymbol{w}_o^T\boldsymbol{x} - \boldsymbol{w}^T(n)\boldsymbol{x})(s+\boldsymbol{w}_o^T\boldsymbol{x}))\nonumber\\
+    &= (\boldsymbol{w}_o^T - \boldsymbol{w}^T(n))\boldsymbol{R}\boldsymbol{w}_o^T + \sigma_s^2.
+\end{align}
+$$
+</div>
+<p>The decision matrix is defined as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\textrm{DT}(n) &= 1-\frac{r_{ey}}{\sigma_y^2}\nonumber\\
+ &= \frac{\boldsymbol{w}^T(n)\boldsymbol{R}_{xx}\boldsymbol{w}_o}{\boldsymbol{w}_o^T\boldsymbol{R}_{xx}\boldsymbol{w}_o+\sigma_s^2}.
+ \label{eqn:ncc_s}
+\end{align}
+$$
+</div>
+<p>In practice, $r_{ey}$ and $\sigma_y^2$ can be estimated by</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_{ey}(n) &= \lambda_{ey}r_{ey}(n-1) + (1-\lambda_{ey})e(n)y(n)\\
+\sigma_y^2(n) &= \lambda_y\sigma_y^2(n-1) + (1-\lambda_y)y(n)^2,
+\end{align}
+$$
+</div>
+<p>where $\lambda_{ey}$ and $\lambda_y$ are forgetting factors for $r_{ey}$ and $\sigma_y^2$ estimation, respectively.</p>
+<p>Same as the variance impulse response algorithm mentioned above, the normalized cross correlation algorithm also depends on the correct estimation of $\boldsymbol{w}$. If $\boldsymbol{w}(n)$ has not converged to $\boldsymbol{w}_o$ yet, such decision criterion may not lead to the robust near-end speech detection. Thus, the adaptive filter should be given some time to converge.</p>
+<p><b>Echo Return Loss Enhancement</b> [<a id="cite-5-1" href="#reference-5">5</a>]. 
+The decision criterion of ERLE (echo return loss enhancement) algorithm is defined as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\textrm{ERLE} = 10\log\left(\frac{P_e^2(n)}{P_y^2(n)}\right),
+\end{align}
+$$
+</div>
+<p>where $P_y^2(n)$ is the estimated power of signal $y$ during a short window (e.g., $16ms$), 
+$P_e^2(n)$ is the estimated power of error signal $e(n)$ during the short window.</p>
+<p>If the near end speech is off, $P_e^2(n)$ is close to zero (after filter converging), and thus $\textrm{ERLE}$ will be very small (e.g., negative); otherwise, $P_e^2(n)$ will be close to $P_y^2(n)$, and $\textrm{ERLE}$ will be close to 0.</p>
+<h1 id="sec-4">4 Far-end Talk Detector</h1>
+<p>When far end speech is off $x(n)=0$, $d(n) = \boldsymbol{w}_o^T\boldsymbol{x} = 0$. In this case, the calculated error $e(n)$ only contains noise (or near end speech) and is not useful to update the filter coefficients</p>
+<div class="mathjax">
+$$
+\begin{align}
+e(n) &= (\boldsymbol{w}_o^T \boldsymbol{x} - \boldsymbol{w}^T(n) \boldsymbol{x}) + s(n) + n(n)\nonumber\\
+   &= s(n) + n(n).
+\end{align}
+$$
+</div>
+<p>One straightforward way to detect the far end speech is to measure the power of the signal $x(n)$</p>
+<div class="mathjax">
+$$
+\begin{align}
+\hat{\sigma}_x^2(n) = \frac{1}{N_x}\sum_{i=0}^{N_x-1}{x(n-i)^2}.
+\end{align}
+$$
+</div>
+<p>When $\hat{\sigma}_x^2$ is small (e.g., $&lt;\textrm{thrd}$), the far end speech is off; otherwise, far end speech is on. In practice, if the length $N_x$ is smaller than the adaptive filter length $N$,  $\hat{\sigma}_x^2$ can be estimated as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\hat{\sigma}_x^2(n) = \hat{\sigma}_x^2(n-1) + \frac{1}{N_x}(x(n)^2 - x(n-N_x)^2).
+\end{align}
+$$
+</div>
+<p>If $N_x$ is larger than the adaptive filter length ($N$), the above equation can still be used to update the power estimation. However, we need more registers to store the previous inputs $x$. Or a simple first order low pass filter can be used to simplify the estimation</p>
+<div class="mathjax">
+$$
+\begin{align}
+\hat{\sigma}_x^2(n) = \lambda_x \hat{\sigma}_x^2(n-1) + (1-\lambda_x)x(n)^2,
+\end{align}
+$$
+</div>
+<p>where $\lambda_x$ is the forgetting factor.</p>
+</div>
+</div>
+
+<div class="reference">
+<ol>
+<li><div id="reference-1">
+Simon Haykin, "Adaptive Filter Theory," Prentice Hall; 4th edition (September 24, 2001) <a href="#cite-1-1">&#8617;</a>
+</div></li>
+<li><div id="reference-2">
+Aleksandar Jovanovic, Kalle Nilver, Patrik Soderberg, Magnus Broberg "Acoustic Echo Cancellation" <a href="#cite-2-1">&#8617;</a>
+</div></li>
+<li><div id="reference-3">
+Jacob Benesty, Dennis R. Morgan, and Jun H. Cho, "A New Class of Doubletalk Detectors Based on Cross-Correlation" IEEE Speech Audio Process., vol. 8, no. 2, pp. 168-172 Mar. 2000 <a href="#cite-3-1">&#8617;</a>
+</div></li>
+<li><div id="reference-4">
+Mohammad Asif Iqbal, Jack W. Stokes, Steven L. Grant, "Normalized Double-Talk Detection Based On Microphone And AEC Error Cross-Correlation," Proc. IEEE ICME'07, pp360-363, 2007 <a href="#cite-4-1">&#8617;</a> <a href="#cite-4-2">&#8617;</a>
+</div></li>
+<li><div id="reference-5">
+David Qi, "<a href="http://www.ti.com/lit/an/spra063/spra063.pdf">Acoustic Echo Cancellation</a>," May 1996 <a href="#cite-5-1">&#8617;</a>
+</div></li>
+</ol>
+</div>
+
+<div class="footer">
+<div class="footnote">
+<ol>
+<li><div id="footnote-1">
+Here, we assume the coefficients are complex values. Real-value coefficient is just a special case. <a href="#footnote_src-1">&#8617;</a>
+</div></li>
+</ol>
+</div>
+
+<div class="footer-text"> Last updated 2019-12-12 23:24:36 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+<script src="js/menu.js"></script>
+</body>
+</html>

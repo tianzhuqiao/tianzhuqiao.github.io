@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+<script src="js/bsmdoc.js"></script>
+<link rel="stylesheet" href="css/menu.css" type="text/css" />
+<title>Program arguments processing utility</title>
+</head>
+<body class="nomathjax">
+<div id="layout" class="">
+<div class="toptitle">
+Program arguments processing utility
+</div>
+
+<p><a href="downloads/progarg.zip">Download V1.2</a></p>
+<p>Simple C functions to easily process the console program arguments.</p>
+<h2>Usage</h2>
+<p>By using the utility, the call to your program may look like</p>
+<div class="bs-example">
+<pre>your_exe -options value0 value1 -argf args.txt ...
+    your_exe : your program
+    -options : first argument
+    value0   : the first value of argument '-options'
+    value1   : the second value of argument '-options'
+    -argf    : load the arguments from the file
+    args.txt : the file contians the arguments
+    .......</pre>
+</div>
+<p>And your <code>main</code> function may look like</p>
+<div class="bs-example">
+<div class="syntax"><pre><span></span><span class="c1">// Step 1: include the utility header</span>
+<span class="cp">#include</span> <span class="cpf">&quot;progarg.h&quot;</span><span class="cp"></span>
+<span class="c1">// Step 2: define the optional helper text</span>
+ <span class="k">static</span> <span class="kt">char</span> <span class="n">Utxt</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{...};</span>
+<span class="c1">// Step 3: define the optional arguments list. If not defined, all arguments will be accepted. Otherwise, the utility will terminate the exe if it sees any un-excepted argument.</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="o">*</span><span class="n">Arguments</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{...};</span>
+<span class="c1">// Step 4: define the optional alias for the argument values, for example &quot;true&quot;==0</span>
+<span class="n">alias_ps</span> <span class="n">alias_g</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{...}</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="c1">// configurations</span>
+    <span class="n">SetUsageHint</span><span class="p">(</span><span class="n">Utxt</span><span class="p">);</span>
+    <span class="n">SetAlias</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">alias_g</span><span class="p">);</span>
+    <span class="n">SetArgumentTable</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="n">Arguments</span><span class="p">);</span>
+    <span class="n">SetSwitchChar</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">);</span>
+
+    <span class="c1">// Initialize the utility, it must be called before calling any other utility functions</span>
+    <span class="n">InitProg</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="n">argv</span><span class="p">);</span>
+
+    <span class="c1">// have access to the arguments</span>
+    <span class="n">GetIntArg</span><span class="p">(...)</span>
+    <span class="n">GetStrArg</span><span class="p">(...)</span>
+    <span class="n">GetDoubleArg</span><span class="p">(...)</span>
+    <span class="n">GetFlagArg</span><span class="p">(...)</span>
+    <span class="p">.....</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The utility can also read the arguments from a configuration file. Then, call your exe with arguments "<code>-argf file_path</code>". The configuration file may look like:</p>
+<div class="bs-example">
+<div class="syntax"><pre><span></span><span class="o">-</span><span class="n">itype</span> <span class="n">Bin</span>
+<span class="o">-</span><span class="n">ibyte</span> <span class="mi">2</span>
+<span class="o">-</span><span class="n">BigEndian</span>
+<span class="c1">#strArg has 1 value: stringargument</span>
+<span class="o">-</span><span class="n">strArg</span> <span class="n">stringargument</span>
+<span class="c1">#strArg1 has 1 value: string argument</span>
+<span class="o">-</span><span class="n">strArg1</span> <span class="s2">&quot;string argument&quot;</span>
+<span class="c1">#strArg2 has 2 values , 1--&gt;string ,2--&gt; argument</span>
+<span class="o">-</span><span class="n">strArg2</span> <span class="n">string</span> <span class="n">argument</span>
+<span class="c1">#strArg3 has 1 value: string * # argument</span>
+<span class="o">-</span><span class="n">srtArg3</span> <span class="s2">&quot;string * # argument&quot;</span>
+</pre></div>
+</div>
+<p>For any line, text after symbol "<code>#</code>" is comment and will be ignored.</p>
+
+<div class="footer">
+<div class="footer-text"> Last updated 2019-12-10 23:12:08 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+<script src="js/menu.js"></script>
+</body>
+</html>
