@@ -1,0 +1,16 @@
+\config{title|A tutorial on time series with neural network}
+\config{heading_numbering|True}
+\config{image_numbering|True}
+\config{table_numbering|True}
+\config{bsmdoc_conf|bsmdoc.cfg}
+{!div|menu||
+#makecontent
+!}
+{!div|main||
+{!div|toptitle||
+A tutorial on time series with neural network
+!}
+{!div|content||
+#include walk_content.bsmdoc
+!}
+!}

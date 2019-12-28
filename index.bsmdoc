@@ -87,6 +87,24 @@ tq@feiyilin.com
 [aec.html|More...]
 !}
 !}
+== [walk.html|A tutorial on time series with neural network]
+{!div|pure-g||
+{!div|image-post pure-u-1|pure-u-lg-1-3||
+[walk.html|\image{./image/walk.svg}]
+!}
+{!div|pure-u-1 pure-u-lg-2-3||
+=======
+{!div|quote||
+{!div|quote_content||
+If you torture the data long enough, it will confess.
+!}
+{!div|quote_by||
+Ronald H. Coase, Essays on Economics and Economists
+!}
+!}
+!}
+!}
+
 == Basics of Digital Signal Processing in Communications System
 - [basic_basics.html|Basics of Digital Signal Processing]
 - [tx.html|Basic transmitter blocks]
@@ -126,9 +144,6 @@ A online tool to convert pinyin to hanzi.
 - { [progarg.html|Console program arguments processing utility.]
 Simple C functions to easily process the console program arguments.
 }.
-#- {[bin2txt.html | data converter.]
-#ascii-int, ascii-double, 二进制数据文件转换
-#}
 #{!post|{[systemc_tips.html | SystemC tips]}||
 #!}
 #{!post|{[tx_modules.html | TX-Modules]}||

@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+<script src="js/bsmdoc.js"></script>
+<link rel="stylesheet" href="css/menu.css" type="text/css" />
+<title>A tutorial on time series with neural network</title>
+</head>
+<body class="nomathjax">
+<div id="layout" class="">
+
+<div class="menu">
+<ul>
+<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-2">2 Preprocessing and features</a></li>
+<li><a href="#sec-3">3 Neural network model</a></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+A tutorial on time series with neural network
+</div>
+<div class="content">
+<h1 id="sec-1">1 Introduction</h1>
+<p>I was once asked to use the accelerometer and gyroscope data (i.e., from a sensor attached to a shoe) to detect the events that whether the shoe is taken off or put on. 
+In other words, you are given a time series (e.g., 50 samples per second),</p>
+<div class="mathjax">
+$$
+\begin{align*}
+    v_x[0], v_y[0], v_z[0], &a_x[0], a_y[0], a_z[0]\\
+    v_x[1], v_y[1], v_z[1], &a_x[1], a_y[1], a_z[1]\\
+    v_x[2], v_y[2], v_z[2], &a_x[2], a_y[2], a_z[2]\\
+    &\vdots
+\end{align*}
+$$
+</div>
+<p>where $v_x$, $v_y$, $v_z$ are speed for axis $x$, $y$ and $z$ respectively, and $a_x$, $a_y$, $a_z$ are the angle speed for each axis. The problem is to detect the human event (take off/put on shoes) from this data.</p>
+<p>Before diving into building models and starting training with the data, I think the first question we shall ask is whether the information we get can solve the problem (maybe this is the second question; the first one should be why we want to detect the event?); that is, does it have information for the problem.</p>
+<div class="quote">
+<div class="quote_content">
+If you torture the data long enough, it will confess.
+</div>
+<div class="quote_by">
+Ronald H. Coase, Essays on Economics and Economists
+</div>
+</div>
+<p>My first intuition is that accelerator and gyroscope are not the right data to solve this problem. Someone may argue that there are many neural networks available to solve much more difficult problems very well, e.g., recognize the cat in the following image.</p>
+<figure class="figure">
+<img src="https://images.freeimages.com/images/large-previews/5c9/cat-1058028.jpg 
+" alt="https://images.freeimages.com/images/large-previews/5c9/cat-1058028.jpg 
+" width="300">
+</figure>
+<p>But why? Why do we believe it will work? One reason is that the image (the specific way that RGB values are combined together) obviously has the information about a cat, since our brain can easily recognize it, although it may not be obvious how our brain can build a mapping between these RGB values and its label (e.g., cat). In this case, we may be able to "mimic" the way how brain may work to recognize it.</p>
+<p>How about the aforementioned "shoe event" case? What will be the right intuition behind it? Does the event fundamental different from others (e.g., lift a shoe without put it on, walk with a shoe in your bag/car etc.)? In my opinion, trying to solve the problem without understanding is dangerous. Of cause, we can always "train" a system to let it outputs what we "expected". But, eventually we need to deal with all kinds of weird corner cases.</p>
+<p>So, what will be the better signal for this problem? One potential choice is <a href="http://www.walkermobile.com/Touch_Technologies_Tutorial_Latest_Version.pdf">capacitive sensor</a>. For example, just like how a capacitive touch sensor works, we can put a capacitive sensor inside the shoe. As human foot is conductive, When it is inside a shoe, it will change the reading from the capacitive sensor (either increase or decrease, depend on the senor design). Thus we can detect the event by identifying the signal change. Such design also has several challenges. For example, the capacitive sensor signal may be significantly reduced when the user wears a thick sock (just like the bad experience you may encounter when touch your phone with a glove). Similarly, when the shoe is wet, the capacitive sensor may stop working properly since water is also conductive.</p>
+<p>Another potential choice is to use a force sensor to measure the pressure. For example, imaging a pressure sensor is installed near the heel. When a shoe is on, the weight of your body/foot will press against the sensor, and thus generate a "higher" reading. On the other hand, when the shoe is off, the reading will be much smaller. Thus, it is not difficult to see that we can easily detect the event without complex algorithm (be careful to select a threshold properly to minimize false triggering, e.g., when your cat stays inside your shoe.).</p>
+<p>However, in some case, we do have to detect the event when a better signal is not available. For example, use the current and previous blood glucose level to predict the level in next 30 mins. Or use accelerator and gyroscope data from a smart watch to detect a event that the user raises hand (e.g., to check the time). Or for the above "shoe event" case, there is no sensor on your shoe, and only data is from the accelerometer in your smart watch.</p>
+<h1 id="sec-2">2 Preprocessing and features</h1>
+<p>To build the model, the first step is to pre-processing the data so that it has the following structure</p>
+<div class="mathjax">
+$$
+\begin{align}
+    \{\textbf{x}, y\},
+\end{align}
+$$
+</div>
+<p>where $\textbf{x}$ is the input (features), which is usually a vector or matrix, $y$ is the expected output or label (e.g., 0 or 1).</p>
+<p>For example, <a href="https://github.com/wchill/HMP_Dataset ">this dataset</a> records the accelerometer data when user was doing various tasks (e.g., walk). Let's try a simpler problem: differentiate <b>walk</b> event from <b>climb chair</b> event. 
+First, download the data</p>
+<div class="syntax"><pre><span></span><span class="c1"># download data file if necessary</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+    <span class="n">dataurl</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/wchill/HMP_Dataset/archive/master.zip&quot;</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">dataurl</span><span class="p">,</span> <span class="s2">&quot;HMP_Dataset.zip&quot;</span><span class="p">)</span>
+    <span class="k">with</span>  <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
+        <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">()</span>
+</pre></div>
+<p>Fig. (<a href="#img-walk">1</a>) and (<a href="#img-climb_chair">2</a>) show a sample accelerometer data for <b>walk</b> and <b>climb chair</b> event. Here are some observations</p>
+<ol>
+<li>Both data shows some kind of periodicity. It makes sense since each data repeats same events multiple times.</li>
+<li><b>Climb chair</b> data looks different from <b>walk</b>. For example, for <b>climb chair</b> event, $y$ and $z$ data look more periodic than <b>walk</b>. It may make sense since the user will move up and down to finish each event. It gives us some confidence/intuition that some classification algorithm may work to differentiate them.</li>
+<li>Roughly the first 2 sec data (i.e., 64 samples) looks very different from the remaining. I guess during that time the user was preparing to start the event. So we need to ignore these data for training and test. For simplicity, we ignore first 2 sec data for the whole dataset; however it may not be a good use of the data since the preparing period for some data may be longer (e.g., 3 sec) or shorter. We really should clean each data separately. Same for the last 2 sec data, we cut the last 2 sec data for the whole dataset for simplicity.</li>
+</ol>
+<figure id="img-walk" class="figure">
+<img src="image/walk.svg 
+" alt="image/walk.svg 
+">
+<figcaption class="caption"><span class="tag">Fig.1.</span> Accelerometer reading for walk event</figcaption>
+</figure>
+<figure id="img-climb_chair" class="figure">
+<img src="image/walk_climb_chair.svg 
+" alt="image/walk_climb_chair.svg 
+">
+<figcaption class="caption"><span class="tag">Fig.2.</span> Accelerometer reading for climb chair event</figcaption>
+</figure>
+<p>Besides the raw senor data, we may also use some statistics and aggregator. For example, in <a href="https://dl.acm.org/citation.cfm?id=3330761">this paper</a>, $\textbf{x}$ is a $31\times 50$ matrix. That is, 31 features are generated for each frame (e.g., mean/std over the last 10/20/50 samples separately (e.g., $mean(v_x[i-9:i])$), differential signal between current sample and the samples 20/40/50 steps before (e.g., $v_x[i]- v_x[i-20]$), and the absolute values). Then current frame is combined with the features from the last 49 frames (2D image with dimension $31\times 50$) is feed into a 1D CNN (along time axis, not very useful to learn across feature axis in this case).</p>
+<p>Some useful statistics and features</p>
+<ul>
+<li>mean, std, max, min, median</li>
+<li>signal magnitude area, e.g. $\sum_{k=i-N+1}^{i}{v_x[k]}$</li>
+<li>energy, e.g. $\frac{1}{N}\sum_{k=i-N+1}^{i}{v_x[k]^2}$</li>
+<li>logarithm</li>
+<li>FFT. In some case, FFT is useful. For example for the above $31\times 50$ input, the 'actual' event can happen at any samples, FFT may be able to mitigate such uncertainty. As shown in Fig. (<a href="#img-fft">3</a>), <b>data 1</b> and <b>data 2</b> are two samples from same data source (a sine wave). Their time domain representations looks different (time shift); however, their frequency domain representation (magnitude) are same (right plot), which may help neural network to learn fast.</li>
+</ul>
+<figure id="img-fft" class="figure">
+<img src="image/walk_fft.svg 
+" alt="image/walk_fft.svg 
+">
+<figcaption class="caption"><span class="tag">Fig.3.</span> Accelerometer reading for climb chair event</figcaption>
+</figure>
+<ul>
+<li>normalization: 
+As usual, it may be useful to normalize each feature with the corresponding training data, e.g., zero mean, unit variance, i.e., 
+   <div class="mathjax">
+$$
+    \begin{align}
+        f_{train} &= (f_{train} - \mu_{f_{train}})/\sigma_{f_{train}},\nonumber \\
+        f_{test} &= (f_{test} - \mu_{f_{train}})/\sigma_{f_{train}},
+    \end{align}
+	$$
+</div>
+<p>where $f_{train}$ is a feature from training samples, $f_{test}$ is the same feature from test samples, and</p>
+<div class="mathjax">
+$$
+    \begin{align}
+        \mu_{f_{train}} = \frac{1}{N}\sum_{i=0}^{N-1}{f_{train}[i]}, \nonumber \\
+        \sigma_{f_{train}} = \frac{1}{N}\sum_{i=0}^{N-1}{\left(f_{train}[i]-\mu_{f_{train}}\right)^2}.
+    \end{align}
+	$$
+</div></li>
+<li><p>differencing: 
+In some case, if a feature is not stationary, we may need to compute the difference between consecutive samples. 
+1st order differencing</p>
+<div class="mathjax">
+$$
+    \begin{align}
+        df_1[n] = f[n] - f[n-1],
+    \end{align}
+	$$
+</div>
+<p>2nd order differencing</p>
+<div class="mathjax">
+$$
+    \begin{align}
+        df_2[n] &= df_1[n] - df_1[n-1]\nonumber\\
+        &= f[n]-2f[n-1]+f[n-2],
+    \end{align}
+	$$
+</div>
+<p>Lag-m differences (seasonal differencing)</p>
+<div class="mathjax">
+$$
+    \begin{align}
+        d_m[n] &= f[n] - f[n-m].
+    \end{align}
+	$$
+</div></li>
+</ul>
+<p>Back to the example, as the raw accelerometer data shows different pattern, let's try to use raw data (within a window) for classification. Let's define</p>
+<ol>
+<li>event $y$: 
+<ul>
+<li>1 $\rightarrow$ walk,</li>
+<li>0 $\rightarrow$ climb chair;</li>
+</ul></li>
+<li>features: $\textbf{x}[N, 3]$. It contains last $N$ frames of raw accelerometer data, each frame has 3 values (i.e., $v_x$, $v_y$, $v_z$)</li>
+</ol>
+<p>Next step is to determine the value of $N$. Each step of walk can be viewed as roughly same; in this case, the reading from accelerometer shall also roughly periodic (based on how long each step lasts). We may want to choose $N$ such that the data will cover the whole period. A reasonable walk speed is usually larger than 3600m/hour; that is $3600m/3600s = 1m/s$. And if the step length (either left or right step) is roughly <a href="https://www.healthline.com/health/stride-length#average-step-and-stride-length">0.75m</a>, which will take $0.75m/(1m/s) = 0.75s$. Thus, a stride (two steps, one left, one right) will take $0.75s*2=1.5s$ to finish. In this case, we can take $2s$ accelerator data as features (i.e., $N=2s*32samples/s=64samples$).</p>
+<p>In reality, the above assumption may not be true. For example, older people may walk more slowly with smaller stride length. We may need to find some way to train each group separately. Or we can treat $N$ as an hyper-parameter to be determined with cross validation.</p>
+<p>Now we have all the information to load the data: $\textbf{x}[:, 64, 3]$, $y \in [0, 1]$</p>
+<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; load data in folder</span>
+<span class="sd">        return (x[:, steps, 3], y)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">walk_through_files</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; walk trhough all files in &#39;path&#39; with extension &#39;ext&#39; &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/*</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="p">))):</span>
+            <span class="k">yield</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; load data file, and return (x[steps], y) &quot;&quot;&quot;</span>
+        <span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">32</span> <span class="c1"># 32 samples/sec</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># ignore the first and last 2 sec data, as the user may not start event</span>
+        <span class="c1"># yet or have already stopped event.</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sample_rate</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">steps</span><span class="o">-</span><span class="n">sample_rate</span><span class="o">*</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">steps</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+
+    <span class="n">x_all</span><span class="p">,</span> <span class="n">y_all</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">walk_through_files</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="c1"># load all files in folder</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_file</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">x_all</span> <span class="o">+=</span> <span class="n">x</span>
+        <span class="n">y_all</span> <span class="o">+=</span> <span class="n">y</span>
+    <span class="c1"># x dimension ~ (batch, steps=steps, channels=3)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">(</span><span class="n">x_all</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_all</span><span class="p">)</span>
+
+<span class="n">steps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="n">x_walk</span><span class="p">,</span> <span class="n">y_walk</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">&#39;walk&#39;</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">x_climb_chair</span><span class="p">,</span> <span class="n">y_climb_chair</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">&#39;Climb_stairs&#39;</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+<p>As usual, to test our model, the data loaded shall be split into two parts: training and test. 
+Here for both <b>walk</b> and <b>climb chair</b> data, $80\%$ data is used for training and remaining is for test.</p>
+<div class="syntax"><pre><span></span><span class="n">walk_train_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_walk</span><span class="p">)</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">climb_train_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_climb_chair</span><span class="p">)</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="n">x_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">x_walk</span><span class="p">[:</span><span class="n">walk_train_len</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">x_climb_chair</span><span class="p">[:</span><span class="n">climb_train_len</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]))</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">to_categorical</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">y_walk</span><span class="p">[:</span><span class="n">walk_train_len</span><span class="p">],</span> <span class="n">y_climb_chair</span><span class="p">[:</span><span class="n">climb_train_len</span><span class="p">])))</span>
+
+<span class="n">x_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">x_walk</span><span class="p">[</span><span class="n">walk_train_len</span><span class="p">:,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">x_climb_chair</span><span class="p">[</span><span class="n">climb_train_len</span><span class="p">:,</span> <span class="p">:,</span> <span class="p">:]))</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">to_categorical</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">y_walk</span><span class="p">[</span><span class="n">walk_train_len</span><span class="p">:],</span> <span class="n">y_climb_chair</span><span class="p">[</span><span class="n">climb_train_len</span><span class="p">:])))</span>
+</pre></div>
+<h1 id="sec-3">3 Neural network model</h1>
+<p>All data is ready, we can set up our model. The following model is kind of chosen arbitrarily; you can play around with the parameters to compare the performance.</p>
+<div class="syntax"><pre><span></span><span class="n">n_timesteps</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">n_outputs</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv1D</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_timesteps</span><span class="p">,</span> <span class="n">n_features</span><span class="p">)))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv1D</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Flatten</span><span class="p">())</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">n_outputs</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;softmax&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;categorical_crossentropy&#39;</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+</pre></div>
+<p>Now it's time to train the model</p>
+<div class="syntax"><pre><span></span><span class="k">class</span> <span class="nc">TestCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_data</span> <span class="o">=</span> <span class="n">test_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span>  <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_data</span>
+        <span class="n">loss</span><span class="p">,</span> <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Testing loss: {}, acc: {}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">acc</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">logs</span><span class="p">[</span><span class="s2">&quot;accuracy&quot;</span><span class="p">],</span> <span class="n">acc</span><span class="p">])</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">TestCallback</span><span class="p">((</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">))</span>
+
+<span class="n">h</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
+</pre></div>
+<p>Here we define the callback to evaluate the accuracy on test data after each epoch. Fig. (<a href="#img-accuracy">4</a>) shows that after 10 epochs, the test data achieves $\sim 97\%$ accuracy.</p>
+<figure id="img-accuracy" class="figure">
+<img src="image/walk_accuracy.svg 
+" alt="image/walk_accuracy.svg 
+">
+<figcaption class="caption"><span class="tag">Fig.4.</span> Accuracy of training and testing dataset</figcaption>
+</figure>
+<p>Full code can be download <a href="./downloads/walk.py">here</a>. The "performance" may be improved by choosing the hyper-parameters or adjusting the model; however, considering that the data may not be labeled correctly (remember we just simply ignore the first/last 2sec data) and accelerometer data may not contain all the information to differentiate the events, the result looks pretty good.</p>
+<p>Back to the "shoe event" problem, could we use the similar procedure to achieve the similar performance? I am afraid not. The above simplified problem is just try to differentiate two events from each other (walk, climb chair). To make "shoe event" detector useful, it needs to detect "shoe event" from all other events. Furthermore, compared to other events, "shoe event" may be very rare; that's how often will you put on/take off your shoes? Let's say we have a model that can detect $99\%$ "shoe event" when it happens; that is $p(\hat{s}/s) = 0.99$. And $1\%$ false detection when other events happen($p(\hat{s}/\bar{s}) = 0.01$). Does such model work? For example, for a certain day, the sensor is active for 8 hours (e.g., wear shoes for 8 hours every day), and all "shoe events" take 5 mins. Then $p(s) = 5 mins/8 hours = 0.01$. In this case, when our model shows it detects the event ($\hat{s}$), the probability that it is triggered by a true "shoe event" is</p>
+<div class="mathjax">
+$$
+\begin{align}
+p(s/\hat{s}) &= \frac{p(\hat{s}/s)*p(s)}{p(\hat{s}/s)*p(s) + p(\hat{s}/\bar{s})*p(\bar{s})} \nonumber \\
+&= \frac{0.99*0.01}{0.99*0.01 + 0.01*(1-0.01)} \nonumber \\
+&= 0.5.
+\end{align}
+$$
+</div>
+<p>So when the model detects a event, we have half-half chance that the detection is triggered by the actual "shoe event", which is not particularly assuring. The problem is that the event we are interested in happens rarely. To improve the performance, we need to decrease $p(\hat{s}/\bar{s})$, for example</p>
+<ul>
+<li>have more data to cover more cases</li>
+<li>more features (e.g., pressure sensor)</li>
+</ul>
+</div>
+</div>
+
+<div class="footer">
+<div class="footer-text"> Last updated 2019-12-28 10:04:05 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+<script src="js/menu.js"></script>
+</body>
+</html>
