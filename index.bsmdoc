@@ -71,7 +71,7 @@ tq@feiyilin.com
 !}
 {!div|pure-u-1 pure-u-lg-2-3||
 =======
-#include ^(\\s)*=+|7|../bsmdoc/index_content.bsmdoc
+#include ^(\\s)*=+|7|../bsmdoc/docs/index_content.bsmdoc
 [http://bsmdoc.feiyilin.com|More...]
 !}
 !}
