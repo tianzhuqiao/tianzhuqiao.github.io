@@ -20,6 +20,14 @@
 <!--[if gt IE 8]><!-->
 <link rel="stylesheet" href="css/blog.css">
 <!--<![endif]-->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
 <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 <title>feiyilin</title>
 </head>
@@ -34,7 +42,7 @@ tq@feiyilin.com
 </div>
 </div>
 <div class="content pure-u-1 pre-u-lg-5-6">
-<h2>bsmedit -- another C/C++/SystemC simulation controller</h2>
+<h2><a href="http://bsmedit.feiyilin.com">bsmedit -- C/C++/SystemC simulation controller</a></h2>
 <div class="pure-g">
 <div class="image-post pure-u-1 pure-u-lg-1-3">
 <a href="http://bsmedit.feiyilin.com"><img src="./image/bsmedit.png" alt="./image/bsmedit.png"></a>
@@ -57,10 +65,10 @@ tq@feiyilin.com
 <a href="http://bsmedit.feiyilin.com">More...</a>
 </div>
 </div>
-<h2>bsmdoc -- another technical html doc generator</h2>
+<h2><a href="http://bsmdoc.feiyilin.com">bsmdoc -- another technical html doc generator</a></h2>
 <div class="pure-g">
 <div class="image-post pure-u-1 pure-u-lg-1-3">
-<a href="http://bsmdoc.feiyilin.com"><img src="./image/bsmdoc.png" alt="./image/bsmdoc.png"></a>
+<a href="http://bsmdoc.feiyilin.com"><img src="./image/bsmdoc2.png" alt="./image/bsmdoc2.png"></a>
 </div>
 <div class="pure-u-1 pure-u-lg-2-3">
 <p>bsmdoc is a tool to generate technical static html docs:</p>
@@ -69,10 +77,11 @@ tq@feiyilin.com
 <li><b>Highly extendable</b>: extend the tool to solve your own problem easily;</li>
 <li><b>Single file doc</b>: generate images, equations in a single file.</li>
 </ul>
+<p>bsmdoc splits the whole doc into blocks (e.g., equation block, paragraph block, heading block, ...). In the following sections, we will show each block in detail, as well as the way to extend the existing blocks.</p>
 <a href="http://bsmdoc.feiyilin.com">More...</a>
 </div>
 </div>
-<h2>Acoustic Echo Cancellation Overview</h2>
+<h2><a href="aec.html">Acoustic Echo Cancellation Overview</a></h2>
 <div class="pure-g">
 <div class="image-post pure-u-1 pure-u-lg-1-3">
 <a href="aec.html"><img src="./image/aec_dtd.svg" alt="./image/aec_dtd.svg"></a>
@@ -89,7 +98,7 @@ tq@feiyilin.com
 <a href="walk.html"><img src="./image/walk.svg" alt="./image/walk.svg"></a>
 </div>
 <div class="pure-u-1 pure-u-lg-2-3">
-<div class="quote">
+<div style="left: 0; transform: none;" class="quote">
 <div class="quote_content">
 If you torture the data long enough, it will confess.
 </div>
@@ -97,6 +106,23 @@ If you torture the data long enough, it will confess.
 Ronald H. Coase, Essays on Economics and Economists
 </div>
 </div>
+</div>
+</div>
+<h2><a href="smacof.html">SMACOF: A tutorial</a></h2>
+<div class="pure-g">
+<div class="image-post pure-u-1 pure-u-lg-1-3">
+<a href="smacof.html"><img src="./image/smacof3.svg" alt="./image/smacof3.svg"></a>
+</div>
+<div class="pure-u-1 pure-u-lg-2-3">
+<p>For parameter estimation, if the object function is quadratic, it is easy to find the solution by set its derivative to zero. For example, suppose we want to estimate $y_i$ from input $\boldsymbol{x}_i$, where $\boldsymbol{x}_i$ is a row vector. From our understanding to the problem, we believe linear least square is a good estimator. That is,</p>
+<div class="mathjax">
+$$
+\hat{y}_i = \boldsymbol{x}_i^T \boldsymbol{w},
+\label{eq-ls}
+$$
+</div>
+<p>where row vector $\boldsymbol{w}$ is the coefficients we want to estimate,</p>
+<a href="smacof.html">More...</a>
 </div>
 </div>
 <h2>Basics of Digital Signal Processing in Communications System</h2>
@@ -120,7 +146,7 @@ Simple C functions to easily process the console program arguments.</p></li>
 </div>
 
 <div class="footer">
-<div class="footer-text"> Last updated 2020-01-02 23:06:04 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-01-04 16:20:33 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>

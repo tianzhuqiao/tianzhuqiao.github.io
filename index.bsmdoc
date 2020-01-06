@@ -52,7 +52,7 @@ def bsmdoc_include(data, **kwargs):
 tq@feiyilin.com
 !}
 {!div|content pure-u-1 pre-u-lg-5-6||
-== bsmedit -- another C/C++/SystemC simulation controller
+== [http://bsmedit.feiyilin.com|bsmedit -- C/C++/SystemC simulation controller]
 {!div|pure-g||
 {!div|image-post pure-u-1|pure-u-lg-1-3||
 [http://bsmedit.feiyilin.com|\image{./image/bsmedit.png}]
@@ -64,10 +64,10 @@ tq@feiyilin.com
 !}
 !}
 
-== bsmdoc -- another technical html doc generator
+== [http://bsmdoc.feiyilin.com|bsmdoc -- another technical html doc generator]
 {!div|pure-g||
 {!div|image-post pure-u-1|pure-u-lg-1-3||
-[http://bsmdoc.feiyilin.com|\image{./image/bsmdoc.png}]
+[http://bsmdoc.feiyilin.com|\image{./image/bsmdoc2.png}]
 !}
 {!div|pure-u-1 pure-u-lg-2-3||
 =======
@@ -76,7 +76,7 @@ tq@feiyilin.com
 !}
 !}
 
-== Acoustic Echo Cancellation Overview
+== [aec.html|Acoustic Echo Cancellation Overview]
 {!div|pure-g||
 {!div|image-post pure-u-1|pure-u-lg-1-3||
 [aec.html|\image{./image/aec_dtd.svg}]
@@ -87,6 +87,7 @@ tq@feiyilin.com
 [aec.html|More...]
 !}
 !}
+
 == [walk.html|A tutorial on time series with neural network]
 {!div|pure-g||
 {!div|image-post pure-u-1|pure-u-lg-1-3||
@@ -94,7 +95,7 @@ tq@feiyilin.com
 !}
 {!div|pure-u-1 pure-u-lg-2-3||
 =======
-{!div|quote||
+{!div|quote|style="left: 0; transform: none;"||
 {!div|quote_content||
 If you torture the data long enough, it will confess.
 !}
@@ -105,6 +106,17 @@ Ronald H. Coase, Essays on Economics and Economists
 !}
 !}
 
+== [smacof.html|SMACOF: A tutorial ]
+{!div|pure-g||
+{!div|image-post pure-u-1|pure-u-lg-1-3||
+[smacof.html|\image{./image/smacof3.svg}]
+!}
+{!div|pure-u-1 pure-u-lg-2-3||
+=======
+#include ^(\\s)*=+|7|smacof_content.bsmdoc
+[smacof.html|More...]
+!}
+!}
 == Basics of Digital Signal Processing in Communications System
 - [basic_basics.html|Basics of Digital Signal Processing]
 - [tx.html|Basic transmitter blocks]

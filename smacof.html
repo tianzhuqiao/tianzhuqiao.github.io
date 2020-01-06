@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+<script src="js/bsmdoc.js"></script>
+<link rel="stylesheet" href="css/menu.css" type="text/css" />
+<title>SMACOF: A Tutorial</title>
+</head>
+<body class="nomathjax">
+<div id="layout" class="">
+
+<div class="menu">
+<ul>
+<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-2">2 SMACOF</a></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+SMACOF: A Tutorial
+</div>
+<div class="content">
+<h1 id="sec-1">1 Introduction</h1>
+<p>For parameter estimation, if the cost function is quadratic, it is easy to find the solution by setting its derivative to zero. For example, suppose we want to estimate $y_i$ from input $\boldsymbol{x}_i$, where $\boldsymbol{x}_i$ is a row vector. Suppose that from our understanding to the problem, we believe linear least square is a good estimator. That is,</p>
+<div class="mathjax">
+$$
+\hat{y}_i = \boldsymbol{x}_i^T \boldsymbol{w},
+\label{eq-ls}
+$$
+</div>
+<p>where row vector $\boldsymbol{w}$ is the coefficients we want to estimate, 
+and the object function is to minimize the sum of squared residues.</p>
+<div class="mathjax">
+$$
+\begin{align}
+f(\boldsymbol{w}) &= \sum_i{(y_i-\hat{y_i})^2} \nonumber \\
+  &= \sum_i{(y_i - \boldsymbol{x}_i^T \boldsymbol{w})^2} \nonumber \\
+  &= (\boldsymbol{Y} - \boldsymbol{X}\boldsymbol{w})^T(\boldsymbol{Y} - \boldsymbol{X}\boldsymbol{w}),
+\label{eq:ls}
+\end{align}
+$$
+</div>
+<p>where $\boldsymbol{Y}=[y_0, y_1, \cdots, y_{N-1}]^T$, $\boldsymbol{X} = [\boldsymbol{x}_0; \boldsymbol{x}_1; \cdots; \boldsymbol{x}_{N-1}]^T$.</p>
+<p>Eq. (\ref{eq:ls}) is quadratic. Its minimum can be found by setting its derivative to zero</p>
+<div class="mathjax">
+$$
+\frac{\partial f(\boldsymbol{w})}{\partial \boldsymbol{w}} = 0.
+$$
+</div>
+<p>That is</p>
+<div class="mathjax">
+$$
+\boldsymbol{X}^T(\boldsymbol{Y} - \boldsymbol{X}\boldsymbol{w}) = 0.
+$$
+</div>
+<p>Thus</p>
+<div class="mathjax">
+$$
+\begin{align}
+\hat{\boldsymbol{w}} = (\boldsymbol{X}^T\boldsymbol{X})^{-1}\boldsymbol{X}^T\boldsymbol{Y}.
+\label{eqn:ls}
+\end{align}
+$$
+</div>
+<p>However, there are many problem whose cost function is non quadratic. Thus, the above linear least square method can not be applied directly. One workaround is to use Taylor expansion to linearize the object function. Imaging there are 4 sensors inside a room ($m=[0, 1, 2, 3]$. The location of each sensor is known in advance (i.e., $\boldsymbol{v}_m = [x_m, y_m]$). The sensor can measure its distance (i.e., $r_m$) to an device, whose location is unknown and needs to be estimated ($\boldsymbol{\theta} = [x, y]$). So the distance can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_m &= \sqrt{(x-x_m)^2 + (y-y_m)^2} + n_m\nonumber \\
+    &= \left\Vert\boldsymbol{\theta} - \boldsymbol{v}_m\right\Vert + n_m,
+\label{eq-distance}
+\end{align}
+$$
+</div>
+<p>where $n_m$ is noise or measurement error. 
+Apparently, unlike Eq. (\ref{eq-ls}), it is not a linear function. Recall Taylor expansion</p>
+<div class="mathjax">
+$$
+\begin{align}
+f(x) \approx f(x_0) + (x-x_0)f^\prime(x_0).
+\end{align}
+$$
+</div>
+<p>Similarly, Eq. (\ref{eq-distance}) can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+r_m \approx \left\Vert\boldsymbol{\theta}_0 - \boldsymbol{v}_m\right\Vert + \frac{\left\langle \boldsymbol{\theta} - \boldsymbol{\theta}_0, \boldsymbol{\theta}_0 - \boldsymbol{v}_m\right\rangle}{\left\Vert\boldsymbol{\theta}_0 - \boldsymbol{v}_m\right\Vert}.
+\end{align}
+$$
+</div>
+<p>Now we have an approximate linear equation, Eq. (\ref{eqn:ls}) can be used to estimate the target position, i.e., $\boldsymbol{\hat{\theta}}$. Then we can use Taylor expansion to get the approximate linear equation around $\boldsymbol{\hat{\theta}}$. We can keep the above procedure to approach the target position. However, the above procedure does not guarantee to converge. If the initial position is far away from the actual position, it may diverge.</p>
+<h1 id="sec-2">2 SMACOF</h1>
+<p>SMACOF (Scaling by MAjorizing a COmplicated Function) uses a smart way to approach the (local) minimal of the non-quadratic cost function with a quadratic surrogate function.</p>
+<p>Imaging we have a cost function $f(\theta)$ to minimize (Fig. <a href="#img-cost_fun">1</a>), which is not quadratic.</p>
+<figure id="img-cost_fun" class="figure">
+<img src="image/smacof0.svg" alt="image/smacof0.svg">
+<figcaption class="caption"><span class="tag">Fig.1.</span> Cost function $f(\theta)$</figcaption>
+</figure>
+<p>As show in Fig. <a href="#img-initial_guess">2</a>, the first step is to get the initial guess $\theta_0$.</p>
+<figure id="img-initial_guess" class="figure">
+<img src="image/smacof1.svg" alt="image/smacof1.svg">
+<figcaption class="caption"><span class="tag">Fig.2.</span> Initial guess $\theta_0$</figcaption>
+</figure>
+<p>From the initial guess, we construct the quadratic surrogate function (Fig. <a href="#img-surrogate">3</a>) with initial guess $\theta_0$, such that</p>
+<ul>
+<li>$g(\theta, \theta_0) \geq f(\theta) $, $\forall \theta$,</li>
+<li>$g(\theta_0, \theta_0) = f(\theta_0)$.</li>
+</ul>
+<figure id="img-surrogate" class="figure">
+<img src="image/smacof2.svg" alt="image/smacof2.svg">
+<figcaption class="caption"><span class="tag">Fig.3.</span> Quadratic surrogate function $g(\theta, \theta_0)$</figcaption>
+</figure>
+<p>Since $g(\theta, \theta_0)$ is quadratic, its minimum can be calculated by setting its derivative to zero (i.e., $\theta_1$).</p>
+<figure id="img-surrogate_min" class="figure">
+<img src="image/smacof3.svg" alt="image/smacof3.svg">
+<figcaption class="caption"><span class="tag">Fig.4.</span> Calculate the minimum of quadratic surrogate function $g(\theta, \theta_0)$</figcaption>
+</figure>
+<p>It is easy to see that for the original cost function $f(\theta)$, $\theta_1$ is a better estimation than $\theta_0$; that is</p>
+<div class="mathjax">
+$$
+\begin{align}
+f(\theta_1) &\leq g(\theta_1, \theta_0) \nonumber \\
+&\leq g(\theta_0, \theta_0) \nonumber \\
+&= f(\theta_0).
+\end{align}
+$$
+</div>
+<p>Now, we are back to the similar situation as the initial condition shown in Fig. <a href="#img-initial_guess">2</a>. And fortunately, we are close to the (local) optimal solution now.</p>
+<figure id="img-iteration1" class="figure">
+<img src="image/smacof4.svg" alt="image/smacof4.svg">
+<figcaption class="caption"><span class="tag">Fig.5.</span> Cost function $f(\theta)$, and the new guess $\theta_1$</figcaption>
+</figure>
+<p>Same as Fig. <a href="#img-surrogate">3</a>, we construct a surrogate function with $\theta_1$, that is $g(\theta, \theta_1)$, such that</p>
+<ul>
+<li>$g(\theta, \theta_1) \geq f(\theta)$, $\forall \theta$</li>
+<li>$g(\theta_1, \theta_1) = f(\theta_1)$</li>
+</ul>
+<figure id="img-surrogate1" class="figure">
+<img src="image/smacof5.svg" alt="image/smacof5.svg">
+<figcaption class="caption"><span class="tag">Fig.6.</span> Quadratic surrogate function $g(\theta, \theta_1)$</figcaption>
+</figure>
+<p>Similarly, set the derivative of $g(\theta, \theta_1)$ to zero to find its minimum $\theta_2$. It is easy to see that $f(\theta_2) \leq f(\theta_1)$.</p>
+<figure id="img-surrogate1_min" class="figure">
+<img src="image/smacof6.svg" alt="image/smacof6.svg">
+<figcaption class="caption"><span class="tag">Fig.7.</span> Calculate the minimum of quadratic surrogate function $g(\theta, \theta_1)$</figcaption>
+</figure>
+<p>Thus an iterative algorithm can be applied to approach the (local) minimal of the cost function:</p>
+<div class="syntax"><pre><span></span><span class="n">initial</span> <span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">converged</span><span class="p">:</span>
+    <span class="n">theta</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">argmin</span><span class="p">(</span><span class="n">g</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+<p>And after each iteration, the cost function will guarantee to decrease (not increase).</p>
+<p>The only problem is to find a quadratic surrogate function $g(\theta, \theta_0)$ for arbitrary $\theta_0$, such that</p>
+<ol>
+<li>$g(\theta, \theta_0) \geq f(\theta)$, $\forall \theta$,</li>
+<li>$g(\theta_0, \theta_0) = f(\theta_0)$.</li>
+</ol>
+<p>For example, for the above position estimation problem, the cost function is</p>
+<div class="mathjax">
+$$
+\begin{align}
+  f(\boldsymbol{\theta})=\sum_{m=1}^M{\left(r_m-d_m(\boldsymbol{\theta})\right)^2},
+\end{align}
+$$
+</div>
+<p>where $d_m(\boldsymbol{\theta})=\left\Vert\boldsymbol{\theta}-v_m\right\Vert$.</p>
+<p>Let's look at one item in the cost function</p>
+<div class="mathjax">
+$$
+\begin{align}
+  f_m(\boldsymbol{\theta}) &= \left(r_m-d_m(\boldsymbol{\theta})\right)^2 \nonumber \\
+    &= r_m^2 + d_m(\boldsymbol{\theta})^2 - 2r_m d_m(\boldsymbol{\theta}),
+\end{align}
+$$
+</div>
+<p>$r_m^2$ is a constant since it is independent of $\boldsymbol{\theta{}}$, 
+$d_m(\boldsymbol{\theta})$ is a quadratic function of $\boldsymbol{\theta{}}$, 
+and $2r_md_m(\boldsymbol{\theta})$ is a function of $\boldsymbol{\theta{}}$, but not quadratic.</p>
+<p>So if some proper quadratic surrogate functions can be found for $2r_md_m(\boldsymbol{\theta})$, then the problem can be solved via iteration as shown above. 
+Since $r_m$ is the range measurement (observation) between the target and the $m$th anchor, $r_m\geq0$. 
+According to <a href="https://en.wikipedia.org/wiki/Cauchy%E2%80%93Schwarz_inequality">Cauchy-Schwarz inequality</a></p>
+<div class="mathjax">
+$$
+\begin{align}
+  \left\Vert\boldsymbol{\theta}-v_m \right\Vert \geq \frac{\langle \boldsymbol{\theta}-v_m, \boldsymbol{\theta}_0-v_m \rangle}{\left\Vert\boldsymbol{\theta}_0-v_m\right\Vert},
+\end{align}
+$$
+</div>
+<p>where $\langle a, b\rangle$ denotes the inner product of vectors $a$ and $b$ (assume $\boldsymbol{\theta}$ will not overlap with $v_m$). 
+Therefore,</p>
+<div class="mathjax">
+$$
+\begin{align}
+ r_md_m(\boldsymbol{\theta})&\geq r_m\frac{\langle \boldsymbol{\theta}-v_m, \boldsymbol{\theta_0}-v_m \rangle}{\left\Vert\boldsymbol{\theta}_0-v_m\right\Vert},
+\end{align}
+$$
+</div>
+<p>Now, we have everything to define the surrogate function</p>
+<div class="mathjax">
+$$
+\begin{align}
+  g_m(\boldsymbol{\theta}, \boldsymbol{\theta}_0) = r_m^2 + d_m(\boldsymbol{\theta})^2 - 2r_m\frac{\langle \boldsymbol{\theta}-v_m, \boldsymbol{\theta}_0-v_m \rangle}{\left\Vert\boldsymbol{\theta}_0-v_m\right\Vert}.
+\end{align}
+$$
+</div>
+<p>It is easy to verify that</p>
+<div class="mathjax">
+$$
+\begin{align}
+    f_m(\boldsymbol{\theta})&\leq g_m(\boldsymbol{\theta}, \boldsymbol{\theta}_0)\\
+    f_m(\boldsymbol{\theta}_0) &= g_m(\boldsymbol{\theta}_0, \boldsymbol{\theta}_0).
+\end{align}
+$$
+</div>
+<p>Similarly, we can construct the quadratic function for each anchor ($m=1\dots M$). Then the overall surrogate function is</p>
+<div class="mathjax">
+$$
+\begin{align}
+g(\boldsymbol{\theta}, \boldsymbol{\theta}_0) = \sum_{m=1}^M{g_m(\boldsymbol{\theta}, \boldsymbol{\theta}_0)}.
+\end{align}
+$$
+</div>
+<p>Obviously, function $g(\boldsymbol{\theta}, \boldsymbol{\theta}_0)$ is a quadratic function. Its minimum can be reached by setting its first derivative to zero.</p>
+</div>
+</div>
+
+<div class="footer">
+<div class="footer-text"> Last updated 2020-01-05 15:52:17 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+<script src="js/menu.js"></script>
+</body>
+</html>
