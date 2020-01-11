@@ -1,0 +1,349 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+<script src="js/bsmdoc.js"></script>
+<link rel="stylesheet" href="css/menu.css" type="text/css" />
+<title>Munkres Algorithm For Assignment Problem: A Tutorial</title>
+</head>
+<body class="nomathjax">
+<div id="layout" class="">
+
+<div class="menu">
+<ul>
+<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-2">2 Munkres algorithm</a> 
+<ul>
+<li><a href="#sec-2-1">2.1 Step 0</a></li>
+<li><a href="#step1">2.2 Step 1</a></li>
+<li><a href="#step2">2.3 Step 2</a></li>
+<li><a href="#step3">2.4 Step 3</a></li>
+</ul></li>
+<li><a href="#sec-3">3 Some Notes</a></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+Munkres Algorithm For Assignment Problem: A Tutorial
+</div>
+<div class="content">
+<h1 id="sec-1">1 Introduction</h1>
+<p><a href="https://pdfs.semanticscholar.org/848c/717ba51e48afef714dfef4bd6ab1cc050dab.pdf">Munkres</a> algorithm (or Hungarian algorithm) is very efficient to solve the <a href="https://en.wikipedia.org/wiki/Assignment_problem">assignment problem</a>. However, I can't find a good tutorial from the internet (most of them are vague high-level description; some show the implementation without explanation), so I try to do it by myself. Here are some applications,</p>
+<p><b>Example 1</b>, you have $n$ jobs for $n$ workers, and each worker is qualified for a subset of jobs. It can be represented by a matrix, e.g.,</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{A} = \begin{bmatrix}
+0 & 1 & 1\\
+0 & 0 & 1\\
+1 & 1 & 0
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>where each cell $\boldsymbol{a}_{i,j}$ indicates whether worker $i$ is qualified for job $j$. Each job can only be assigned to at most one worker and each worker can only accept at most one qualified job. The problem is to assign as most jobs as possible to workers.</p>
+<p><b>Example 2</b><a name="example2"><sup>&#x2693;</sup></a>, imaging you have a capacitive multitouch screen. At each frame (e.g., 120Hz), after detecting all the touches on the screen, you want to determine whether each touch detected in current frame is the same touch in previous frame (e.g., to draw a line between two if they are from same touch). To do that, you can use some metric to calculate the correlation between touches from current frame and previous frame, e.g.,</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{C} = \begin{bmatrix}
+0.8 & 0.1 & 0.5\\
+0.6 & 0.5 & 0.3\\
+0.4 & 0.5 & 0.1
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>where $c_{i,j}$ is the correlation between $i^{th}$ touch in previous frame and $j^{th}$ touch in current frame. 
+Then, the problem is to find one element from each row and each column, which maximizes the total correlation.</p>
+<p><b>Example 3</b><a name="example3"><sup>&#x2693;</sup></a>, instead of a capacitive touch screen, now you are using radar installed on an self-driving vehicle to detect vehicles in front of you. And you want to determine whether the vehicles detected in current frame is same as the vehicles from the previous frame.</p>
+<h1 id="sec-2">2 Munkres algorithm</h1>
+<p>The following tutorial is based on <a href="http://csclab.murraystate.edu/~bob.pilgrim/445/munkres.html">this</a> and <a href="https://pdfs.semanticscholar.org/848c/717ba51e48afef714dfef4bd6ab1cc050dab.pdf">this</a>. The main difference are</p>
+<ul>
+<li>Python implementation with structure closer to the algorithm in <a href="https://pdfs.semanticscholar.org/848c/717ba51e48afef714dfef4bd6ab1cc050dab.pdf">original paper</a>,</li>
+<li>More explanation based on the original paper.</li>
+</ul>
+<p>Without loss of generality, the $N\times N$ cost matrix $\boldsymbol{A}=\{a_{i,j}\geq 0\}$ is defined as</p>
+<div class="mathjax">
+$$
+\boldsymbol{A} = \begin{bmatrix}
+a_{0,0} & a_{0,1} & \cdots & a_{0, N-1}\\
+a_{1,0} & a_{1,1} & \cdots & a_{1, N-1}\\
+\vdots  & \vdots  & \ddots & \vdots\\
+a_{N-1,0} & a_{N-1,1} & \cdots & a_{N-1, N-1}
+\end{bmatrix}.
+$$
+</div>
+<p>The problem is to find $N$ distinct elements (none of them share the same row or column) to minimize the sum. It will be clear shortly for the cost matrix with negative values or to maximize the sum.</p>
+<p>As described in the paper, the main algorithm is split into four steps:</p>
+<h2 id="sec-2-1">2.1 Step 0</h2>
+<p>This is a preprocessing step:</p>
+<ol>
+<li><p>Find the minimum of each row and subtract it from all elements of that row. It is easy to see that such processing will not change the solution. That is, a solution for the cost matrix after processing is also a solution for the cost matrix before processing. For example, if we add a constant $c$ to first row</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \boldsymbol{A} + \begin{bmatrix}
+c & c & \cdots & c\\
+0 & 0 & \cdots & 0\\
+\vdots  & \vdots  & \ddots & \vdots\\
+0 & 0 & \cdots & 0
+\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>$\boldsymbol{A}^\prime$ will have same solution as $\boldsymbol{A}$, as the contribution from the 2nd item to any feasible solution is always same; that is, one element from its first row (i.e., $c$), one element from all the other rows (i.e., 0).</p>
+<p>So, we can subtract/add constant to any row and column, which will not change the solution. There is one more constraint that after the processing all elements shall always be non-negative (positive or zeros, that's why we subtract minimum from each row). Such constraint is important, since in this case, if anytime we find a feasible solution with all zero elements in cost matrix, we are done (for the cost matrix after processing, 0 is the smallest sum we can get). For a cost matrix with negative values, we can subtract the minimum values from all elements. The resulting cost matrix will only have positive values or zeros, and its solution is same as the original cost matrix.</p>
+<p>For example, for the following cost matrix</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{A} = \begin{bmatrix}
+1 & 1 & 3 \\
+2 & 4 & 6 \\
+3 & 6 & 9
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>after subtracting the minimum from each row, we have</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \begin{bmatrix}
+0 & 0 & 2 \\
+0 & 2 & 4 \\
+0 & 3 & 6
+\end{bmatrix}.
+\end{align}
+$$
+</div></li>
+<li><p>Mark the starred zeros. Starred zeros are distinct; that is, there are at most one starred zero in each row or column. Then, cover all the columns with a starred zero.</p>
+<p>For the above example, the starred zero will be</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \begin{bmatrix}
+0^\star & 0 & 2 \\
+0 & 2 & 4 \\
+0 & 3 & 6
+\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>And the covered column looks like</p>
+<figure id="img-step0_cover" class="figure">
+<img src="./image/step0_cover.svg" alt="./image/step0_cover.svg" width="120px">
+<figcaption class="caption"><span class="tag">Fig.1.</span> Initial cover</figcaption>
+</figure></li>
+</ol>
+<p>It is easy to see that for $N \times N$ cost matrix, if we can find $N$ starred zeros, we are done. Otherwise, go to <a href="#step1">Step 1</a>. 
+<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">step_zero</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; preliminaries step &quot;&quot;&quot;</span>
+    <span class="c1"># subtract minimum from each row &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="c1"># mark the starred zero in C; each row and col will have maximum 1 startted zero</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_cover</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_cover</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zeros</span><span class="o">.</span><span class="n">STAR</span><span class="o">.</span><span class="n">value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">row_cover</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">col_cover</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cover_star</span><span class="p">()</span>
+</pre></div></p>
+<h2 id="step1">2.2 Step 1</h2>
+<p>This step is to find uncovered zeros and prime it.</p>
+<ul>
+<li>If there is no more uncovered zeros, go to <a href="#step3">Step 3</a>, where we will create more zeros by subtracting/adding constant to rows and columns.</li>
+<li>Otherwise, 
+<ul>
+<li>if there is a starred zero in the same row as the current primed zero, uncover the column of the starred zero, and cover the row. It is easy to see that there is at most one primed zero in each row.</li>
+<li>otherwise, go to <a href="#step2">Step 2</a> (we find a better sequence of starred zero to cover more rows/columns, more details in <a href="#step2">Step 2</a>). The current primed zero is the only uncovered primed zero.</li>
+</ul></li>
+</ul>
+<p>For the above example (Fig. <a href="#img-step0_cover">1</a>), after this step, the first column will be uncovered, while the first row will be covered. The primed zeros will be</p>
+<figure id="img-step1_prime" class="figure">
+<img src="./image/step1_prime.svg" alt="./image/step1_prime.svg" width="120px">
+<figcaption class="caption"><span class="tag">Fig.2.</span> Primed zeros</figcaption>
+</figure>
+<p>And the primed zero in red is the uncovered primed zero.</p>
+<p><div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">step_one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; find uncovered zeros and prime it &quot;&quot;&quot;</span>
+    <span class="n">C_zeros</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">C_zeros_uncovered</span> <span class="o">=</span> <span class="n">C_zeros</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">row_cover</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+    <span class="n">C_zeros_uncovered</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">col_cover</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="c1"># find a uncovered zero</span>
+        <span class="c1"># looks like np.argmax is fast than np.nozero, np.where</span>
+        <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">C_zeros_uncovered</span><span class="p">),</span> <span class="n">C_zeros_uncovered</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">C_zeros_uncovered</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># no uncovered zeros</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Steps</span><span class="o">.</span><span class="n">STEP3</span>
+
+        <span class="c1"># prime it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zeros</span><span class="o">.</span><span class="n">PRIME</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">star_in_row</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+            <span class="c1"># star in this row,</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_star_in_row</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="c1"># cover row</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">row_cover</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="c1"># uncover the column</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">col_cover</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">C_zeros_uncovered</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">C_zeros</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">row_cover</span><span class="p">)</span>
+            <span class="n">C_zeros_uncovered</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uncovered_zero_prime</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Steps</span><span class="o">.</span><span class="n">STEP2</span>
+</pre></div></p>
+<h2 id="step2">2.3 Step 2</h2>
+<p>This is the most complicated step. It is to find a better cover from the current zeros (primed and starred zeros), which can cover one more column or row. The first step is to construct a sequence $S$ of alternating starred and primed zeros</p>
+<ol>
+<li>$z_0$: start from uncovered prime zero in <a href="#step1">Step 1</a></li>
+<li>$z_1$: find star zero in same column of $z_0$</li>
+<li>$z_2$: find prime zero in same row of $z_1$</li>
+<li>...</li>
+</ol>
+<p>It will be clear shortly why we need such sequence.</p>
+<p>First, sequence $S$ will stop <a name="primed_zero_order"><sup>&#x2693;</sup></a>. For example, if we order all primed zero by the order it gets assigned in <a href="#step1">Step 1</a>, then order($z_2$) &lt; order($z_0$) (Recall that $z_1$, $z_0$ are in same column, and uncovered, which has to be caused by $z_2$; so such operation (uncover the column of $z_1$/$z_0$) shall happen before we prime $z_0$).</p>
+<p>Second, sequence $S$ will stop at a primed zero. For example, for $z_1$, since the column of $z_1$ is not covered ($z_1$ and $z_0$ shares the same column, so this column must be uncovered.), its row must be covered by a primed zero on the same row as $z_1$ (as from the previous step, only a primed zero can uncovered a column and cover a row). Let's denote the last item (a primed zero) to be $z_{2M}$.</p>
+<p>Third, $z_0$, $z_2$, $z_4$ ..., and $z_{2M}$ are distinct (i.e., not share the same row or column). From <a href="#step1">Step 1</a>, it is easy to see that they will not share the same row, since there are at most one primed zero on each row. If $z_{2k}$ and $z_{2l}$ shares the same column ($k&lt;l$), there must be a starred zero in this column; otherwise the sequence $S$ will stop when we first encounter $z_{2k}$. Thus, $z_{2k+1}$ and $z_{2l+1}$ will be the same starred zero (Recall that at most one starred zero in each column), which means $z_{2k+2}$ and $z_{2l+2}$ are the same primed zero (at most one primed zero in one row). It conflicts with the <a href="#primed_zero_order">observation</a> that primed zeros in sequence $S$ are ordered.</p>
+<p>Thus, we can replace the starred zeros in the sequence $S$ ($z_1$, $z_3$, ..., $z_{2M-1}$) with primed zeros ($z_0$, $z_2$, $z_4$, ..., $z_{2M}$). Compared to the original starred zeros, the new starred zeros will have one more item.</p>
+<p>Note that the sequence $S$ may not contain all the original starred zeros. However, the new starred zeros are still distinct. For example, suppose $z^\star$ is not in the sequence $S$, then $z^\star$ will not share the same column as ($z_1$, $z_3$, ..., $z_{2M-1}$). Thus, it will not share the same column as ($z_0$, $z_2$, ..., $z_{2M-2}$) (as $z_1$ and $z_0$ have the same column, and so on). $z_{2M}$ will also not share same column as $z^\star$, as there is no starred zeros in column of $z_{2M}$.</p>
+<p>Similarly, $z^\star$ will not share the same row as ($z_1$, $z_3$, ..., $z_{2M-1}$). Thus, it will not share the same row as ($z_2$, $z_4$, ..., $z_{2M}$) (as $z_1$ and $z_2$ have the same row, and so on). $z_{0}$ is the uncovered primed zero from <a href="#step1">Step 1</a>; and there is no starred zero in that row.</p>
+<p>For the above example (Fig. <a href="#img-step1_prime">2</a>), the sequence $s$ will be</p>
+<ul>
+<li>$z_0 \sim a_{1, 0}$</li>
+<li>$z_1 \sim a_{0, 0}$</li>
+<li>$z_2 \sim a_{0, 1}$</li>
+</ul>
+<p>Then unstar the starred zeros in the sequence $S$ (i.e., $z_1 \sim a_{0, 0}$), and star the primed zeros in $S$ (i.e., $z_0 \sim a_{1, 0}$, $z_2 \sim a_{0, 1}$).</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \begin{bmatrix}
+0 & 0^\star & 2 \\
+0^\star & 2 & 4 \\
+0 & 3 & 6
+\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Now, we have 2 distinct zeros, which is better than we have before. 
+Clear the current covered rows/columns and cover all the columns with starred zeros</p>
+<figure class="figure">
+<img src="./image/step2_cover.svg" alt="./image/step2_cover.svg" width="120px">
+</figure>
+<p><div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">step_two</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Find a better cover from current zeros &#39;&#39;&#39;</span>
+    <span class="c1"># construct a sequence from the uncovered primed zero from step 1</span>
+    <span class="n">path_count</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nrow</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">ncol</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">path</span><span class="p">[</span><span class="n">path_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncovered_zero_prime</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_star_in_col</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">path_count</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">break</span>
+
+        <span class="n">path_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">path</span><span class="p">[</span><span class="n">path_count</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="n">path_count</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+
+        <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_prime_in_row</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">path_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">path_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">path</span><span class="p">[</span><span class="n">path_count</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="n">path_count</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">c</span><span class="p">]</span>
+
+    <span class="c1"># unstar the starred zeros, and star the primed zeros in the sequence</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">path_count</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zeros</span><span class="o">.</span><span class="n">STAR</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zeros</span><span class="o">.</span><span class="n">NORMAL</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zeros</span><span class="o">.</span><span class="n">STAR</span><span class="o">.</span><span class="n">value</span>
+    <span class="c1"># cover the starred columns</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cover_star</span><span class="p">()</span>
+</pre></div></p>
+<h2 id="step3">2.4 Step 3</h2>
+<p>This step is to generate more distinct zeros in the cost matrix by adding/subtracting constants to row and column, and at same time make sure all elements are not negative. Then return to <a href="#step1">Step 1</a>.</p>
+<p>The first step is to find the minimal value from all uncovered elements, i.e., $v_m$. Then subtract $v_m$ from each uncovered column and add $v_m$ to each covered row. As discussed early, such processing will not change the solution, and</p>
+<ul>
+<li>If $a_{i,j}$ is not covered, then after processing $a^\prime_{i, j} = a_{i, j} - v_m$ as column $j$ is not covered.</li>
+<li>If $a_{i,j}$ is covered by a column only. The above processing will not impact such elements, so no change.</li>
+<li>If $a_{i,j}$ is covered by a row only (its column is not covered), it will first be decreased by $v_m$ (its column is not covered), then increased by $v_m$ (its row is covered); so no change.</li>
+<li>If $a_{i,j}$ is covered by a row and a column, then after processing $a^\prime_{i, j} = a_{i, j} + v_m$ as row $i$ is covered.</li>
+</ul>
+<p>So it is easy to see that after the processing, all elements in cost matrix are still non-negative. And the current starred zeros and primed zeros will not be impacted by the above processing (stared and primed zero can not be covered by both its row and column). The good thing is that the processing will potentially create more distinct zeros (the smallest uncovered element in the cost matrix will be zero after the processing).</p>
+<p>Let's check the impact of the above processing to sum of the cost matrix. Assuming there are $n_c$ covered columns and $n_r$ covered rows, the difference between the sums of the cost matrix after and before the processing is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\Delta_{sum} &= -N*(N-n_c)*v_m + N*n_r*v_m\nonumber\\
+&= -N(N-n_c - n_r)*v_m.
+\end{align}
+$$
+</div>
+<p>Since $N&gt;n_c + n_r$ (otherwise, the solution is found), at each <a href="#step3">Step 3</a>, the sum of the cost matrix will decrease by $N(N-n_c - n_r)*v_m$, which means that the algorithm will stop eventually.</p>
+<p>For the above example, the minimum of the uncovered elements is 2.</p>
+<figure class="figure">
+<img src="./image/step3_min.svg" alt="./image/step3_min.svg" width="120px">
+</figure>
+<p>Subtract $2$ to each uncovered columns, and return to <a href="#step1">Step 1</a>.</p>
+<div class="mathjax">
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \begin{bmatrix}
+0 & 0^\star & 0 \\
+0^\star & 2 & 2 \\
+0 & 3 & 4
+\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p><div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">step_three</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    subtract smallest value from uncovered cells to each uncovered cols, and</span>
+<span class="sd">    add it to each covered rows. so the final result is always positive</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># find the smallest value from uncovered cells</span>
+    <span class="n">minval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_smallest</span><span class="p">()</span>
+    <span class="c1"># add it to covered rows</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_cover</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">*</span><span class="n">minval</span>
+    <span class="c1"># subtract it from uncovered columns</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">-=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">col_cover</span><span class="p">)</span><span class="o">*</span><span class="n">minval</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Steps</span><span class="o">.</span><span class="n">STEP1</span>
+</pre></div></p>
+<h1 id="sec-3">3 Some Notes</h1>
+<p>The full code can be found <a href="./downloads/munkres.py">here</a>.</p>
+<p>The above algorithm is for the solution to get the minimum sum. For the problem for maximum sum (e.g., for <a href="#example2">Example 2</a>, we want to maximize the correlation sum.), we can easily convert it to a equivalent minimum sum problem by</p>
+<ul>
+<li>multiple -1 to all elements,</li>
+<li>subtract the resulting minimum value from all elements.</li>
+</ul>
+<p>Sometime, the original cost matrix may not be square, e.g., in <a href="#example3">Example 3</a>, the vehicle detected in previous frame may disappear in current frame (e.g., passed by us), or new car may be detected). In this case, we can append all zero rows/columns to make the cost matrix square. The resulting cost matrix will have the same solution as the original cost matrix, as for any feasible solution, the contribution of all zero rows/columns are same (i.e., 0).</p>
+</div>
+</div>
+
+<div class="footer">
+<div class="footer-text"> Last updated 2020-01-10 20:48:47 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+<script src="js/menu.js"></script>
+</body>
+</html>

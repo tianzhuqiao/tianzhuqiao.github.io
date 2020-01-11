@@ -1,0 +1,16 @@
+\config{title|Munkres Algorithm For Assignment Problem: A Tutorial}
+\config{heading_numbering|True}
+\config{image_numbering|True}
+\config{table_numbering|True}
+\config{bsmdoc_conf|bsmdoc.cfg}
+{!div|menu||
+#makecontent
+!}
+{!div|main||
+{!div|toptitle||
+Munkres Algorithm For Assignment Problem: A Tutorial
+!}
+{!div|content||
+#include munkres_content.bsmdoc
+!}
+!}

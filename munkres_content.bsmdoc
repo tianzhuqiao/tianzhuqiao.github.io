@@ -1,0 +1,223 @@
+= Introduction
+[https://pdfs.semanticscholar.org/848c/717ba51e48afef714dfef4bd6ab1cc050dab.pdf|Munkres] algorithm (or Hungarian algorithm) is very efficient to solve the [https://en.wikipedia.org/wiki/Assignment_problem|assignment problem]. However, I can't find a good tutorial from the internet (most of them are vague high-level description; some show the implementation without explanation), so I try to do it by myself. Here are some applications,
+
+\tag{b|Example 1}, you have $n$ jobs for $n$ workers, and each worker is qualified for a subset of jobs. It can be represented by a matrix, e.g.,
+$$
+\begin{align}
+\boldsymbol{A} = \begin{bmatrix}
+0 & 1 & 1\\
+0 & 0 & 1\\
+1 & 1 & 0
+\end{bmatrix},
+\end{align}
+$$
+where each cell $\boldsymbol{a}_{i,j}$ indicates whether worker $i$ is qualified for job $j$. Each job can only be assigned to at most one worker and each worker can only accept at most one qualified job. The problem is to assign as most jobs as possible to workers.
+
+\tag{b|Example 2}\anchor{example2}, imaging you have a capacitive multitouch screen. At each frame (e.g., 120Hz), after detecting all the touches on the screen, you want to determine whether each touch detected in current frame is the same touch in previous frame (e.g., to draw a line between two if they are from same touch). To do that, you can use some metric to calculate the correlation between touches from current frame and previous frame, e.g.,
+$$
+\begin{align}
+\boldsymbol{C} = \begin{bmatrix}
+0.8 & 0.1 & 0.5\\
+0.6 & 0.5 & 0.3\\
+0.4 & 0.5 & 0.1
+\end{bmatrix},
+\end{align}
+$$
+where $c_{i,j}$ is the correlation between $i^{th}$ touch in previous frame and $j^{th}$ touch in current frame.
+Then, the problem is to find one element from each row and each column, which maximizes the total correlation.
+
+\tag{b|Example 3}\anchor{example3}, instead of a capacitive touch screen, now you are using radar installed on an self-driving vehicle to detect vehicles in front of you. And you want to determine whether the vehicles detected in current frame is same as the vehicles from the previous frame.
+
+= Munkres algorithm
+{!exec|firstRunOnly||{%
+import inspect
+import os, sys
+sys.path.append(os.path.join(os.path.abspath('.'), 'downloads'))
+import munkres
+def bsmdoc_pycode(fun, *args, **kwargs):
+	return bsmdoc_highlight(inspect.getsource(eval("munkres.Munkres.%s"%(fun))), 'python', 'autogobble')
+%}!}
+
+The following tutorial is based on [http://csclab.murraystate.edu/~bob.pilgrim/445/munkres.html|this ] and [https://pdfs.semanticscholar.org/848c/717ba51e48afef714dfef4bd6ab1cc050dab.pdf|this]. The main difference are
+- Python implementation with structure closer to the algorithm in [https://pdfs.semanticscholar.org/848c/717ba51e48afef714dfef4bd6ab1cc050dab.pdf|original paper],
+- More explanation based on the original paper.
+
+Without loss of generality, the $N\times N$ cost matrix $\boldsymbol{A}=\{a_{i,j}\geq 0\}$ is defined as
+$$
+\boldsymbol{A} = \begin{bmatrix}
+a_{0,0} & a_{0,1} & \cdots & a_{0, N-1}\\
+a_{1,0} & a_{1,1} & \cdots & a_{1, N-1}\\
+\vdots  & \vdots  & \ddots & \vdots\\
+a_{N-1,0} & a_{N-1,1} & \cdots & a_{N-1, N-1}
+\end{bmatrix}.
+$$
+The problem is to find $N$ distinct elements (none of them share the same row or column) to minimize the sum. It will be clear shortly for the cost matrix with negative values or to maximize the sum.
+
+As described in the paper, the main algorithm is split into four steps:
+
+== Step 0
+This is a preprocessing step:
+* {Find the minimum of each row and subtract it from all elements of that row. It is easy to see that such processing will not change the solution. That is, a solution for the cost matrix after processing is also a solution for the cost matrix before processing. For example, if we add a constant $c$ to first row
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \boldsymbol{A} + \begin{bmatrix}
+c & c & \cdots & c\\
+0 & 0 & \cdots & 0\\
+\vdots  & \vdots  & \ddots & \vdots\\
+0 & 0 & \cdots & 0
+\end{bmatrix}.
+\end{align}
+$$
+$\boldsymbol{A}^\prime$ will have same solution as $\boldsymbol{A}$, as the contribution from the 2nd item to any feasible solution is always same; that is, one element from its first row (i.e., $c$), one element from all the other rows (i.e., 0).
+
+So, we can subtract/add constant to any row and column, which will not change the solution. There is one more constraint that after the processing all elements shall always be non-negative (positive or zeros, that's why we subtract minimum from each row). Such constraint is important, since in this case, if anytime we find a feasible solution with all zero elements in cost matrix, we are done (for the cost matrix after processing, 0 is the smallest sum we can get). For a cost matrix with negative values, we can subtract the minimum values from all elements. The resulting cost matrix will only have positive values or zeros, and its solution is same as the original cost matrix.
+
+For example, for the following cost matrix
+$$
+\begin{align}
+\boldsymbol{A} = \begin{bmatrix}
+1 & 1 & 3 \\
+2 & 4 & 6 \\
+3 & 6 & 9
+\end{bmatrix},
+\end{align}
+$$
+after subtracting the minimum from each row, we have
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \begin{bmatrix}
+0 & 0 & 2 \\
+0 & 2 & 4 \\
+0 & 3 & 6
+\end{bmatrix}.
+\end{align}
+$$
+}
+* {Mark the starred zeros. Starred zeros are distinct; that is, there are at most one starred zero in each row or column. Then, cover all the columns with a starred zero.
+
+For the above example, the starred zero will be
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \begin{bmatrix}
+0^\star & 0 & 2 \\
+0 & 2 & 4 \\
+0 & 3 & 6
+\end{bmatrix}.
+\end{align}
+$$
+And the covered column looks like
+{!image|width="120px"||
+\caption{Initial cover}
+\label{img-step0_cover}
+./image/step0_cover.svg
+!}
+}
+It is easy to see that for $N \times N$ cost matrix, if we can find $N$ starred zeros, we are done. Otherwise, go to [#step1|Step 1].
+\pycode{step_zero}
+
+== Step 1 \label{step1}
+This step is to find uncovered zeros and prime it.
+-If there is no more uncovered zeros, go to [#step3|Step 3], where we will create more zeros by subtracting/adding constant to rows and columns.
+- Otherwise,
+-- if there is a starred zero in the same row as the current primed zero, uncover the column of the starred zero, and cover the row. It is easy to see that there is at most one primed zero in each row.
+-- otherwise, go to [#step2|Step 2] (we find a better sequence of starred zero to cover more rows/columns, more details in [#step2|Step 2]). The current primed zero is the only uncovered primed zero.
+
+For the above example (Fig. \ref{img-step0_cover}), after this step, the first column will be uncovered, while the first row will be covered. The primed zeros will be
+{!image|width="120px"||
+\caption{Primed zeros}
+\label{img-step1_prime}
+./image/step1_prime.svg
+!}
+And the primed zero in red is the uncovered primed zero.
+
+\pycode{step_one}
+
+== Step 2 \label{step2}
+This is the most complicated step. It is to find a better cover from the current zeros (primed and starred zeros), which can cover one more column or row. The first step is to construct a sequence $S$ of alternating starred and primed zeros
+    * $z_0$: start from uncovered prime zero in [#step1|Step 1]
+    * $z_1$: find star zero in same column of $z_0$
+    * $z_2$: find prime zero in same row of $z_1$
+    * ...
+It will be clear shortly why we need such sequence.
+
+First, sequence $S$ will stop \anchor{primed_zero_order}. For example, if we order all primed zero by the order it gets assigned in [#step1|Step 1], then order($z_2$) < order($z_0$) (Recall that $z_1$, $z_0$ are in same column, and uncovered, which has to be caused by $z_2$; so such operation (uncover the column of $z_1$/$z_0$) shall happen before we prime $z_0$).
+
+Second, sequence $S$ will stop at a primed zero. For example, for $z_1$, since the column of $z_1$ is not covered ($z_1$ and $z_0$ shares the same column, so this column must be uncovered.), its row must be covered by a primed zero on the same row as $z_1$ (as from the previous step, only a primed zero can uncovered a column and cover a row). Let's denote the last item (a primed zero) to be $z_{2M}$.
+
+Third, $z_0$, $z_2$, $z_4$ ..., and $z_{2M}$ are distinct (i.e., not share the same row or column). From [#step1|Step 1], it is easy to see that they will not share the same row, since there are at most one primed zero on each row. If $z_{2k}$ and $z_{2l}$ shares the same column ($k<l$), there must be a starred zero in this column; otherwise the sequence $S$ will stop when we first encounter $z_{2k}$. Thus, $z_{2k+1}$ and $z_{2l+1}$ will be the same starred zero (Recall that at most one starred zero in each column), which means $z_{2k+2}$ and $z_{2l+2}$ are the same primed zero (at most one primed zero in one row). It conflicts with the [#primed_zero_order|observation] that primed zeros in sequence $S$ are ordered.
+
+Thus, we can replace the starred zeros in the sequence $S$ ($z_1$, $z_3$, ..., $z_{2M-1}$) with primed zeros ($z_0$, $z_2$, $z_4$, ..., $z_{2M}$). Compared to the original starred zeros, the new starred zeros will have one more item.
+
+Note that the sequence $S$ may not contain all the original starred zeros. However, the new starred zeros are still distinct. For example, suppose $z^\star$ is not in the sequence $S$, then $z^\star$ will not share the same column as ($z_1$, $z_3$, ..., $z_{2M-1}$). Thus, it will not share the same column as ($z_0$, $z_2$, ..., $z_{2M-2}$) (as $z_1$ and $z_0$ have the same column, and so on). $z_{2M}$ will also not share same column as $z^\star$, as there is no starred zeros in column of $z_{2M}$.
+
+Similarly,  $z^\star$ will not share the same row as ($z_1$, $z_3$, ..., $z_{2M-1}$). Thus, it will not share the same row as ($z_2$, $z_4$, ..., $z_{2M}$) (as $z_1$ and $z_2$ have the same row, and so on). $z_{0}$ is the uncovered primed zero from [#step1|Step 1]; and there is no starred zero in that row.
+
+For the above example (Fig. \ref{img-step1_prime}), the sequence $s$ will be
+- $z_0 \sim a_{1, 0}$
+- $z_1 \sim a_{0, 0}$
+- $z_2 \sim a_{0, 1}$
+Then unstar the starred zeros in the sequence $S$ (i.e., $z_1 \sim a_{0, 0}$), and star the primed zeros in $S$ (i.e., $z_0 \sim a_{1, 0}$, $z_2 \sim a_{0, 1}$).
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \begin{bmatrix}
+0 & 0^\star & 2 \\
+0^\star & 2 & 4 \\
+0 & 3 & 6
+\end{bmatrix}.
+\end{align}
+$$
+Now, we have 2 distinct zeros, which is better than we have before.
+Clear the current covered rows/columns and cover all the columns with starred zeros
+{!image|width="120px"||
+./image/step2_cover.svg
+!}
+\pycode{step_two}
+
+== Step 3 \label{step3}
+This step is to generate more distinct zeros in the cost matrix by adding/subtracting constants to row and column, and at same time make sure all elements are not negative. Then return to [#step1|Step 1].
+
+The first step is to find the minimal value from all uncovered elements, i.e., $v_m$. Then subtract $v_m$ from each uncovered column and add $v_m$ to each covered row. As discussed early, such processing will not change the solution, and
+- If $a_{i,j}$ is not covered, then after processing $a^\prime_{i, j} = a_{i, j} - v_m$ as column $j$ is not covered.
+- If $a_{i,j}$ is covered by a column only. The above processing will not impact such elements, so no change.
+- If $a_{i,j}$ is covered by a row only (its column is not covered), it will first be decreased by $v_m$ (its column is not covered), then increased by $v_m$ (its row is covered); so no change.
+- If $a_{i,j}$ is covered by a row and a column, then after processing $a^\prime_{i, j} = a_{i, j} + v_m$ as row $i$ is covered.
+
+So it is easy to see that after the processing, all elements in cost matrix are still non-negative. And the current starred zeros and primed zeros will not be impacted by the above processing (stared and primed zero can not be covered by both its row and column). The good thing is that the processing will potentially create more distinct zeros (the smallest uncovered element in the cost matrix will be zero after the processing).
+
+Let's check the impact of the above processing to sum of the cost matrix. Assuming there are $n_c$ covered columns and $n_r$ covered rows, the difference between the sums of the cost matrix after and before the processing is
+$$
+\begin{align}
+\Delta_{sum} &= -N*(N-n_c)*v_m + N*n_r*v_m\nonumber\\
+&= -N(N-n_c - n_r)*v_m.
+\end{align}
+$$
+
+Since $N>n_c + n_r$ (otherwise, the solution is found), at each [#step3|Step 3], the sum of the cost matrix will decrease by $N(N-n_c - n_r)*v_m$, which means that the algorithm will stop eventually.
+
+For the above example, the minimum of the uncovered elements is 2.
+{!image|width="120px"||
+./image/step3_min.svg
+!}
+
+Subtract $2$ to each uncovered columns, and return to [#step1|Step 1].
+$$
+\begin{align}
+\boldsymbol{A}^\prime = \begin{bmatrix}
+0 & 0^\star & 0 \\
+0^\star & 2 & 2 \\
+0 & 3 & 4
+\end{bmatrix}.
+\end{align}
+$$
+
+\pycode{step_three}
+
+= Some Notes
+The full code can be found [./downloads/munkres.py|here].
+
+The above algorithm is for the solution to get the minimum sum. For the problem for maximum sum (e.g., for [#example2| Example 2], we want to maximize the correlation sum.), we can easily convert it to a equivalent minimum sum problem by
+- multiple -1 to all elements,
+- subtract the resulting minimum value from all elements.
+
+Sometime, the original cost matrix may not be square, e.g., in [#example3|Example 3], the vehicle detected in previous frame may disappear in current frame (e.g., passed by us), or new car may be detected). In this case, we can append all zero rows/columns to make the cost matrix square. The resulting cost matrix will have the same solution as the original cost matrix, as for any feasible solution, the contribution of all zero rows/columns are same (i.e., 0).
+

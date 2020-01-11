@@ -48,43 +48,31 @@ def bsmdoc_include(data, **kwargs):
 
 {!div|pure-g||
 {!div|sidebar pure-u-1 pure-u-lg-1-6||div|header||
-= 飞意林
-tq@feiyilin.com
+[mailto:tq@feiyilin.com|\tag{i|fa fa-envelope fa-lg|}]
 !}
+
 {!div|content pure-u-1 pre-u-lg-5-6||
-== [http://bsmedit.feiyilin.com|bsmedit -- C/C++/SystemC simulation controller]
+== [munkres.html|Munkres Algorithm For Assignment Problem: A Tutorial]
 {!div|pure-g||
 {!div|image-post pure-u-1|pure-u-lg-1-3||
-[http://bsmedit.feiyilin.com|\image{./image/bsmedit.png}]
+[munkres.html|\image{width=260px|./image/step1_prime.svg}]
 !}
-{!div|pure-u-1 pure-u-lg-2-3||
+{!div|text-post pure-u-1 pure-u-lg-2-3||
 =======
-#include ^(\\s)*=+|16|../bsmedit/docs/index_content.bsmdoc
-[http://bsmedit.feiyilin.com|More...]
+#include ^(\\s)*=+|3|munkres_content.bsmdoc
+[munkres.html|More...]
 !}
 !}
 
-== [http://bsmdoc.feiyilin.com|bsmdoc -- another technical html doc generator]
+== [smacof.html|SMACOF: A tutorial ]
 {!div|pure-g||
 {!div|image-post pure-u-1|pure-u-lg-1-3||
-[http://bsmdoc.feiyilin.com|\image{./image/bsmdoc2.png}]
+[smacof.html|\image{./image/smacof3.svg}]
 !}
-{!div|pure-u-1 pure-u-lg-2-3||
+{!div|text-post pure-u-1 pure-u-lg-2-3||
 =======
-#include ^(\\s)*=+|7|../bsmdoc/docs/index_content.bsmdoc
-[http://bsmdoc.feiyilin.com|More...]
-!}
-!}
-
-== [aec.html|Acoustic Echo Cancellation Overview]
-{!div|pure-g||
-{!div|image-post pure-u-1|pure-u-lg-1-3||
-[aec.html|\image{./image/aec_dtd.svg}]
-!}
-{!div|pure-u-1 pure-u-lg-2-3||
-=======
-#include ^(\\s)*=+|4|aec_content.bsmdoc
-[aec.html|More...]
+#include ^(\\s)*=+|7|smacof_content.bsmdoc
+[smacof.html|More...]
 !}
 !}
 
@@ -93,7 +81,7 @@ tq@feiyilin.com
 {!div|image-post pure-u-1|pure-u-lg-1-3||
 [walk.html|\image{./image/walk.svg}]
 !}
-{!div|pure-u-1 pure-u-lg-2-3||
+{!div|text-post pure-u-1 pure-u-lg-2-3||
 =======
 {!div|quote|style="left: 0; transform: none;"||
 {!div|quote_content||
@@ -106,17 +94,42 @@ Ronald H. Coase, Essays on Economics and Economists
 !}
 !}
 
-== [smacof.html|SMACOF: A tutorial ]
+== [http://bsmedit.feiyilin.com|bsmedit -- C/C++/SystemC simulation controller]
 {!div|pure-g||
 {!div|image-post pure-u-1|pure-u-lg-1-3||
-[smacof.html|\image{./image/smacof3.svg}]
+[http://bsmedit.feiyilin.com|\image{./image/bsmedit.png}]
 !}
-{!div|pure-u-1 pure-u-lg-2-3||
+{!div|text-post pure-u-1 pure-u-lg-2-3||
 =======
-#include ^(\\s)*=+|7|smacof_content.bsmdoc
-[smacof.html|More...]
+#include ^(\\s)*=+|16|../bsmedit/docs/index_content.bsmdoc
+[http://bsmedit.feiyilin.com|More...]
 !}
 !}
+
+== [http://bsmdoc.feiyilin.com|bsmdoc -- another technical html doc generator]
+{!div|pure-g||
+{!div|image-post pure-u-1|pure-u-lg-1-3||
+[http://bsmdoc.feiyilin.com|\image{./image/bsmdoc2.png}]
+!}
+{!div|text-post pure-u-1 pure-u-lg-2-3||
+=======
+#include ^(\\s)*=+|7|../bsmdoc/docs/index_content.bsmdoc
+[http://bsmdoc.feiyilin.com|More...]
+!}
+!}
+
+== [aec.html|Acoustic Echo Cancellation Overview]
+{!div|pure-g||
+{!div|image-post pure-u-1|pure-u-lg-1-3||
+[aec.html|\image{./image/aec_dtd.svg}]
+!}
+{!div|text-post pure-u-1 pure-u-lg-2-3||
+=======
+#include ^(\\s)*=+|4|aec_content.bsmdoc
+[aec.html|More...]
+!}
+!}
+
 == Basics of Digital Signal Processing in Communications System
 - [basic_basics.html|Basics of Digital Signal Processing]
 - [tx.html|Basic transmitter blocks]
