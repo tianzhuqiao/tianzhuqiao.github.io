@@ -345,7 +345,7 @@ $$
 </div>
 <p>This algorithm is easy to implement since it only depends on the input signals $x(n)$ and $y(n)$, but not the estimated signals, e.g., $e(n)$ and $d^\prime(n)$.</p>
 <p><b>Variance Impulse Response Algorithm [<a id="cite-2-1" href="#reference-2">2</a>].</b> 
-When the algorithm (e.g., LMS algorithm) converges after some period, the estimated $\boldsymbol{w}(n)$ will converge to the actual $\boldsymbol{w}_o(n)$. And the echoes are supposed to be stable (or pseudo-stable), which means that $\boldsymbol{w}_o(n)$ will not change dramatically. So if we detect any large change of the estimated  $\boldsymbol{w}(n)$, we could say that it doesn't come from the change of the channel, but from the near end speech. 
+When the algorithm (e.g., LMS algorithm) converges after some period, the estimated $\boldsymbol{w}(n)$ will converge to the actual $\boldsymbol{w}_o(n)$. And the echoes are supposed to be stable (or pseudo-stable), which means that $\boldsymbol{w}_o(n)$ will not change dramatically. So if we detect any large change of the estimated $\boldsymbol{w}(n)$, we could say that it doesn't come from the change of the channel, but from the near end speech. 
 With that said, this algorithm calculates the variance of the maximum filter coefficient of the adaptive filter.</p>
 <div class="mathjax">
 $$
@@ -460,7 +460,7 @@ $$
 \end{align}
 $$
 </div>
-<p>When $\hat{\sigma}_x^2$ is small (e.g., $&lt;\textrm{thrd}$), the far end speech is off; otherwise, far end speech is on. In practice, if the length $N_x$ is smaller than the adaptive filter length $N$,  $\hat{\sigma}_x^2$ can be estimated as</p>
+<p>When $\hat{\sigma}_x^2$ is small (e.g., $&lt;\textrm{thrd}$), the far end speech is off; otherwise, far end speech is on. In practice, if the length $N_x$ is smaller than the adaptive filter length $N$, $\hat{\sigma}_x^2$ can be estimated as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -509,7 +509,7 @@ Here, we assume the coefficients are complex values. Real-value coefficient is j
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2019-12-12 23:24:36 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-01-12 19:13:02 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 <script src="js/menu.js"></script>

@@ -6,9 +6,9 @@ However, in practice, the speaker and the microphone is almost always not totall
 As shown in Fig. [#img-aec_problem], In this case, the \tag{b|far end} user will hear his/her own voice with some delay. Such phenomena is recognized as \tag{b|acoustic echo}. Although in this case most likely the far end and near end users may still be able to understand what the other is talking, it is very annoying and will reduce the communication quality dramatically. Thus, there is a need for acoustic echo cancellation (AEC).
 
 {!image||
+\label{img-aec_problem}
+\caption{Illustration of the echo in acoustic transmission system.}
 ./image/aec_problem.svg
-\config{label|img-aec_problem}
-\config{caption|Illustration of the echo in acoustic transmission system.}
 !}
 The goal of AEC is to remove the echo from the speaker collected by the microphone before sending to the \tag{b|far end} user. The echo depends on a lot of conditions, for example the relative position of the speaker and the microphone, the way the near end user holds the phone, the other objects around the near end users (e.g., furnitures), etc. It is difficult to determine the echo (i.e., magnitude, phase, delay) in advance. However, for each specific talk between the far end and near end users, the channel between the near end speaker and the near end microphone (e.g., $H$ in Fig. [#img-aec_problem]) is almost fixed or slowly varying, since during the talk, the environment mentioned above that will affect the channel $H$ may not change dramatically.
 
@@ -16,9 +16,9 @@ Thus, we have a simpler problem to solve: estimate the fixed (or slowly varying)
 
 Since $H$ is not deterministic, we needs to find some ways to adaptively estimate the channel from the speaker to the microphone. When channel is precisely estimated, the echo can be easily removed from the signal collected by the microphone.
 {!image||
+\label{img-aec_comp}
+\caption{Structure of the acoustic echo cancellation.}
 ./image/aec_comp.svg
-\config{label|img-aec_comp}
-\config{caption|Structure of the acoustic echo cancellation.}
 !}
 As shown in Fig. [#img-aec_comp], signal from the near end microphone ($y(n)$) contains 3 components
 - $d(n)$ is the echo (from the near end speaker to near end microphone),
@@ -251,9 +251,9 @@ For example, when the near end speech is on (e.g., $s(n)\neq 0)$), the calculate
 
 Thus, as shown in Fig. [#img-aec_dtd], a block is added to detect the near-end speech (in some literature, it is also called double-talk detector. Since if the far end speech is off, there is always no need to update the filter coefficients. Thus, the only case we need to detect is both far end and near end speech are on.). Once detected, we will stop updating the filter coefficients. In other words, the filter coefficients are kept constant (the echo is still estimated and canceled, but the filter coefficients are not updated).
 {!image||
+\label{img-aec_dtd}
+\caption{Structure of the acoustic echo cancellation with double talk detector.}
 ./image/aec_dtd.svg
-\config{label|img-aec_dtd}
-\config{caption|Structure of the acoustic echo cancellation with double talk detector.}
 !}
 The next question is how to detect that the near-end speech is on? Most algorithms are based on the heuristics.
 
