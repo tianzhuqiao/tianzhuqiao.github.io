@@ -2,15 +2,35 @@
 \config{bsmdoc_conf|index.cfg}
 
 {!exec|firstRunOnly||unescape||{%
-def bsmdoc_emph(data, args, **kwargs):
+def bsmdoc_emph(data, *args, **kwargs):
     return bsmdoc_tag(data, ['i'], **kwargs)
-def bsmdoc_post(data, args, **kwargs):
-    title = ""
-    if args:
-        title = args[0]
-    post = ( '<h2>'+title+'</h2>\n'
-             '<p>' + data + '</p>\n')
-    return post
+
+post = {}
+
+def bsmdoc_post(data, *args, **kwargs):
+    title = ''
+    if 'title' in post:
+        title = bsmdoc_heading(post.get('title', ''), '==', *args, **kwargs)
+        post.pop('title')
+    if 'image' in post:
+        img = bsmdoc_div(post['image'], 'image-post', 'pure-u-1', 'pure-u-lg-1-3')
+        text = bsmdoc_div(post['text'], 'text-post', 'pure-u-1', 'pure-u-lg-2-3')
+        data = img + text
+        post.pop('image')
+        post.pop('text')
+    return title + bsmdoc_div(data, 'pure-g')
+
+def bsmdoc_ptitle(data, *args, **kwargs):
+    post['title'] = data
+    return ""
+
+def bsmdoc_pimg(data, *args, **kwargs):
+    post['image'] = data
+    return ""
+def bsmdoc_ptext(data, *args, **kwargs):
+    post['text'] = data
+    #return bsmdoc_div(data, 'text-post', 'pure-u-1', 'pure-u-lg-2-3')
+    return ''
 
 bsmdoc_include_raw = bsmdoc_include
 def bsmdoc_include(data, **kwargs):
@@ -48,40 +68,37 @@ def bsmdoc_include(data, **kwargs):
 
 {!div|pure-g||
 {!div|sidebar pure-u-1 pure-u-lg-1-6||div|header||
+{!div|avatar||
+\image{image/avatar.png}
+!}
 [mailto:tq@feiyilin.com|\tag{i|fa fa-envelope fa-lg|}]
 !}
 
 {!div|content pure-u-1 pre-u-lg-5-6||
-== [munkres.html|Munkres Algorithm For Assignment Problem: A Tutorial]
-{!div|pure-g||
-{!div|image-post pure-u-1|pure-u-lg-1-3||
-[munkres.html|\image{width=260px|./image/step1_prime.svg}]
-!}
-{!div|text-post pure-u-1 pure-u-lg-2-3||
+{!post||
+\ptitle{[munkres.html|Munkres Algorithm For Assignment Problem: A Tutorial]}
+\pimg{[munkres.html|\image{width=260px|./image/step1_prime.svg}]}
+\ptext{
 =======
 #include ^(\\s)*=+|3|munkres_content.bsmdoc
 [munkres.html|More...]
-!}
+}
 !}
 
-== [smacof.html|SMACOF: A tutorial ]
-{!div|pure-g||
-{!div|image-post pure-u-1|pure-u-lg-1-3||
-[smacof.html|\image{./image/smacof3.svg}]
-!}
-{!div|text-post pure-u-1 pure-u-lg-2-3||
+{!post||
+\ptitle{[smacof.html|SMACOF: A tutorial ]}
+\pimg{[smacof.html|\image{./image/smacof3.svg}]}
+\ptext{
 =======
 #include ^(\\s)*=+|7|smacof_content.bsmdoc
 [smacof.html|More...]
-!}
+}
 !}
 
-== [walk.html|A tutorial on time series with neural network]
-{!div|pure-g||
-{!div|image-post pure-u-1|pure-u-lg-1-3||
-[walk.html|\image{./image/walk.svg}]
-!}
-{!div|text-post pure-u-1 pure-u-lg-2-3||
+{!post||
+\ptitle{[walk.html|A tutorial on time series with neural network]}
+\pimg{[walk.html|\image{./image/walk.svg}]}
+\ptext{
 =======
 {!div|quote|style="left: 0; transform: none;"||
 {!div|quote_content||
@@ -91,43 +108,37 @@ If you torture the data long enough, it will confess.
 Ronald H. Coase, Essays on Economics and Economists
 !}
 !}
-!}
+}
 !}
 
-== [http://bsmedit.feiyilin.com|bsmedit -- C/C++/SystemC simulation controller]
-{!div|pure-g||
-{!div|image-post pure-u-1|pure-u-lg-1-3||
-[http://bsmedit.feiyilin.com|\image{./image/bsmedit.png}]
-!}
-{!div|text-post pure-u-1 pure-u-lg-2-3||
+{!post||
+\ptitle{[http://bsmedit.feiyilin.com|bsmedit -- C/C++/SystemC simulation controller]}
+\pimg{[http://bsmedit.feiyilin.com|\image{./image/bsmedit.png}]}
+\ptext{
 =======
 #include ^(\\s)*=+|16|../bsmedit/docs/index_content.bsmdoc
 [http://bsmedit.feiyilin.com|More...]
-!}
+}
 !}
 
-== [http://bsmdoc.feiyilin.com|bsmdoc -- another technical html doc generator]
-{!div|pure-g||
-{!div|image-post pure-u-1|pure-u-lg-1-3||
-[http://bsmdoc.feiyilin.com|\image{./image/bsmdoc2.png}]
-!}
-{!div|text-post pure-u-1 pure-u-lg-2-3||
+{!post||
+\ptitle{[http://bsmdoc.feiyilin.com|bsmdoc -- another technical html doc generator]}
+\pimg{[http://bsmdoc.feiyilin.com|\image{./image/bsmdoc2.png}]}
+\ptext{
 =======
 #include ^(\\s)*=+|7|../bsmdoc/docs/index_content.bsmdoc
 [http://bsmdoc.feiyilin.com|More...]
-!}
+}
 !}
 
-== [aec.html|Acoustic Echo Cancellation Overview]
-{!div|pure-g||
-{!div|image-post pure-u-1|pure-u-lg-1-3||
-[aec.html|\image{./image/aec_dtd.svg}]
-!}
-{!div|text-post pure-u-1 pure-u-lg-2-3||
+{!post||
+\ptitle{[aec.html|Acoustic Echo Cancellation Overview]}
+\pimg{[aec.html|\image{./image/aec_dtd.svg}]}
+\ptext{
 =======
 #include ^(\\s)*=+|4|aec_content.bsmdoc
 [aec.html|More...]
-!}
+}
 !}
 
 == Basics of Digital Signal Processing in Communications System
