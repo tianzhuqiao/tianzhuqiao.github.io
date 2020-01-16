@@ -1,0 +1,16 @@
+\config{title|Synchronization}
+
+#include basic_config.bsmdoc
+
+{!div|menu||
+#makecontent
+!}
+{!div|main||
+{!div|toptitle||
+Synchronization
+!}
+{!div|content||
+#include basic_sync.bsmdoc
+!}
+!}
+

@@ -1,0 +1,129 @@
+\config{heading_numbering|True}
+\config{image_numbering|True}
+\config{table_numbering|True}
+\config{show_source|False}
+\config{js|add|https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML}
+\config{js|add|https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js}
+\config{js|add|js/bsmdoc.js}
+\config{js|add|js/menu.js}
+\config{css|add|css/bsmdoc.css}
+\config{css|add|css/menu.css}
+{!config||{%
+[html]
+begin = <!DOCTYPE html>
+    <html lang="en">
+end= </html>
+
+[header]
+begin = <head>
+    <meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+end = <title>%(TITLE)s</title>
+    </head>
+content = <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+          processClass: "mathjax",
+          ignoreClass: "tex2jax_ignore|nomathjax"
+      });
+      MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+    </script>
+[body]
+begin = <body class="nomathjax">
+    <div id="layout" class="">
+end = </div>
+    </body>
+
+[footer]
+begin = <div class="footer">
+end = </div>
+content = <div class="footer-text"> Last updated %(UPDATED)s, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a> %(SOURCE)s | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+%}!}
+
+{!exec|firstRunOnly||{%
+import os, sys
+sys.path.insert(0, os.path.join(os.path.abspath('.'), 'downloads'))
+import common
+import src
+import sync
+import inspect
+regenerate_all_figures = False
+def bsmdoc_example(data, *args, **kwargs):
+    return bsmdoc_div(bsmdoc_highlight(data, 'python'), 'bs-example')
+def bsmdoc_example_src(data, *args, **kwargs):
+    return bsmdoc_div(bsmdoc_highlight(data, 'python'), 'bs-example-src')
+def bsmdoc_codesnippet(data, *args, **kwargs):
+    return inspect.getsource(eval(data))
+def bsmdoc_testsnippet(data, *args, **kwargs):
+    data = inspect.getsource(eval(data))
+    data = data.replace('\n    ', '\n>>> ')
+    data = data[data.index('\n') + 1:]
+    if data.find('####')!=-1:
+        data = data[:data.index('####')-5]
+    return data
+def bsmdoc_checksnippet(data, *args, **kwargs):
+    data = inspect.getsource(eval(data))
+    data = data.replace('\n    ', '\n>>> ')
+    data = data[data.index('####') + 4:]
+    result = data[:data.index('\n')]
+    data = data[data.index('\n')+1:]
+    return data+result
+%}!}
+{!exec|firstRunOnly||{%
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy
+import scipy.signal
+import scipy.io
+import pprint
+import traceback
+import inspect
+from common import *
+def bsmdoc_testsnippet2(data, *args, **kwargs):
+    data = inspect.getsource(eval(data))
+    data = data.replace('\n    ', '\n')
+    data = data.split('\n')
+    result = []
+    sec = 0
+    exec_buf = []
+    data = data[1:]
+    execute = False
+    if args and len(args)>=2:
+        execute = True
+    try:
+        for _i, _d in enumerate(data):
+            if '####' in _d:
+               sec += 1
+            if execute and not ('#noexec' in _d):
+                exec_buf.append(_d)
+                if not (_i<len(data)-1 and data[_i+1].startswith('    ')):
+                    exec('\n'.join(exec_buf), globals())
+                    exec_buf = []
+            export_enable = (not args) or (sec == int(args[0]))
+            if args and sec>int(args[0]):
+                break
+            if export_enable:
+                if not ('#hide' in _d) and _d.strip():
+                    if _d.startswith('    '):
+                        result.append("... "+_d)
+                    else:
+                        result.append(">>> "+_d)
+                if '#eval' in _d:
+                    result.append(pprint.pformat(eval(_d)))
+    except:
+        print(execute)
+        bsmdoc_error_('failed', **kwargs)
+        traceback.print_exc()
+    s = "\n".join(result)
+    s = s.replace('#noexec', '')
+    s = s.replace('#noeval', '')
+    s = s.replace('#eval', '')
+    return s
+%}!}
+
+\reference{lyons|Richard G. Lyons, "Understanding Digital Signal Processing", Pearson Education; 3rd edition (November 11, 2010)}
+\reference{cordic|Andraka, Ray, "A survey of CORDIC algorithms for FPGA based computers" ([http://www.andraka.com/files/crdcsrvy.pdf|PDF]). ACM. North Kingstown, RI, USA: Andraka Consulting Group, Inc. 0-89791-978-5/98/01. Retrieved 2016-05-08}
+\reference{mm|Mueller, K. H., and M. S. Muller, "Timing Recovery in Digital Synchronous Data Receivers," IEEE Transactions on Communications, Vol. COM-24, May 1976, pp. 516-531}
+\reference{oppenheim|Alan V. Oppenheim, Ronald W. Schafer, "Discrete-Time Signal Processing," Pearson; 3rd edition (August 28, 2009)}
+

@@ -1,0 +1,806 @@
+= Synchronization
+Synchronization is critical to communications system. It helps the system to establish a shared sense of time and frequency between transmitter and receiver. In this section, we will introduce some basic ideas. As we mentioned in all the other sections, we will not plan to list all the algorithms (how could that even be possible?), instead, we will show some basic ideas and wish you will know how to start when you need to deal with a real problem. The code used in this section can be found [./downloads/sync.py|here].
+== Frequency Synchronization
+We will use a QPSK signal as an example to show the basic idea of frequency synchronization. The transmitted signal can be written as
+$$
+\begin{align}
+x(t) &= \Re(s(t) e^{j2\pi f_ct + \phi})\nonumber\\
+    &= \Re\left((s_r(t) + js_i(t)) (\cos(2\pi f_ct + \phi)+j\sin(2\pi f_ct + \phi))\right)\nonumber\\
+    &= s_r(t)\cos(2\pi f_ct + \phi) - s_i(t)\sin(2\pi f_ct + \phi),
+    \label{eqn:sync_tx}
+\end{align}
+$$
+where $f_c$ is the carrier frequency, $\phi$ is an arbitrary phase (unknown to the receiver side), $s(t) = s_r(t) + js_i(t)$ is the signal, and $\Re(.)$ is the operator to take the real part.
+At the receiver side, the signal is demodulated with carrier ($f_c^\prime$)\footnote{Here we ignore the amplitude, which will be handled by AGC (automatic gain control) or Equalizer.}
+$$
+\begin{align}
+y(t) &= x(t) \times 2e^{j(-2\pi f_c^\prime t)}\nonumber \\
+    &= 2\left(s_r(t)\cos(2\pi f_ct + \phi) - s_i(t)\sin(2\pi f_ct + \phi)\right)e^{j(-2\pi f_c^\prime t)}\nonumber\\
+    &= \left(s_r(t)(e^{j(2\pi f_ct + \phi)}+e^{j(-2\pi f_ct - \phi)}) - \frac{s_i(t)}{j}(e^{j(2\pi f_ct + \phi)}-e^{j(-2\pi f_ct - \phi)})\right)e^{j(-2\pi f_c^\prime t)}\nonumber\\
+    &= (s_r(t)+js_i(t))e^{j(2\pi(f_c - f_c^\prime)t + \phi)} + (s_r(t)-js_i(t))e^{j(-2\pi (f_c + f_c^\prime)t -\phi)}\nonumber\\
+    &= s(t)e^{j(2\pi(f_c - f_c^\prime)t + \phi)} + (s_r(t)-js_i(t))e^{j(-2\pi (f_c + f_c^\prime)t -\phi)},
+\end{align}
+$$
+where the center frequency of the second item is usually much higher than the first item. Thus, it can be easily filtered with a low pass filter, that is, after filtering, only the first item will be left
+$$
+\begin{align}
+r(t) &= s(t)e^{j(2\pi (f_c-f_c^\prime)t + \phi)}.
+\label{eqn:sync_rx}
+\end{align}
+$$
+Don't be scared of the complicated equations above. The procedure is actually straightforward, as shown in Fig. \ref{img-sync_phase_fc}.
+{!image||
+./image/sync_phase_fc.svg
+\label{img-sync_phase_fc}
+\caption{Demodulation with carrier frequency $f_c$.}
+!}
+If $f_c = f_c^\prime$, such system is called zero IF (intermediate frequency) system. It may suffer from IQ imbalance problem. In particular, since the reference signal $e^{-j(2\pi f_c^\prime)}$ is complex signal, and usually the analog circuit needs to generate the real and image part, respectively. Any imbalance (e.g., phase, frequency and amplitude) between its real and image parts will distort the signal. To overcome such problem, many application use a non-zero IF. In other words, after demodulation, the signal is centered at a non-zero IF (e.g., $f_c^\prime = f_c - f_{\textrm{if}}$). #It is necessary for the signal from the analog demodulation to be real, while the original signal is not ($s_i(t)\neq 0$). In this case
+#$$
+#\begin{align}
+#r(t) &= \Re(s(t)e^{j(2\pi f_{\textrm{if}} t + \phi)})\nonumber\\
+#    &= s_i(t)\cos(2\pi f_{\textrm{if}} t + \phi) - s_i(t)\sin(2\pi f_{\textrm{if}} t + \phi).
+#\label{eqn:sync_rx_if}
+#\end{align}
+#$$
+#Eq. (\ref{eqn:sync_rx_if}) can also be achieved by
+In this case, the demodulation can be done with the real part of the above reference signal (i.e., $\cos(2\pi f_c^\prime t)$)
+$$
+\begin{align}
+y(t) &= x(t) \times 2\cos(-2\pi f_c^\prime t)\nonumber \\
+    &= 2\left(s_r(t)\cos(2\pi f_ct + \phi) - s_i(t)\sin(2\pi f_ct + \phi)\right)\cos(-2\pi f_c^\prime t)\nonumber\\
+    &= s_r(t) \cos(2\pi (f_c - f_c^\prime)t + \phi) - s_i(t) \sin(2\pi (f_c - f_c^\prime)t - \phi) + \nonumber\\
+       &\qquad s_r(t) \cos(2\pi (f_c + f_c^\prime)t + \phi) - s_i(t) \sin(2\pi (f_c + f_c^\prime)t + \phi).
+\end{align}
+$$
+It is easy to see the last two items can be filtered by a low pass filter. Thus, after filtering, only the first two items will be left
+$$
+\begin{align}
+r(t) &= s_r(t) \cos(2\pi (f_c - f_c^\prime)t + \phi) + s_i(t) \sin(2\pi (f_c - f_c^\prime)t + \phi)\nonumber\\
+    &= s_i(t)\cos(2\pi f_{\textrm{if}} t + \phi) - s_i(t)\sin(2\pi f_{\textrm{if}} t + \phi).
+\label{eqn:sync_rx_if}
+\end{align}
+$$
+You may have noticed the similarity between Eqs. (\ref{eqn:sync_rx_if}) and (\ref{eqn:sync_tx}). What we achieve so far is to down-shift the signal from $f_c$ to $f_{\textrm{if}}$.
+{!div|info||
+Can $f_{\textrm{if}}$ be chosen arbitrarily? What's the requirement of $f_{\textrm{if}}$?
+!}
+The procedure is shown in Fig. \ref{img-sync_phase_if}.
+{!image||
+./image/sync_phase_if.svg
+\label{img-sync_phase_if}
+\caption{Demodulation with non-zero IF.}
+!}
+
+As shown in Fig. \ref{img-sync_phase_adc}, now it is time to bring the signal to discrete domain, where Eq. (\ref{eqn:sync_rx_if}) is written as
+$$
+\begin{align}
+r[n] &= s_r[n]\cos(2\pi \frac{f_{\textrm{if}}}{f_s}n  + \phi) - s_i[n]\sin(2\pi \frac{f_{\textrm{if}}}{f_s}n + \phi).
+\label{eqn:sync_rx_discrete}
+\end{align}
+$$
+where $f_s$ is the sampling frequency.
+{!image||
+./image/sync_phase_adc.svg
+\label{img-sync_phase_adc}
+\caption{IF signal in discrete domain.}
+!}
+Then, a digital mixer is applied to bring the IF signal to baseband
+$$
+\begin{align}
+r_m[n] &= r[n] \times 2e^{j(-2\pi \frac{f_{\textrm{if}}^\prime}{f_s}n)}\nonumber \\
+    &= s[n]e^{j(2\pi \frac{f_{\textrm{if}} - f_{\textrm{if}}^\prime}{f_s}n + \phi)} + (s_r[n]-js_i[n])e^{j(-2\pi \frac{f_{\textrm{if}} + f_{\textrm{if}}^\prime}{f_s}-\phi)}.
+\label{eqn:sync_rx_discrete2}
+\end{align}
+$$
+Again, the center frequency of the second item is much higher than the first item, which can be filtered out easily with an digital low pass filter (Fig. \ref{img-sync_phase_base}). Thus, the baseband signal after low pass filter can be written as
+$$
+\begin{align}
+r_b[n] &= s[n]e^{j(2\pi \frac{f_{\textrm{if}} - f_{\textrm{if}}^\prime}{f_s}n + \phi)}.
+\label{eqn:sync_rx_baseband}
+\end{align}
+$$
+{!image||
+./image/sync_phase_base.svg
+\label{img-sync_phase_base}
+\caption{Baseband signal after IF demodulation in discrete domain.}
+!}
+In ideal case, $\phi=0$ and $f_{\textrm{if}}^\prime = f_{\textrm{if}}$, where Eq. (\ref{eqn:sync_rx_baseband}) is simplified as
+$$
+\begin{align}
+r_b[n] &= s[n],
+\end{align}
+$$
+which is same as the transmitted data (Fig. \ref{img-sync_tx}).
+{!image||
+./image/sync_rx_ideal.svg
+\label{img-sync_tx}
+\caption{Ideal received signal after demodulation.}
+!}
+
+When the phase error is not zero (i.e., $\phi\neq 0$), and frequency error is zero (i.e., $f_{\textrm{if}}^\prime = f_{\textrm{if}}$), Eq. (\ref{eqn:sync_rx}) is written as
+$$
+\begin{align}
+r_b[n] &= s[n]e^{j\phi}.
+\end{align}
+$$
+The constellation is rotated by $\phi$.
+{!image||
+./image/sync_rx_phi.svg
+\label{img-sync_phi}
+\caption{Received signal after demodulation with phase error.}
+!}
+
+When the frequency offset is not zero, the received constellation will not contain 4 points any more, instead, the received signal can be located anywhere on the unit circle. In Fig. \ref{img-sync_df}, the received constellation looks like 4 clusters. It is because we only show a small amount of data; otherwise, it will be a circle, as the phase error ($2\pi\frac{f_{\textrm{if}} - f_{\textrm{if}}^\prime}{f_s}+\phi$) will increase as $n$ increases.
+{!image||
+./image/sync_rx_df.svg
+\label{img-sync_df}
+\caption{Received signal after demodulation with frequency error.}
+!}
+
+We have seen the impact of the frequency and/or phase error to the signal constellation. The next question is how to fix it? There are generally two steps
+* {\tag{b|Estimate the phase error.}
+For example, Fig. \ref{img-sync_phase_error} shows the received and the estimated signals. In some systems, the estimated signal can be the true signal ($s[n]$, e.g., preamble symbols known at the receiver side). In some systems, it may be from the estimation (e.g., maximum likelihood estimation). Then the phase error is the phase difference between the received and estimated signals
+$$
+\begin{align}
+r_b[n]s[n]^{*} &= \left\Vert s[n]\right\Vert^2e^{j\phi_e}\nonumber \\
+    &= e^{j\phi_e}
+\end{align}
+$$
+where $s[n]^{*} = s_r[n] - js_i[n]$ is the conjugate of $s[n]$. Then the phase error can be estimated as
+$$
+\begin{align}
+\angle(r_b[n]s[n]^{*}) = \phi_e.
+\end{align}
+$$
+{!image||
+./image/sync_rx_phase_error.svg
+\label{img-sync_phase_error}
+\caption{Phase error estimation.}
+!}
+
+#In practice, the phase can be estimated with the CORDIC \cite{Andraka} algorithm.
+How to calculate the angle/phase? For software simulation (e.g., matlab, scilab, scipy), there is always some function available, which may not be true for real hardware implementation.
+
+\tag{b|Look-up Table.} One straightforward way is to use a look-up table, that is, storing the phase corresponding to each point on the unit circle (i.e., $a+jb$, and $a^2+ b^2=1$). Generally we need the phase within range $[-\pi, \pi]$; however, there is no need for the look-up table to cover the whole range, since \tag{b|$\sin$} and \tag{b|$\cos$} are symmetric. For example, since
+$$
+\begin{align}
+\cos(-\alpha) &= \cos(\alpha),\nonumber\\
+\sin(-\alpha) &= -\sin(\alpha),
+\end{align}
+$$
+the look-up table may only store the positive phase. That is, for a complex value $a+jb$, if $b\geq 0$, $\alpha = \alpha_l$, where $\alpha_l$ is the value in look-up table (indexed with $a+jb$); otherwise ($b<0$), $\alpha=-\alpha_l$, where $\alpha_l$ corresponds to $a-bj$ in the look-up table. Thus, there is no need to worry about the negative phase ($[-\pi, 0]$). Furthermore, for phase in $[0, \pi]$, since
+$$
+\begin{align}
+\cos(\pi-\alpha) &= -\cos(\alpha),\nonumber\\
+\sin(\pi-\alpha) &= \sin(\alpha),
+\end{align}
+$$
+it only needs to store the phase in $[0, \pi/2]$, where the phase in $[\pi/2, \pi]$ can be derived easily. In summary, to look up the phase of $a+jb$,
+* find the phase corresponding to $|a| + j|b|$, denote it as $\alpha_l$;
+* if $a\geq 0$ and $b\geq 0$, the phase is in the first quadrant, i.e., $\alpha=\alpha_l$;
+* if $a < 0$ and $b \geq 0$, the phase is in the second quadrant, i.e., $\alpha=\pi -\alpha_l$;
+* if $a < 0$ and $b < 0$, the phase is in the third quadrant, i.e., $\alpha=\alpha_l-\pi$;
+* if $a\geq 0$ and $b <0$, the phase is in the forth quadrant, i.e., $\alpha=-\alpha_l$;
+It is not bad as we shrink the look up table by a factor of 4 by simple math. Actually if the look up table size is the bottle neck, we can do even better. Considering a phase in $[0, \pi/2]$, we have
+$$
+\begin{align}
+\cos(\alpha) &= \sin(\pi/2 - \alpha),\nonumber\\
+\sin(\alpha) &= \cos(\pi/2 - \alpha).
+\end{align}
+$$
+It means that the look up table only needs to cover $[0, \pi/4]$. To find the phase of $a+jb$ in first quadrant (i.e., $a\geq 0$, $b\geq 0$) (the other quadrants can be got as mentioned above)
+* calculate $a_m = \max(a, b)$, and $b_m = \min(a, b)$;
+* find the phase $\alpha_l$ correspond to $a_m + jb_m$;
+* if $a_m = a$, then the phase is in $[0, \pi/4]$, i.e., $\alpha = \alpha_l$;
+* if $a_m = b$, then the phase is in $[\pi/4, \pi/2]$, i.e., $\alpha = \pi/2 - \alpha_l$.
+In practice, the complex value may not be on the unit circle. In this case, before searching the phase in the look-up table, it is helpful to normalized it first
+$$
+\begin{align}
+a_n &= \frac{a}{\sqrt{a^2+b^2}},\nonumber\\
+b_n &= \frac{b}{\sqrt{a^2+b^2}}.
+\end{align}
+$$
+Apparently, $\angle(a_n+b_nj)$ is same as $\angle(a+jb)$, since scaling a complex value wil not change its direction (angle).
+
+\tag{b|Phase Approximation.} If the phase error $\phi_e$ is small,
+$$
+\begin{align}
+e^{j\phi_e} &= \cos(\phi_e) + j\sin(\phi_e)\nonumber\\
+    &\approx 1 + \phi_e.
+\end{align}
+$$
+Thus, the phase error can be estimated by the image part of $r[n]s[n]^{*}$, that is
+$$
+\phi_e \approx \Im(r_b[n]s[n]^{*}),
+$$
+where $\Im(.)$ is the operator to take the image part of a complex value.
+{!image||
+./image/sync_rx_phase_error_approx.svg
+\label{img-sync_phase_error_approx}
+\caption{Phase error estimation when $\phi_e$ is small.}
+!}
+Such assumption may be true once the frequency synchronization converges. Thus, it can be used to simplify the operation. However, it is definitely not true for the initialization period of the frequency synchronization, since the phase offset can be arbitrary. As mentioned above, we need a better approximation in $[0, \pi/4]$.
+
+As described in \cite{lyons}, a phase in $[0,\pi/4]$ can be approximated as
+$$
+\begin{align}
+\alpha = \frac{b/a}{1+0.28125(b/a)^2}.
+\label{eqn:sync_phase_est}
+\end{align}
+$$
+As shown in Fig. \ref{img-sync_clk_phase_est}, the maximum estimation error is roughly 0.28 degree.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|1||{%
+sync.sync_phase_est_test
+%}!}!}
+{!div|bs-demo-rst||image||
+./image/sync_clk_phase_est.png
+\label{img-sync_clk_phase_est}
+\caption{Phase error of the estimation from Eq. (\ref{eqn:sync_phase_est}).}
+!}
+
+\tag{b|CORDIC Algorithm.} The CORDIC (COordinate Rotation DIgital Computer) algorithm \cite{cordic} is an iterative method to estimate the phase. Generally, a phase $\alpha$ in $[0, \pi/4]$ can be decoupled as
+$$
+\begin{align}
+\alpha = \pi/8 + d_1\pi/16 + d_2\pi/32 + \cdots,
+\end{align}
+$$
+where $d_i = \pm 1$. In other words, if we rotate a complex value by $\pi/8$ (clockwise), then $d_1\pi/16$, $d_2\pi/32$, $\cdots$, eventually, the phase of the resulting value will approach zero.
+So one general idea to estimate a phase in $[0, \pi/4]$ could be
+* rotate (clockwise) with a phase $\pi/8$,
+* if the resulting value is still in first quadrant, rotate (clockwise) with a phase of $\pi/16$;
+** otherwise, rotate (counterclockwise) with a phase of $\pi/16$.
+* if the resulting value is in first quadrant, rotate (clockwise) with a phase $\pi/32$,
+** otherwise, rotate (counterclockwise) with a phase of $\pi/32$.
+* $\cdots$
+To rotate a complex value $a+jb$ by a phase $\alpha$ (counterclockwise),
+$$
+\begin{align}
+a^\prime &= a\cos(\alpha) - b\sin(\alpha),\nonumber\\
+b^\prime &= b\cos(\alpha) + a\sin(\alpha).
+\label{eqn:sync_rotate}
+\end{align}
+$$
+Thus, we can store all the $\cos(\pi/8)$, $\sin(\pi/8)$, $\cos(\pi/16)$, $\sin(\pi/16)$, $\cdots$, and follow the above procedure to estimate the phase. However, such procedure is computational complicated, since at each step it needs 4 multiplications and 2 additions. CORDIC algorithm simplifies such procedure. Eq. (\ref{eqn:sync_rotate}) can be written as
+$$
+\begin{align}
+a^\prime &= \cos(\alpha)(a - b\tan(\alpha)),\nonumber\\
+b^\prime &= \cos(\alpha)(b + a\tan(\alpha)).
+\label{eqn:sync_rotate2}
+\end{align}
+$$
+If $\alpha$ is chosen such that $\tan(\alpha)= d_k 2^{-k}$, where $d_k$ is the rotation direction, then Eq. (\ref{eqn:sync_rotate2}) can be simplified as
+$$
+\begin{align}
+a^\prime &= \cos(\alpha)(a - bd_k 2^{-k}),\nonumber\\
+b^\prime &= \cos(\alpha)(b + ad_k 2^{-k}).
+\label{eqn:sync_rotate3}
+\end{align}
+$$
+Since we only care about the phase and not the amplitude, the phase of $a^\prime/\cos(\alpha)+jb^\prime/\cos(\alpha)$ is same as $a^\prime+jb^\prime$. Thus, $\cos(\alpha)$ can be ignored
+$$
+\begin{align}
+a^\prime &= a - bd_k 2^{-k},\nonumber\\
+b^\prime &= b + ad_k 2^{-k}.
+\label{eqn:sync_rotate4}
+\end{align}
+$$
+In this case, Eq. (\ref{eqn:sync_rotate4}) can be easily implemented by shifting and addition. The algorithm is summarized as
+$$
+\begin{align}
+a_{k+1} &= a_k- b_k d_k 2^{-k},\nonumber\\
+b_{k+1} &= b_k+ a_k d_k 2^{-k},\nonumber\\
+\alpha_{k+1} &= \alpha_k - d_k \arctan(2^{-k}),
+\end{align}
+$$
+where
+$$
+\begin{align}
+d_k = \begin{cases} 1 & \textrm{if } b_k<0\\
+    -1 & \textrm{otherwise}
+    \end{cases}.
+\end{align}
+$$
+For the phase in $[0, \pi/4]$, the iteration may look like
+{!div|bs-demo||
+{!highlight|python||codesnippet||{%
+common._cordic
+%}!}!}
+Then, the arbitrary phase ($[-\pi, \pi]$) can be got by applying the symmetric properties mentioned above
+{!div|bs-demo||
+{!highlight|python||codesnippet||{%
+common.cordic
+%}!}!}
+Fig. \ref{img-sync_cordic_est} shows the maximum estimation errors from the CORDIC algorithm. The error is smaller with more iterations, as expected.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|0||{%
+common.cordic_test
+%}!}!}
+{!div|bs-demo-rst||image||
+./image/sync_cordic_est.svg
+\label{img-sync_cordic_est}
+\caption{Maximum estimation error of the CORDIC algorithm.}
+!}
+}
+* {\tag{b|Compensate Phase Error.}
+The estimated error is used to adjust the system such that the phase error is decreased. For example, the phase error will be sent to a PI (proportional and integral) controller (Fig. \ref{img-sync_pi})
+$$
+\begin{align}
+e[n] &= e_p[n] + e_i[n],
+\end{align}
+$$
+where
+$$
+\begin{align}
+e_p[n] &= g_p\phi_e[n]\nonumber\\
+e_i[n] &= e_i[n-1] + g_i\phi_e[n].
+\end{align}
+$$
+{!image||
+./image/sync_pi.svg
+\label{img-sync_pi}
+\caption{Structure of a PI controller.}
+!}
+For example, as shown in Fig. \ref{img-sync_phase_comp}, $e[n]$ is sent to the block that generates $f_c^\prime$ or to the block that generates $f_{\textrm{if}}^\prime$\footnote{They may also be called mixer in literature.}. In our example, frequency down-shifting with $f_c^\prime$ is done in analog domain. Thus, $e[n]$ needs to send to a DAC block to generate the analog signal (e.g., $e(t)$) before sending to $f_c^\prime$. Such process brings more cost. However, it makes sure that the analog LPF block works in ideal condition when the frequency synchronization converges. Otherwise, if $f_{\textrm{if}}$ is too far away from $f_{\textrm{if}}^\prime$, the signal band may not be in the passband of the analog low pass filter, which causes distortion to the signal.
+{!image||
+./image/sync_phase_comp.svg
+\label{img-sync_phase_comp}
+\caption{Structure of phase error compensation.}
+!}
+On the other side, compensating $e[n]$ at $f_{if}^\prime$ is much easier, since both the error signal $e[n]$ and the NCO (numerically controlled oscillator) are in digital domain.
+The NCO block generates the reference signal for frequency down-shifting to get the baseband signal (by multiplying $e^{j\phi_{\textrm{nco}}}$), where
+$$
+\begin{align}
+\phi_{\textrm{nco}}[n] = \phi_{\textrm{nco}}[n-1] - 2\pi\frac{f_{\textrm{if}}^\prime}{f_s} - e[n].
+\end{align}
+$$
+In Fig. \ref{img-sync_phase_comp}, the phase error ($e[n]$) is sent to the NCO for frequency synchronization. Thus, there is a delay ($D$) between phase error estimation and compensation (e.g., the delay from the digital LPF). If the delay is large, it may limit the maximal frequency offset the system can deal with. For example, at time $n$, the estimated phase error is positive, while at time $n+D$, the phase error may be negative due some large frequency offset. If we use $e[n]$ to compensate for the phase error of sample $n+D$, the system may diverge. Thus, in some system, to minimize the delay $D$, we may put a phase rotation block right before the decision block (Fig. \ref{img-sync_phase_comp2}).
+{!image||
+./image/sync_phase_comp2.svg
+\label{img-sync_phase_comp2}
+\caption{Structure of phase error compensation to minimize the delay $D$.}
+!}
+}
+
+In the following example, we will show how to do the frequency synchronization for a QPSK signal (Fig. \ref{img-sync_tx}). First, let us define some parameters.
+The signal bandwidth is 1 MHz (centered at 2 MHz IF) with sampling rate 8 MHz.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|1||{%
+sync.sync_freq_demo
+%}!}!}
+Generate the random QPSK symbols at 1 MHz, which are up-sampled to 8 MHz by inserting zero. Then, the result signal is low-pass filtered to suppress mirrors.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|2||{%
+sync.sync_freq_demo
+%}!}!}
+{!div|bs-demo-rst||image||
+./image/sync_demo_tx.png
+\label{img-sync_demo_tx}
+\caption{Frequency response of the up-sampled signal.}
+!}
+
+Up-shift the baseband signal to IF to simulate a received signal after ADC.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|3||{%
+sync.sync_freq_demo
+%}!}!}
+{!div|bs-demo-rst||image||
+./image/sync_demo_rx.png
+\label{img-sync_demo_rx}
+\caption{Frequency response of the received signal after ADC.}
+!}
+Before we start the frequency synchronization loop, let us define some variables.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|4||{%
+sync.sync_freq_demo
+%}!}!}
+\tag{b|fir_rx} is the coefficients for the low pass filter after down shifting ($f_{\textrm{if}}^\prime$). Now we can do the actual frequency recovery loop.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|5||{%
+sync.sync_freq_demo
+%}!}!}
+As shown in the above code
+- \tag{b|Step 1.} Calculate the phase for down-shifting the IF signal to baseband. The phase includes two items: one from $f_{\textrm{if}}^\prime$, and the other from the estimated phase error. It is a good idea to limit the phase in $[-\pi, \pi]$. Otherwise, when the phase becomes very big, the round error from float/double value will be unacceptable.
+- \tag{b|Step 3.} For simplicity, the LPF is done with naive implementation. You should never do this for real.
+- \tag{b|Step 4.} For simplicity, we assume the system does not have clock error (i.e., the transmitter and receives have the exact same clock rate, which is not true in practice.). And we also manually find the best sampling phase, which should be recovered by the clock synchronization in real.
+- {\tag{b|Step 6.} There are generally two ways to get the hard value of the received signal. In some systems (e.g., 802.11a), the system may send some preamble, which is known at the receiver side. In this case, the hard value is the true value of the transmitted preamble signal. In some systems, such preamble is not available (e.g., too expensive). In this case, the point on the constellation that is closest to the received signal may be viewed as the hard value. Such method has some obvious drawbacks. For example, as shown in Fig. \ref{img-sync_phase_error_large}, since the system has a large phase error $\phi_e$, the point on the constellation that is closest to the received signal is the orange point, instead of the blue point. Then, the estimated error will be $\hat{\phi}_e$, rather than $\phi_e$.
+{!image||
+./image/sync_rx_phase_error_large.svg
+\label{img-sync_phase_error_large}
+\caption{Illustration of large phase error.}
+!}
+}
+Figs. \ref{img-sync_demo_scatter} and \ref{img-sync_demo_err} show the simulation result. With 20 kHz frequency offset, the signals without frequency synchronization show as a blue circle on the constellation, as expected; while after frequency synchronization, the signals converges to a QPSK constellation.
+{!image||
+./image/sync_demo_scatter.png
+\label{img-sync_demo_scatter}
+\caption{Signals with and without frequency synchronization.}
+!}
+And the estimated phase error $e[n]$ converges to a constant which is close to $-2\pi\frac{20e3}{8e6} = -0.0157$.
+{!image||
+./image/sync_demo_err.png
+\label{img-sync_demo_err}
+\caption{Estimated phase error.}
+!}
+
+== Clock Synchronization
+The main purpose of clock synchronization (or clock/timing recovery, symbol synchronization) is to find the optimal sampling phase and rate. Let's start with the simplest BPSK case. For example, Fig. \ref{img-sync_clk_bpsk} shows 2 possible sampling phases. It is obvious that the sampling phase indicated by the blue dash line is better than the red one, where the signal is stronger, suffers less from ISI and is more robust to random noise.
+{!image||
+./image/sync_clk_bpsk.svg
+\label{img-sync_clk_bpsk}
+\caption{Sampling phases of BPSK signal.}
+!}
+For BPSK signal, one way to achieve clock synchronization is to check the time when the signal crosses zero. The zero-crossing position may correspond to a sample which is either zero (i.e., $r[n]=0$), or changes sign/phase from its previous sample (i.e., $r[n]r[n-1]<0$). For example, as shown in Fig. \ref{img-sync_clk_bpsk_tr}, the blue dash line shows the optimal sampling phase, and the up-sampling rate is 24. Then the optimal sampling timing will be roughly 12 samples (0.5 symbols) from any zero crossing position (indicated by the red dots). So one straightforward algorithm is to check the distance between the last sampling position and adjacent zero crossing point. If the distance is not 12 samples (0.5 symbols), update the next sampling phase accordingly.
+{!image||
+./image/sync_clk_bpsk_tr.svg
+\label{img-sync_clk_bpsk_tr}
+\caption{Timing recovery for BPSK signal.}
+!}
+It is easy to see such algorithm suffers from long run 1 or -1. The red dots in Fig. \ref{img-sync_clk_bpsk_tr1} shows the expected zero-crossing positions, which are apparently not close to zero since there is no phase change between adjacent symbols. In this case, the algorithm won't be able to update the sampling phase during that long run 1 or -1 period. In practice, such long run 1 or -1 should be avoided, for example, by the scramble block in the transmitter or modulation schemes (e.g., bi-phase).
+{!image||
+./image/sync_clk_bpsk_tr1.svg
+\label{img-sync_clk_bpsk_tr1}
+\caption{Timing recovery for BPSK signal.}
+!}
+The zero-crossing algorithm works well for 'clean' signal. However, if the signal suffers from noise, the zero-crossing position will not occur once between two adjacent symbols (with phase change). Instead, it may occur multiple times within a symbol, or the cross-zero position will not be one sample, but a region. Thus, it will be difficult to determine the phase error.
+
+Another widely used algorithm is called early-late gate method. For each symbol, we will get three samples (Fig. \ref{img-sync_clk_bpsk_opt})
+* one at the estimated optimal sampling time ($r_{on}$);
+* one before the estimated optimal sampling time ($r_{early}$);
+* one after the estimated optimal sampling time ($r_{late}$).
+Don't be confused. Here the estimated optimal sampling time may be far away from the optimal sampling time. Usually, the distance between samples $r_{on}$ and $r_{early}$ is chosen to be same as the one between $r_{on}$ and $r_{late}$.
+The algorithm adjusts the sampling phase dynamically by comparing these three samples.
+The goal of the clock synchronization is to minimize $|r_{late}-r_{early}|$ (Fig. \ref{img-sync_clk_bpsk_opt}).
+{!image||
+./image/sync_clk_bpsk_opt.svg
+\label{img-sync_clk_bpsk_opt}
+\caption{Optimal sampling phase for the early-late gate method.}
+!}
+
+\tag{b|Sampling too early.} Fig. \ref{img-sync_clk_bpsk_early} shows the early sampling case, where the estimated sampling phase is before the optimal one. In this special case, $r_{late}$ is larger than $r_{early}$, which can be used to adjust the sampling phase of the next samples (e.g., delay the sampling time).
+{!image||
+./image/sync_clk_bpsk_early.svg
+\label{img-sync_clk_bpsk_early}
+\caption{Early sampling for the early-late gate method.}
+!}
+
+\tag{b|Sampling too late.} Similarly, Fig. \ref{img-sync_clk_bpsk_late} shows the late sampling case, where $r_{late}$ is smaller than $r_{early}$. Thus, the next samples need to be sampled early.
+
+{!image||
+./image/sync_clk_bpsk_late.svg
+\label{img-sync_clk_bpsk_late}
+\caption{Late sampling for the early-late gate method.}
+!}
+
+We will use an example with BPSK signal to show how to achieve clock synchronization with the early-late gate method\footnote{If you are familiar with FM RDS modulation, you will appreciate that the demo is a simplified RDS signal demodulation.}. As usual, we first define some parameters used in the simulation. The data/symbol rate is very small (~1 kHz), thus the sampling rate can be relatively high (e.g., 128 times of the data/symbol rate).
+{!div|bs-demo||
+{!highlight|python||testsnippet2|1||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+
+We prepend a PN (pseudo-noise) sequence in front of the message bits, so that at the receiver side we can easily find the start of the message bits with a correlation to calculate the BER (bit error rate). The 127 bits PN sequence is generated with an LFSR (linear-feedback shift register). We also append some zeros at the end of the message bits, just to push all the data bits through the filters.
+
+{!div|bs-demo||
+{!highlight|python||testsnippet2|2||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+Then, we add a differential encoding, such that the system can tolerate 180 phase ambiguity (e.g., as mentioned in the frequency synchronization section).
+{!div|bs-demo||
+{!highlight|python||testsnippet2|3||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+Its encoding and decoding schemes are shown in Tables. \ref{tbl-sync_bpsk_diff_encode} and \ref{tbl-sync_bpsk_diff_decode}, respectively.
+{{
+\label{tbl-sync_bpsk_diff_encode}
+\caption{Differential encoding.}
+    Prev output| Current input| Current output||+
+    0 | 0 | 0 ||-
+    0 | 1 | 1 ||-
+    1 | 0 | 1 ||-
+    1 | 1 | 0 ||-
+}}
+The potential drawback of differential coding is the 'error propagation'. As shown in Table. \ref{tbl-sync_bpsk_diff_decode}, the current decoding output relies on both the current input and the previous input. If the previous input is wrong, the decoding output may be wrong too.
+{{
+\label{tbl-sync_bpsk_diff_decode}
+\caption{Differential decoding.}
+    Prev input| Current input| Current output||+
+    0 | 0 | 0 ||-
+    0 | 1 | 1 ||-
+    1 | 0 | 1 ||-
+    1 | 1 | 0 ||-
+}}
+The next step is shaping filter, which is defined as
+$$
+\begin{align}
+H_{T}(f)=\begin{cases}
+\cos\frac{\pi ft_{d}}{4} & 0\leq f\leq\frac{2}{t_d}\\
+0 & f>\frac{2}{t_d}\end{cases}
+\end{align}
+$$
+where $t_d = \frac{1}{f_d}$.
+Its frequency and impulse responses are shown in Fig. \ref{img-sync_clk_bpsk_shaping}.
+{!image||
+./image/sync_clk_bpsk_shaping.svg
+\label{img-sync_clk_bpsk_shaping}
+\caption{The frequency and impulse response of the shaping filter.}
+!}
+To generate the filter coefficients, we first build the filter in frequency domain, then convert it to time domain with IFFT.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|4||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+Before applying the shaping filter, the signal bits are up-sampled by a factor of 2. In particular, \tag{b|1} and \tag{b|0} is replaced with $[1, -1]$ and $[-1, 1]$, respectively. The waveforms after shaping filter are shown in Fig. \ref{img-sync_clk_bpsk_biphase}. It is easy to see that there is always a zero-crossing within each symbol. Such fact can be used for clock synchronization with the zero-crossing method mentioned above.
+{!image||
+./image/sync_clk_bpsk_biphase.svg
+\label{img-sync_clk_bpsk_biphase}
+\caption{The biphase waveforms for bit 1 and 0, respectively.}
+!}
+{!div|bs-demo||
+{!highlight|python||testsnippet2|5||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+Now it's time to add clock error and noise.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|6||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+The clock error is added with function [https://github.com/tianzhuqiao/basic/blob/master/sync.py|rx_src]. When implementing \tag{b|rx_src}, we need to make sure it works as intended.To do that, we can use a sinusoid signal for testing. For example, the following code adds 100 ppm offset to the sampling frequency (e.g., 24 MHz) of a sinusoid signal (e.g., 1 MHz). Since the signal length is 10000, the result signal will have roughly 1 (10000*100e-6) additional sample. As shown in Fig. \ref{img-sync_rx_src_test}, at the beginning $n\approx 0$, two signals matched with each other very well; while $n\approx 10000$, compared to the original signal, (\tag{b|s}) the result signal (\tag{b|s2}) is roughly 'delayed' by 1 sample. In other words, within a period of roughly 10000 samples, \tag{b|s2} has one more samples than \tag{b|s}, as expected.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|1||{%
+sync.rx_src_test
+%}!}!}
+{!div|bs-demo-rst||image||
+./image/sync_rx_src_test.svg
+\label{img-sync_rx_src_test}
+\caption{Frequency response of the up-sampled signal.}
+!}
+Another test we can do is to apply the \tag{b|rx_srcs} twice to get the signal at the original frequency. The result should be as close to the original signal as possible.
+{!exec||
+exec(open('./downloads/sync.py').read())
+!}
+{!div|bs-demo||
+{!highlight|python||testsnippet2|2|execute||{%
+sync.rx_src_test
+%}!}!}
+The received signal is then down-sampled by a factor of 8, so the clock synchronization is done at sampling rate of $152/8=19$ kHz (or 16 times of the symbol rate). Such choice is kind of 'arbitrary', and should base on the application. Generally, the higher the sampling rate, the better the clock synchronization performance.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|7||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+The down-sampled signal is then sent to a matching filter, which has the same shape as the waveform shown in Fig. \ref{img-sync_clk_bpsk_biphase} (except the sampling rate).
+{!div|bs-demo||
+{!highlight|python||testsnippet2|8||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+Now it is time for clock synchronization and BPSK demodulation
+{!div|bs-demo||
+{!highlight|python||testsnippet2|9||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+Function \tag{b|sync_clk_bpsk} implements the early-late gate method for clock synchronization. For each symbol, three samples are compared to adjust the sampling phase of the next symbol. For simplicity, in the demo, we directly apply the estimated error to the sampling phase. In some application, it may be helpful to send the estimated error to a PI controller first. The implementation find the 'best' phase in all the 16 possible phases. In other words, the performance is only 'optimal' within these 16 phases. If the optimal phase is beyond these 16 phases, there is no way to find the optimal one. Thus, the higher the sampling rate, the better the performance. In the next example, we will show how to use interpolation to approach the optimal sampling phase without requiring a high sampling frequency. For this demo, 16 phases is enough to get a good result.
+
+Here, the 'early' and 'late' samples are the neighbours of the 'on' sample, that is the distance between the 'early' (or 'late') sample and the 'on' sample is 1 sample. You may try different values to compare the performance\footnote{You may also need to change the compensation step accordingly.}.
+{!div|bs-demo||
+{!highlight|python||codesnippet||{%
+sync.sync_clk_bpsk
+%}!}!}
+{!div|bs-demo-rst||image||
+./image/sync_clk_bpsk_sampling.png
+\label{img-sync_clk_bpsk_sampling}
+\caption{Estimated sampling phase.}
+!}
+Fig. \ref{img-sync_clk_bpsk_sampling} shows the signal after matched filter and the estimated sampling time (indicated by the orange dots). After several symbols, the sampling phases are converged to the peaks or valleys, which means the clock synchronization algorithm works well.
+
+After that, it is trivial to find the frame head with a correlation, so that we can calculate the BER. With the setup shown above, you should see zero bit error.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|10||{%
+sync.sync_clk_bpsk_demo
+%}!}!}
+
+The methods discussed above require multiple samples per symbol. Thus, it is suitable for the low symbol rate system; while for the high symbol rate system, the required sampling rate may be too large to be feasible. Fortunately, there are algorithms that can work on symbols directly.
+One famous timing recovery algorithm is Mueller-Muller algorithm \cite{mm}. For example, Fig. \ref{img-sync_clk_mm} shows the sampling phase and ISI of a system, where $f$ is the total channel response (e.g., from the shaping filter). Apparently, the sampling phase is delayed by $\tau$ from the optimal sampling. It causes ISI to the previous symbol (e.g., $\propto f(\tau-1)]$), and to the next symbol (e.g., $\propto f(\tau+1)$). MM method tries to minimize $|f(\tau-1)-f(\tau+1)|$.
+{!image||
+./image/sync_clk_mm.svg
+\label{img-sync_clk_mm}
+\caption{Illustration of Mueller-Muller algorithm.}
+!}
+The phase error can be written as \cite{mm}
+$$
+\begin{align}
+e[n] = r[n]\bar{r}[n-1] - r[n-1]\bar{r}[n],
+\end{align}
+$$
+where $r[n]$ is the received signal, i.e.,
+$$
+\begin{align}
+r[n] = \sum_{k=-\infty}^{\infty}{f(\tau+k)\bar{r}[n-k]},
+\end{align}
+$$
+$\bar{r}[n]$ is the corresponding true value. Then
+$$
+\begin{align}
+E(e[n]) &= E(r[n]\bar{r}[n-1] - r[n-1]\bar{r}[n])\nonumber\\
+ &=  E\left(\bar{r}[n-1] \sum_{k=-\infty}^{\infty}{f(\tau+k)\bar{r}[n-k]} - \bar{r}[n] \sum_{k=-\infty}^{\infty}{f(\tau+k)\bar{r}[n-1-k]}\right)\nonumber\\
+ &= f(\tau+1)E(\bar{r}[n-1]^2) - f(\tau-1)E(\bar{r}[n]^2).
+\end{align}
+$$
+The second equation comes from the fact that $\bar{r}[l]$ and $\bar{r}[m]$ ($l \neq m$) are uncorrelated (i.e., $E(\bar{r}[l]\bar{r}[m])=0$).
+If $\bar{r}[n]^2$ is constant (e.g., 1), then
+$$
+\begin{align}
+E(e(n)) =  f(\tau+1) -  f(\tau-1).
+\end{align}
+$$
+
+It is easy to understand the algorithm with examples. Here we assume everything is ideal, except the sampling clock (e.g., phase, rate):
+#* the only ISI (inter-symbol-interference) comes from the shaping filter (i.e., raised cosine filter);
+#* the sampling rate is 20 times the symbol rate (e.g., we need to down-sample the received signals by a factor of 20 to get the symbols).
+\tag{b|Optimal sampling.} Fig. \ref{img-sync_clk_mm_optimal} shows the ideal case. We sample the data at $n=\cdots, -1, 0, 1, \cdots$, where the ISI is zero. The estimated error with MM algorithm is also zero
+$$
+\begin{align}
+E(e) &= 0-0 = 0.
+\end{align}
+$$
+{!image||
+./image/sync_clk_mm_optimal.svg
+\label{img-sync_clk_mm_optimal}
+\caption{Optimal sampling.}
+!}
+
+\tag{b|Sampling too late.} As shown in Fig. \ref{img-sync_clk_mm_late}, the sampling interval is same as the previous case. However, the sampling phase is offset by 0.25 symbol period from the optimal case. The estimated error is
+$$
+\begin{align}
+E(e) &= -0.14 - 0.28\nonumber\\
+  &= -0.42.
+\end{align}
+$$
+{!image||
+./image/sync_clk_mm_late.svg
+\label{img-sync_clk_mm_late}
+\caption{Late sampling.}
+!}
+
+\tag{b|Sampling too early.} As shown in Fig. \ref{img-sync_clk_mm_early}, the sampling interval is same as the previous case. However, the sampling phase is offset by 0.25 symbol period to the left from the optimal case. The estimated error is
+$$
+\begin{align}
+E(e) &= 0.28 - (-0.14)\nonumber\\
+  &= 0.42
+\end{align}
+$$
+{!image||
+./image/sync_clk_mm_early.svg
+\label{img-sync_clk_mm_early}
+\caption{Early sampling.}
+!}
+
+\tag{b|Sampling too fast.} As shown in Fig. \ref{img-sync_clk_mm_fast}, the sampling interval is smaller than the optimal case. When the previous sample is sampled at optimal phase, the current sample is sampled too early. In this case,
+$$
+\begin{align}
+E(e) &= 0.28 - 0\nonumber\\
+  &= 0.28.
+\end{align}
+$$
+{!image||
+./image/sync_clk_mm_fast.svg
+\label{img-sync_clk_mm_fast}
+\caption{Sampling too fast.}
+!}
+
+\tag{b|Sampling too slow.} As shown in Fig. \ref{img-sync_clk_mm_slow}, the sampling interval is same as the previous case. However, the sampling phase is offset by 0.25 symbol period to the left from the optimal case. In this case,
+$$
+\begin{align}
+E(e) &= -0.14 - 0\nonumber\\
+  &= -0.14.
+\end{align}
+$$
+#Similarly, the sign of the error is positive, which is same as the above \tag{b|Sampling too late} case. Thus, we can use the error to adjust the sampling phase of the next one (i.e., sampling earlier).
+{!image||
+./image/sync_clk_mm_slow.svg
+\label{img-sync_clk_mm_slow}
+\caption{Sampling too slow.}
+!}
+
+In the above examples, the signal is assumed to be real. For complex signal (i.e., $r[n]=r_r[n]+r_i[n]$), the timing error can be estimated as $e[n] = e_r[n] + e_i[n]$, where
+$$
+\begin{align}
+e_r[n] &= r_r[n]\bar{r}_r[n-1] - r_r[n-1]\bar{r}_r[n],\nonumber\\
+e_i[n] &= r_i[n]\bar{r}_i[n-1] - r_i[n-1]\bar{r}_i[n].
+\end{align}
+$$
+It is equivalent to
+$$
+\begin{align}
+e[n] &= \Re(r[n]^*\bar{r}[n-1] - r[n-1]^*\bar{r}[n]).
+\end{align}
+$$
+
+Same as the frequency synchronization case, the estimated error is sent to a PI controller before compensation (Fig. \ref{img-sync_pi}). The next question is how to compensate the estimated timing error? For example, Fig. \ref{img-sync_clk_cmp} shows that the we need a sample at time $\tau$ (indicated by a red line), but the previous block only gives us sample at time $\cdots, -2, -1, 0, 1, 2, \cdots$.
+{!image||
+./image/sync_clk_cmp.svg
+\label{img-sync_clk_cmp}
+\caption{Illustration of timing error compensation.}
+!}
+One obvious solution is to apply the timing error to the previous block, such that it changes its sampling phase and output the sample at the right phase. For example, we may delay the sampling phase of a ADC block by $\tau$.
+
+Another solution is to use interpolation with the existing samples. For example, if $\tau$ is a rational number (e.g., 1/4), then as mentioned in the \tag{b|Sampling Rate Conversion} section, the sample at $\tau$ can be got by
+* up-sampling the system by a factor of 4;
+* low pass filtering;
+* retrieve the sample at time $\tau$ (equivalent to align the center filter coefficient (e.g. $f(0)$) at time $\tau$ as shown in Fig. \ref{img-sync_clk_cmp2}).
+The procedure is illustrated in Fig. \ref{img-sync_clk_cmp2}, that is
+$$
+\begin{align}
+r[\tau] = \sum_{k}f(-\tau+k)r[k],
+\end{align}
+$$
+where $f$ is the filter coefficients, $k$ is integer. As shown in \tag{b|Sampling Rate Conversion} section, if the up-sampling factor (e.g., 4) is known in advance, we can design a filter at 4 times the sampling rate, such that $f(-1/4+k)$ is available. However, for timing synchronization case, $\tau$ may be arbitrary. And even if it is a rational number, its corresponding denominator may be too large to pre-design a filter. In this case, it is preferred to design a sampling rate conversion filter at a reasonably high sampling rate, then use interpolation to estimate the filter coefficient if there is no one for a certain phase.
+{!image||
+./image/sync_clk_cmp2.svg
+\label{img-sync_clk_cmp2}
+\caption{Illustration of timing error compensation with interpolation.}
+!}
+
+Now we have all the blocks for clock synchronization, its structure may look like
+{!image||
+./image/sync_clk_comp.svg
+\label{img-sync_clk_comp}
+\caption{Structure of clock synchronization.}
+!}
+{!div|info||
+The timing error estimation is done in symbol rate. However, the compensation SRC may run at a higher sampling rate.
+!}
+
+In the following example, we will show how to do the clock synchronization for a QPSK signal (Fig. \ref{img-sync_tx}). The signal bandwidth is 1 MHz (centered at 2 MHz IF) with sampling rate 8 MHz. In this demo, we assume the sampling clock at the receiver side is not exactly same as the transmitter (e.g., with 100 ppm offset).
+{!div|bs-demo||
+{!highlight|python||testsnippet2|1||{%
+sync.sync_clk_demo
+%}!}!}
+The QPSK signal at 1 MHz is up-sampled by a factor of 8 (insert 0).
+{!div|bs-demo||
+{!highlight|python||testsnippet2|2||{%
+sync.sync_clk_demo
+%}!}!}
+At the receiver side, the signal is sampled with clock \tag{b|Fs_rx}, which is achieved by function [./downloads/sync.py|rx_src].
+{!div|bs-demo||
+{!highlight|python||testsnippet2|3||{%
+sync.sync_clk_demo
+%}!}!}
+If we down-sample the received signal without clock synchronization, the signal will look like the one shown in Fig. \ref{img-sync_clk_demo_r}. It is even very difficult to tell the signal is from a QPSK constellation.
+{!image||
+./image/sync_clk_demo_r.png
+\label{img-sync_clk_demo_r}
+\caption{Received symbols without clock synchronization.}
+!}
+
+Then the received signal is filtered with the matched filter. For simplicity, in this demo, we apply the clock synchronization after the matched filter. The risk is if the offset between the transmitter and receiver clocks is large, it will cause ISI even if the offset is compensated later perfectly, since the matched filter is not working in ideal case. Thus, in some application, the clock offset may be compensated before the matched filter; however, in this case, it will introduce more delay between the timing error estimation and compensation.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|4||{%
+sync.sync_clk_demo
+%}!}!}
+The last thing before we run the clock synchronization loop is to define some variables. In this demo, we estimate the timing error at symbol rate (1 MHz), and the error is compensated at sampling rate ($\approx$ 8 MHz). Thus, the poly-phase filter is run at sampling rate, while its coefficients is designed at 20 times the sampling rate.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|5||{%
+sync.sync_clk_demo
+%}!}!}
+
+Now we have everything to run the clock synchronization loop. As shown in Fig. \ref{img-sync_clk_comp}, it generally has two components: timing error compensation and estimation.
+
+The timing error compensation is done with an SRC (sampling rate conversion) block, as shown in the first \tag{b|while} loop. The code is familiar to us, except the section to generate the coefficients. Besides a fixed step, the sampling phase is also dynamically adjusted by the estimation error (\tag{b|timing_err}). Since the poly-phase filter is designed at 20 times of the sampling rate at the receiver side, there are 20 phases available. However, the estimated timing error may align the filter arbitrary with the input samples. In some cases, the filter phase may not be available for filtering. In such case, linear interpolation is applied to estimate the filter coefficient (for example, phase 10.2 may be estimated with phase 10 and 11 with linear interpolation).
+
+The timing error estimation is done in the second \tag{b|while} loop. It basically down-samples the output from the previous SRC loop by a factor of 8 to get the symbol, then estimates the error with MM algorithm. The error is filtered with a PI controller before sent to the previous SRC loop.
+{!div|bs-demo||
+{!highlight|python||testsnippet2|7||{%
+sync.sync_clk_demo
+%}!}!}
+
+Figs. \ref{img-sync_clk_demo_err} and \ref{img-sync_clk_demo_sym} show the results from the demo. The estimated error converges to 0.002 (100e-6*20) quickly. And the estimated symbols are converged to QPSK constellation well.
+{!image||
+./image/sync_clk_demo_err.png
+\label{img-sync_clk_demo_err}
+\caption{Estimated timing error.}
+!}
+{!image||
+./image/sync_clk_demo_sym.png
+\label{img-sync_clk_demo_sym}
+\caption{Symbol after clock synchronization.}
+!}
+

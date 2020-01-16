@@ -37,8 +37,6 @@ MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
 <li><a href="#sec-2-2">2.2 Convolutional interleaver</a></li>
 </ul></li>
 <li><a href="#sec-3">3 Mapping</a></li>
-<li><a href="#sec-4">4 Shaping filter</a></li>
-<li><a href="#sec-5">5 Modulation</a></li>
 </ul>
 </div>
 <div class="main">
@@ -47,7 +45,8 @@ Transmitter
 </div>
 <div class="content">
 <h1 id="sec-1">1 Scrambler</h1>
-<p>Scrambler is also called <b>randomizer</b>. It is usually the first block in many communication systems, which 'randomizes' the source data (e.g., the binary sequence). Why do we want to randomize the data? One example is that the randomized data can help the receiver to achieve the symbol synchronization. For example, when you send a signal as shown in Fig. <a href="#img-scrambler_tx">1</a></p>
+<p>Scrambler is also called <b>randomizer</b>. It is usually the first block in many communication systems, which 'randomizes' the source data (e.g., the binary sequence). Why do we want to randomize the data? One example is that the randomized data can help the receiver to achieve the symbol synchronization.
+For example, when you send a signal as shown in Fig. <a href="#img-scrambler_tx">1</a></p>
 <figure id="img-scrambler_tx" class="figure">
 <img src="./image/scrambler_tx.svg" alt="./image/scrambler_tx.svg">
 <figcaption class="caption"><span class="tag">Fig.1.</span> The illustration of a transmitted binary sequence.</figcaption>
@@ -141,7 +140,7 @@ The naive LFSR can be implemented in python as</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">prbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,))</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p</span><span class="o">*</span><span class="n">s</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
@@ -159,13 +158,13 @@ y[n] &= x[n] \oplus s[n]\nonumber\\
 \end{align}
 $$
 </div>
-Thus, if we prepend enough zeros to the data bits, we can easily send the initial status to the receiver. For example, for the PRBS shown in Fig. <a href="#img-scramble_lfsr">4</a>, we may prepend 7 zeros, so the data ($x^\prime[n]$) may look like
- <div class="mathjax">
+<p>Thus, if we prepend enough zeros to the data bits, we can easily send the initial status to the receiver. For example, for the PRBS shown in Fig. <a href="#img-scramble_lfsr">4</a>, we may prepend 7 zeros, so the data ($x^\prime[n]$) may look like</p>
+<div class="mathjax">
 $$
- \begin{align}
- 0, 0, 0, 0, 0, 0, 0, x[0], x[1], \cdots
- \end{align}
- $$
+\begin{align}
+0, 0, 0, 0, 0, 0, 0, x[0], x[1], \cdots
+\end{align}
+$$
 </div>
 <p>The LFSR is initialized with arbitrary initial status as shown in Fig. <a href="#img-scramble_lfsr0">5</a>, where $X$ in the block indicated either 1 or 0.</p>
 <figure id="img-scramble_lfsr0" class="figure">
@@ -295,12 +294,12 @@ For the above example, how many outputs $x$ will be effected if the current inpu
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;normal&#39;</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p</span><span class="o">*</span><span class="n">z</span><span class="p">)</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
             <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;inverse&#39;</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p</span><span class="o">*</span><span class="n">z</span><span class="p">)</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
             <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -477,7 +476,7 @@ Click on the <code>Reset</code> button to reset the demo, and elsewhere to get t
 
 <script type="text/paperscript" src="js/deinterleaver_conv.js" canvas="deinterleaver_conv_canvas"></script>
 <div class="bs-example">
-Convolutional interleaver demo.
+Convolutional deinterleaver demo.
 Click on the <code>Reset</code> button to reset the demo, and elsewhere to get the next input.
 The input is the output from the above convolutional interleaver output.
 <div class="center_align">
@@ -513,15 +512,15 @@ $$
         <span class="c1"># the only difference between the interleaver and de-interleaver is the</span>
         <span class="c1"># order of the shift registers.</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;normal&#39;</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">slope</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nrows</span><span class="p">)]</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">slope</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">)]</span>
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;deintlv&#39;</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">slope</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">xrange</span><span class="p">(</span><span class="n">nrows</span><span class="p">))]</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">slope</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">)))]</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
         <span class="n">index</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nrows</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">):</span>
         <span class="c1"># process the data in each row</span>
         <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">r</span> <span class="o">+</span> <span class="n">index</span><span class="p">,</span> <span class="n">nrows</span><span class="p">)</span>
         <span class="n">xn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">value</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="n">n</span><span class="p">::</span><span class="n">nrows</span><span class="p">]])</span>
@@ -541,7 +540,7 @@ $$
 <span class="o">&gt;&gt;&gt;</span> <span class="n">xd</span><span class="p">,</span> <span class="n">dstate</span> <span class="o">=</span> <span class="n">interleaver_conv</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;deintlv&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="c1"># calculate the delay from the interleaver and de-interleaver, which is</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="c1"># equal to the total number of the shift registers</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">delay</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">delay</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="n">delay</span><span class="p">],</span> <span class="n">xd</span><span class="p">[</span><span class="n">delay</span><span class="p">:])</span>
 <span class="bp">True</span>
 </pre></div>
@@ -789,9 +788,6 @@ Thus, b'1011 will be sent as position (3(b'11), 2(b'10)) on the constellation (F
     <span class="k">return</span> <span class="n">g</span>
 </pre></div>
 </div>
-<h1 id="sec-4">4 Shaping filter</h1>
-<p>The shaping filter following the mapping is to minimize the ISI (inter-symbol interference). Before filtering, it usually needs to up-sampling the symbols such that it complies with the Nyquist sampling theorem. The general sampling rate conversion will be discussed in a separate section later. Here, it usually only involves a simple integral up-sampling, e.g., by inserting 0.</p>
-<h1 id="sec-5">5 Modulation</h1>
 </div>
 </div>
 
@@ -819,7 +815,7 @@ Imaging if your phone is built this way, hold your phone tight to block more sig
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2019-12-11 21:35:41 Pacific Standard Time, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-01-14 23:00:15 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>

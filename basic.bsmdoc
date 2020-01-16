@@ -1,0 +1,19 @@
+\config{title|basic}
+
+#include basic_config.bsmdoc
+
+{!div|menu||
+#makecontent
+!}
+{!div|main||
+{!div|toptitle||
+basics of digital signal processing in communications system
+!}
+{!div|content||
+#include basic_basics.bsmdoc
+#include basic_tx.bsmdoc
+#include basic_src.bsmdoc
+#include basic_sync.bsmdoc
+!}
+!}
+
