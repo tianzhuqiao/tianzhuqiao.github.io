@@ -802,7 +802,7 @@ Its frequency and impulse responses are shown in Fig. <a href="#img-sync_clk_bps
 <span class="o">&gt;&gt;&gt;</span> <span class="n">msg_signal</span> <span class="o">+=</span> <span class="n">noise</span>
 </pre></div>
 </div>
-<p>The clock error is added with function <a href="https://github.com/tianzhuqiao/basic/blob/master/sync.py">rx_src</a>. When implementing <b>rx_src</b>, we need to make sure it works as intended.To do that, we can use a sinusoid signal for testing. For example, the following code adds 100 ppm offset to the sampling frequency (e.g., 24 MHz) of a sinusoid signal (e.g., 1 MHz). Since the signal length is 10000, the result signal will have roughly 1 (10000*100e-6) additional sample. As shown in Fig. <a href="#img-sync_rx_src_test">28</a>, at the beginning $n\approx 0$, two signals matched with each other very well; while $n\approx 10000$, compared to the original signal, (<b>s</b>) the result signal (<b>s2</b>) is roughly 'delayed' by 1 sample. In other words, within a period of roughly 10000 samples, <b>s2</b> has one more samples than <b>s</b>, as expected.</p>
+<p>The clock error is added with function <a href="./downloads/sync.py">rx_src</a>. When implementing <b>rx_src</b>, we need to make sure it works as intended.To do that, we can use a sinusoid signal for testing. For example, the following code adds 100 ppm offset to the sampling frequency (e.g., 24 MHz) of a sinusoid signal (e.g., 1 MHz). Since the signal length is 10000, the result signal will have roughly 1 (10000*100e-6) additional sample. As shown in Fig. <a href="#img-sync_rx_src_test">28</a>, at the beginning $n\approx 0$, two signals matched with each other very well; while $n\approx 10000$, compared to the original signal, (<b>s</b>) the result signal (<b>s2</b>) is roughly 'delayed' by 1 sample. In other words, within a period of roughly 10000 samples, <b>s2</b> has one more samples than <b>s</b>, as expected.</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mf">24e6</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10000</span><span class="p">))</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">rx_src</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mf">24e6</span><span class="p">,</span> <span class="mf">24e6</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">100e-6</span><span class="p">))</span>
@@ -1257,7 +1257,7 @@ You may also need to change the compensation step accordingly. <a href="#footnot
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2020-01-14 23:05:44 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-01-17 23:05:24 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>
