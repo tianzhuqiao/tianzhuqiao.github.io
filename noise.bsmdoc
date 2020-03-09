@@ -1,0 +1,16 @@
+\config{title|A Tutorial on Noise}
+\config{heading_numbering|True}
+\config{image_numbering|True}
+\config{table_numbering|True}
+\config{bsmdoc_conf|bsmdoc.cfg}
+{!div|menu||
+#makecontent
+!}
+{!div|main||
+{!div|toptitle||
+A Tutorial on Noise
+!}
+{!div|content||
+#include noise_content.bsmdoc
+!}
+!}

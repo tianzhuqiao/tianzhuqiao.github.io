@@ -37,6 +37,11 @@ MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
 <li><a href="#sec-2-2">2.2 Convolutional interleaver</a></li>
 </ul></li>
 <li><a href="#sec-3">3 Mapping</a></li>
+<li><a href="#sec-4">4 Random Number</a>
+<ul>
+<li><a href="#sec-4-1">4.1 Uniform Random Number</a></li>
+<li><a href="#sec-4-2">4.2 Gaussian Random Number</a></li>
+</ul></li>
 </ul>
 </div>
 <div class="main">
@@ -788,6 +793,105 @@ Thus, b'1011 will be sent as position (3(b'11), 2(b'10)) on the constellation (F
     <span class="k">return</span> <span class="n">g</span>
 </pre></div>
 </div>
+<h1 id="sec-4">4 Random Number</h1>
+<h2 id="sec-4-1">4.1 Uniform Random Number</h2>
+<p>Most software package/library include function to generate uniform random number; but occasionally we may need to generate manually (e.g., to get a consist result on different platforms). One simple way is to use <a href="https://en.wikipedia.org/wiki/Linear_congruential_generator">linear congruential generator</a>. Its general format is</p>
+<div class="mathjax">
+$$
+\begin{align}
+x(n+1) = (a*x(n) + c) \mod m,
+\end{align}
+$$
+</div>
+<p>where $a$, $c$ and $m$ are constant, and $x(n)$ is the last random number. There are many popular choices of these parameters; one implementation shown in <b>man srand</b> looks like</p>
+<div class="syntax"><pre><span></span><span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">next</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+<span class="cm">/* RAND_MAX assumed to be 32767 */</span>
+<span class="kt">int</span> <span class="nf">myrand</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">next</span> <span class="o">=</span> <span class="n">next</span> <span class="o">*</span> <span class="mi">1103515245</span> <span class="o">+</span> <span class="mi">12345</span><span class="p">;</span>
+    <span class="k">return</span><span class="p">((</span><span class="kt">unsigned</span><span class="p">)(</span><span class="n">next</span><span class="o">/</span><span class="mi">65536</span><span class="p">)</span> <span class="o">%</span> <span class="mi">32768</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">mysrand</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">seed</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">next</span> <span class="o">=</span> <span class="n">seed</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<p>It will give you a pseudo random number between 0 and RAND_MAX. If you want to generate a random number between $L$ and $U$, you may follow the suggestion <a href="https://eternallyconfuzzled.com/using-rand-c-c-advice-for-the-c-standard-librarys-rand-function/">here</a> if the following simple way doesn't give you good result.</p>
+<div class="syntax"><pre><span></span><span class="kt">int</span> <span class="n">r</span> <span class="o">=</span> <span class="n">L</span> <span class="o">+</span> <span class="n">myrand</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">U</span><span class="o">-</span><span class="n">L</span><span class="p">)</span><span class="o">/</span><span class="n">RAND_MAX</span><span class="p">;</span>
+</pre></div>
+<h2 id="sec-4-2">4.2 Gaussian Random Number</h2>
+<p>Similarly, occasionally we may need to generate it by ourselves (e.g., on a embedded microcontroller).
+<a href="https:/en.wikipedia.org/wiki/Box%E2%80%93Muller_transform">Box-Muller</a> transform gives us an efficient way to generate random number with standard normal distribution from uniform distribution (Alternatively, I saw one uses central limit theorem to generate normal distribution samples by adding multiple samples from uniform distribution.). Suppose you have two independent samples from uniform distribution, then the following samples are from standard normal distribution,</p>
+<div class="mathjax">
+$$
+\begin{align}
+x &= \sqrt{-2\ln{u_1}}\cos(2\pi u_2)\nonumber \\
+y &= \sqrt{-2\ln{u_1}}\sin(2\pi u_2),
+\end{align}
+$$
+</div>
+<p>where $u_1$, $u_2$ are from uniform distribution between 0 and 1, that is $u_1\sim U(0, 1)$.</p>
+<p>To see why this is the case, let us first define</p>
+<div class="mathjax">
+$$
+\begin{align}
+r = \sqrt{-2\ln{u_1}},
+\end{align}
+$$
+</div>
+<p>The cumulative distribution function (CDF) of $r$ is defined as</p>
+<div class="mathjax">
+$$
+\begin{align}
+P(r&lt;R) &= P(\sqrt{-2\ln(u_1)}&lt;R) \nonumber \\
+&= P(u_1&gt;e^{-\frac{R^2}{2}}) \nonumber\\
+&= 1 - e^{-\frac{R^2}{2}}.
+\end{align}
+$$
+</div>
+<p>Thus, its PDF is</p>
+<div class="mathjax">
+$$
+\begin{align}
+f(R) &= \frac{\partial P(r&lt;R)}{\partial R} \nonumber \\
+&= R e^{-\frac{R^2}{2}}.
+\end{align}
+$$
+</div>
+<p>This is the PDF for <a href="https://en.wikipedia.org/wiki/Rayleigh_distribution">Rayleigh distribution</a>.</p>
+<p>Similarly, the PDF of $\theta = 2\pi u_2$ ($u_2\sim U(0, 1)$) is $\sim U(0, 2\pi)$.</p>
+<p>Now, $x$, $y$ can be defined as</p>
+<div class="mathjax">
+$$
+\begin{align}
+x &= r\cos(\theta),\nonumber \\
+y &= r\sin(\theta).
+\end{align}
+$$
+</div>
+<p>To get the joined PDF of $x$, $y$ (i.e., $f(x, y)$), first we need to calculate the Jacobian</p>
+<div class="mathjax">
+$$
+\begin{align}
+\frac{\partial x, y}{\partial r, \theta} = \begin{bmatrix}
+\cos(\theta) & -r\sin(\theta) \\
+\sin(\theta) & r\cos(\theta) \\
+\end{bmatrix}
+ = r.
+\end{align}
+$$
+</div>
+<p>Then, $f(x, y)$ can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+f(x, y) &= \frac{f(r, \theta)}{\frac{\partial x, y}{\partial r, \theta}} \nonumber \\
+&= \frac{r}{2\pi}e^{-\frac{r^2}{2}}\times \frac{1}{r} \nonumber \\
+&= \frac{1}{2\pi}e^{-\frac{x^2+y^2}{2}}.
+\end{align}
+$$
+</div>
+<p>It is easy to see that $x$, $y$ are independent standard normal distribution.</p>
 </div>
 </div>
 
@@ -815,7 +919,7 @@ Imaging if your phone is built this way, hold your phone tight to block more sig
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2020-01-14 23:00:15 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-03-08 20:09:39 PDT, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>

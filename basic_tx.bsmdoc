@@ -550,3 +550,5 @@ common.gen_gray_table
 #= Shaping filter
 #The shaping filter following the mapping is to minimize the ISI (inter-symbol interference). Before filtering, it usually needs to up-sampling the symbols such that it complies with the Nyquist sampling theorem. The general sampling rate conversion will be discussed in a separate section later. Here, it usually only involves a simple integral up-sampling, e.g., by inserting 0.
 #= Modulation
+
+#include noise_content.bsmdoc
