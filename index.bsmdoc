@@ -2,35 +2,51 @@
 \config{bsmdoc_conf|index.cfg}
 
 {!exec|firstRunOnly||unescape||{%
+import bsmdoc
 def bsmdoc_emph(data, *args, **kwargs):
     return bsmdoc_tag(data, ['i'], **kwargs)
 
 post = {}
 
 def bsmdoc_post(data, *args, **kwargs):
-    title = ''
-    html = args[0]
-    if 'title' in post:
-        title = bsmdoc_tag(post.get('title', ''), 'a', 'href="%s"'%html)
+    src = args[0]
+    title = ""
+    if src.endswith('.bsmdoc'):
+        bdoc = bsmdoc.Bdoc(False, False)
+        bdoc.bsmdoc_gen(src, output=False)
+
+        # title
+        html = bdoc.output_filename
+        title = bdoc.cfg['title']
+    else:
+        html = src
+    title = post.get('title', title)
+
+    if title:
+        title = bsmdoc_tag(title, 'a', 'href="%s"'%html)
         h = post.get('header', '==')
         title = bsmdoc_heading(title, h, *args, **kwargs)
-        post.pop('title')
-        post.pop('header', None)
+
+    img = ""
     if 'image' in post:
         img = bsmdoc_tag(post.get('image', ''), 'a', 'href="%s"'%html)
         img = bsmdoc_div(img, 'image-post', 'pure-u-1', 'pure-u-lg-1-3')
-        text = post['text']
-        if post.get('more', False):
-            text += '<p><a href="%s">More...</a></p>'%html
-        text = bsmdoc_div(text, 'text-post', 'pure-u-1', 'pure-u-lg-2-3')
+    text = post['text']
+    if post.get('more', False):
+        text += '<p><a href="%s">More...</a></p>'%html
+        if img:
+            text = bsmdoc_div(text, 'text-post', 'pure-u-1', 'pure-u-lg-2-3')
+        else:
+            text = bsmdoc_div(text, 'text-post', 'pure-u-1', 'pure-u-lg-1')
         data = img + text
-        post.pop('image')
-        post.pop('text')
-        post.pop('more')
+
+    post.clear()
     return title + bsmdoc_div(data, 'pure-g')
 
+
 def bsmdoc_ptitle(data, *args, **kwargs):
-    post['title'] = data
+    if data:
+        post['title'] = data
     if args:
         post['header'] = args[0].strip()
     return ""
@@ -72,7 +88,6 @@ def bsmdoc_include(data, **kwargs):
                 return '\n'.join(lines[pattern[0]+1:pattern[1]])+'\n'
         if len(pattern) == 1:
             return '\n'.join(lines[pattern[0]:])+'\n'
-        print(c)
         return c
     return None
 %}!}
@@ -86,172 +101,6 @@ def bsmdoc_include(data, **kwargs):
 !}
 
 {!div|content pure-u-1 pre-u-lg-5-6||
-{!post|munkres.html||
-\ptitle{Munkres Algorithm For Assignment Problem: A Tutorial}
-\pimg{\image{width=260px|./image/step1_prime.svg}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|3|munkres_content.bsmdoc
-}
-!}
-
-{!post|smacof.html||
-\ptitle{SMACOF: A tutorial}
-\pimg{\image{./image/smacof3.svg}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|7|smacof_content.bsmdoc
-}
-!}
-
-{!post|walk.html||
-\ptitle{A tutorial on time series with neural network}
-\pimg{\image{./image/walk.svg}}
-\ptext{
-=======
-{!div|quote|style="left: 0; transform: none;"||
-{!div|quote_content||
-If you torture the data long enough, it will confess.
-!}
-{!div|quote_by||
-Ronald H. Coase, Essays on Economics and Economists
-!}
-!}
-}
-!}
-
-{!post|http://bsmedit.feiyilin.com||
-\ptitle{bsmedit -- C/C++/SystemC simulation controller}
-\pimg{\image{./image/bsmedit.png}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|16|../bsmedit/docs/index_content.bsmdoc
-}
-!}
-
-{!post|http://bsmdoc.feiyilin.com||
-\ptitle{bsmdoc -- another technical html doc generator}
-\pimg{\image{./image/bsmdoc2.png}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|7|../bsmdoc/docs/index_content.bsmdoc
-}
-!}
-
-{!post|aec.html||
-\ptitle{Acoustic Echo Cancellation Overview}
-\pimg{\image{./image/aec_dtd.svg}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|4|aec_content.bsmdoc
-}
-!}
-
-== Basics of Digital Signal Processing in Communications System
-{!post|basics.html||
-\ptitle{===|Basics of Digital Signal Processing}
-\pimg{\image{./image/sampling_ambiguity.svg}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|2|basic_basics.bsmdoc
-}
-!}
-
-{!post|tx.html||
-\ptitle{===|Basic transmitter blocks}
-\pimg{\image{./image/mapping_gray_table.svg}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|2|basic_tx.bsmdoc
-}
-!}
-
-{!post|src.html||
-\ptitle{===|Sampling Rate Conversion}
-\pimg{\image{./image/filter_fir_polyphase_down.svg}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|2|basic_src.bsmdoc
-}
-!}
-
-{!post|sync.html||
-\ptitle{===|Synchronization}
-\pimg{\image{./image/sync_rx_df.svg}}
-\ptext{more|
-=======
-#include ^(\\s)*=+|2|basic_sync.bsmdoc
-}
-!}
-#== Indoor Localization
-#* L. Cheng and T. Qiao, "An indoor localization algorithm in the absence of a priori propagation information," in \emph{Proc. IEEE APS'17}, 2017.
-#* {T. Qiao and H. Liu, "Incremental anchor layout for indoor positioning," in
-#  \emph{Proc. IEEE ICC'17}, 2017.}
-#* {L. Cheng and T. Qiao, "Localization in the parking lot by parked-vehicle
-#  assistance," \emph{{IEEE} Trans. Intell. Transp. Syst.}, vol. 17, no. 12,
-#  pp. 3629--3634, Dec 2016.}
-#* {T. Qiao, Y. Zhang, and H. Liu, "Nonlinear expectation maximization estimator
-#  for {TDOA} localization," \emph{{IEEE} Wireless Commun. Lett.}, vol. 3,
-#  no. 6, pp. 637--640, Dec 2014.}
-#* {T. Qiao and H. Liu, "Improved least median of squares localization for
-#  non-line-of-sight mitigation," \emph{{IEEE} Commun. Lett.}, vol. 18, no. 8,
-#  pp. 1451--1454, Aug. 2014. ([http://hdl.handle.net/1957/54534|pdf])}
-#* {Z. Su, J.Huschle, S. Redfield, T. Qiao, H. Liu, and F. Liu, "High-speed
-#  real-time multi-channel data-acquisition unit: Challenges and results," in
-#  \emph{Proc. IEEE CCNC'14}, Jan 2014, pp. 105--112.}
-#* {T. Qiao, S. Redfield, A. Abbasi, Z. Su, and H. Liu, "Robust coarse position
-#  estimation for {TDOA} localization," \emph{{IEEE} Wireless Commun. Lett.},
-#  vol. 2, no. 6, pp. 623--626, December 2013.}
-#* {T. Qiao and H. Liu, "An improved method of moments estimator for {TOA} based
-#  localization," \emph{{IEEE} Commun. Lett.}, vol. 17, no. 7, pp. 1321--1324,
-#  2013. ([http://hdl.handle.net/1957/42645|pdf])}
-
-
-== Small tools
-- {[https://github.com/tianzhuqiao/tikz_export|tikz_export]:
-generate pdf/svg/eps file from tikzpicture.
-}
-- {[pinyin2hanzi.html|Pinyin to Hanzi.]
-A online tool to convert pinyin to hanzi.
-}
-- { [progarg.html|Console program arguments processing utility.]
-Simple C functions to easily process the console program arguments.
-}.
-#{!post|{[systemc_tips.html | SystemC tips]}||
-#!}
-#{!post|{[tx_modules.html | TX-Modules]}||
-#这个库包含了一些可用于构建systemc仿真程序的基本模块，以期减少重复劳动。如果和 [http://bsmedit.feiyilin.com/| bsmedit] 联合起来使用，会更加方便。
-#!}
-#{!post|{[downloads/autotool.pdf | 如何用automake, autoconf编译工程(ver 0.16)]}||
-#!}
-#{!div|posts||
-#= Communications tutorial
-#{!post|{[scss_1.html | 通信系统仿真概述-发射端]}||
-#!}
-#{!post|{[src_fraction.html | 分数倍频率转换]}||
-#!}
-#{!post|{[bpsk_str.html |BPSK定时同步]}||
-#!}
-#{!post|{[filter_lut.html | 用look up table来实现高倍采样信号的滤波]}||
-#!}
-#{!post|{[psk_dem.html | PSK 解调--简述频率同步和采样同步]}||
-#!}
-#{!post|{[./downloads/ofdm.pdf| OFDM系统各种偏差]}||
-#!}
-#{!post|{[./downloads/aec_tut.pdf | Acoustic Echo Cancellation Overview(draft)]}||
-# !}
-#{!post|{[./downloads/fft_tut.pdf| Real FFT tutorial]}||
-#!}
-#{!post|{[viterbi.html | Viterbi算法--一个例子]}||
-#!}
-#{!post|{[euclidean.html | Euclidean算法解码BCH--一个例子]}||
-#!}
-#{!post|{[bcjr.html | BCJR算法--一个例子]}||
-#!}
-#{!post|{[sum_product.html| Sum-product算法--一个例子]}||
-#!}
-#!} # communication tutorial
-
-
+#include index_post.bsmdoc
 !}
 !}

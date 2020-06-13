@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+processClass: "mathjax",
+ignoreClass: "tex2jax_ignore|nomathjax"
+});
+MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+<script src="js/bsmdoc.js"></script>
+<link rel="stylesheet" href="css/menu.css" type="text/css" />
+<title>A Tutorial on C++ Copy and Swap Idiom</title>
+</head>
+<body class="nomathjax">
+<div id="layout" class="">
+
+<div class="menu">
+<ul>
+<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-2">2 Copy and Swap Idiom</a></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+A Tutorial on C++ Copy and Swap Idiom
+</div>
+<div class="content">
+<h1 id="sec-1">1 Introduction</h1>
+<p>Someone once shows me the following code</p>
+<div class="syntax"><pre><span></span><span class="k">struct</span> <span class="n">Widget</span> <span class="p">{</span>
+    <span class="n">Widget</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+    <span class="n">Widget</span><span class="p">(</span><span class="k">const</span> <span class="n">Widget</span><span class="o">&amp;</span> <span class="n">w</span><span class="p">)</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+    <span class="n">Widget</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span> <span class="n">w</span><span class="p">)</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+    <span class="n">Widget</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">Widget</span> <span class="n">obj</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// swap obj and this</span>
+        <span class="p">...</span>
+        <span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// member variables</span>
+    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">};</span>
+</pre></div>
+<p>The struct is supposed to contain some parameters only. I can't convince myself</p>
+<ol>
+<li>The majority of the code is to bring the default constructor and assignment operator back.</li>
+<li>Why we do a swap in the assign operator.</li>
+</ol>
+<p>The answer eventually I got is</p>
+<ol>
+<li>It implements a <b>copy and swap idiom</b>, which is powerful;</li>
+<li>It is safe to do a swap in the assign operator as <b>obj</b> is a <b>pass by value</b> argument; the copy constructor will handle the copy if necessary.</li>
+<li>We need to define the move constructors here; otherwise the compiler will not generate the default one for us as we declare the assignment operator. Similar for default constructor and copy constructor.</li>
+</ol>
+<p>The reasons look complicated and solid. But wait, what will be the difference if it is implemented like this</p>
+<div class="syntax"><pre><span></span><span class="k">struct</span> <span class="n">Widget</span> <span class="p">{</span>
+    <span class="c1">// member variables</span>
+    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">};</span>
+</pre></div>
+<p>Do we lose anything? Remember the struct only contains some simple parameters, and no need to maintain any resources (e.g., allocate/deallocate memory). The above simple implementation actually makes things slightly better. For the following example,</p>
+<div class="syntax"><pre><span></span><span class="n">Widget</span> <span class="n">w</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="n">Widget</span> <span class="n">w2</span><span class="p">;</span>
+<span class="n">w2</span> <span class="o">=</span> <span class="n">w</span><span class="p">;</span>
+</pre></div>
+<p>for line <b>w2=w</b>, the naive implementation only needs to call the default assignment operator, while the "copy and swap" implementation needs one copy constructor (as pass by value for the assignment operator) and one assignment operator (to swap the data). For the struct in the example, it is unnecessary as the default assignment operator gets the job done.</p>
+<p>So it doesn't look like a good idea to blindly bring the idiom to all classes, although I do agree it is powerful. Then when shall we implement it?</p>
+<h1 id="sec-2">2 Copy and Swap Idiom</h1>
+<p>As shown <a href="https://www.geeksforgeeks.org/copy-swap-idiom-c/">here</a>, let's check the case when the default copy constructor is not enough. For example (not a good example, never do this in production), the following class is used to manager a resource (i.e., memory).</p>
+<div class="syntax"><pre><span></span><span class="k">class</span> <span class="nc">Widget</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">Widget</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="o">:</span><span class="n">size</span><span class="p">(</span><span class="n">size</span><span class="p">),</span>
+     <span class="n">data</span><span class="p">(</span><span class="k">nullptr</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">size</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="o">~</span><span class="n">Widget</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">delete</span> <span class="n">data</span><span class="p">;</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="k">protected</span><span class="o">:</span>
+    <span class="c1">// member variables</span>
+    <span class="kt">int</span><span class="o">*</span> <span class="n">data</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span>  <span class="n">size</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">};</span>
+</pre></div>
+<p>In this case, line <b>w2=w</b> from the above example will just make <b>w2.data</b> point to <b>w.data</b>. When <b>w</b> is deleted, the actual memory will be freed; <b>w2.data</b> will point to a de-allocated memory (dangling pointer). To solve this problem, we need to define the copy constructor by ourselves</p>
+<div class="syntax"><pre><span></span><span class="k">class</span> <span class="nc">Widget</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="p">...</span>
+    <span class="n">Widget</span><span class="p">(</span><span class="k">const</span> <span class="n">Widget</span><span class="o">&amp;</span> <span class="n">obj</span><span class="p">)</span>
+    <span class="o">:</span><span class="n">size</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">size</span><span class="p">),</span>
+     <span class="n">data</span><span class="p">(</span><span class="k">nullptr</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">size</span><span class="p">];</span>
+        <span class="n">memmove</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="p">...</span>
+<span class="p">};</span>
+</pre></div>
+<p>As usual, we also need to define the assignment operator, e.g.,</p>
+<div class="syntax"><pre><span></span><span class="k">class</span> <span class="nc">Widget</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="p">...</span>
+    <span class="n">Widget</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">Widget</span><span class="o">&amp;</span> <span class="n">obj</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="k">this</span> <span class="o">!=</span> <span class="o">&amp;</span><span class="n">obj</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">clear</span><span class="p">();</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">size</span><span class="p">];</span>
+            <span class="n">memmove</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">clear</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">delete</span> <span class="n">data</span><span class="p">;</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="p">...</span>
+<span class="p">};</span>
+</pre></div>
+<p>The above code will work, but it has some potential issues</p>
+<ol>
+<li><p>copy constructor and assignment operator shares similar code. It will be nice if we can avoid it. One way is to put the code in a function. However, it will not solve all issues. If the below code fails (e.g., fails to allocate memory), <b>this-&gt;data</b> in assignment operator will not point to any memory (the old memory has already been freed).</p>
+<div class="syntax"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">size</span><span class="p">];</span>
+<span class="n">memmove</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</pre></div></li>
+<li>In assignment operator, we need to check if <b>obj</b> and <b>this</b> are actually same object.</li>
+</ol>
+<p>To solve the above issues, copy-and-swap idiom comes to rescue. No need to change the copy constructor, but we do need to update the assignment operator:</p>
+<ol>
+<li>Change its argument to by value, so that the copy constructor can help to create the object if necessary.</li>
+<li><p>Assignment operator body (<b>operator=</b>)</p>
+<ol>
+<ol>
+<li>No need to check <b>this</b> any more (<b>obj</b> is a temporary object).</li>
+<li>No need to allocate new memory as it shall be handled by the copy constructor. And we only need to swap <b>this</b> and <b>obj</b>, which usually will not throw exception. If there is failure in memory allocation, it will be before calling the assignment operator (so assignment operator will not be executed). It is nice since it will not leave <b>this</b> to be <b>nullptr</b>.</li>
+<li>No need to free the memory originally allocated in <b>this</b>, as it will be freed when <b>obj</b> is deleted.</li>
+</ol>
+</ol>
+<div class="syntax"><pre><span></span><span class="k">class</span> <span class="nc">Widget</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">Widget</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">Widget</span> <span class="n">obj</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">swap</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kt">void</span> <span class="n">swap</span><span class="p">(</span><span class="n">widget</span><span class="o">&amp;</span> <span class="n">obj</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">size</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</pre></div></li>
+</ol>
+<p>And we also need to add the move constructor, as the compiler will not generate the default one for us. Otherwise, in the following example, line <b>list.push_back(Widget())</b> will call the expensive (but unnecessary) copy constructor.</p>
+<div class="syntax"><pre><span></span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Widget</span><span class="o">&gt;</span> <span class="n">list</span><span class="p">;</span>
+<span class="n">list</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">Widget</span><span class="p">(</span><span class="mi">10</span><span class="p">));</span>
+</pre></div>
+<p>Can we simply bring the default move constructor back?</p>
+<div class="syntax"><pre><span></span><span class="k">class</span> <span class="nc">Widget</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">Widget</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span> <span class="n">obj</span><span class="p">)</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">};</span>
+</pre></div>
+<p>Actually it will not work. Since we have a raw pointer member, the default move constructors will just copy the pointer, which will create a dangling pointer when <b>obj</b> is destroyed. Instead, we shall do something like</p>
+<div class="syntax"><pre><span></span><span class="k">class</span> <span class="nc">Widget</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">Widget</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span> <span class="n">obj</span><span class="p">)</span>
+    <span class="o">:</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+     <span class="n">data</span><span class="p">(</span><span class="k">nullptr</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">swap</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="p">...</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+
+<div class="footer">
+<div class="footer-text"> Last updated 2020-06-12 17:31:31 PDT, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+<script src="js/menu.js"></script>
+</body>
+</html>

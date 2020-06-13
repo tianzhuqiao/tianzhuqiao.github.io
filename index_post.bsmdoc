@@ -1,0 +1,111 @@
+﻿{!post|copy_swap_cpp.bsmdoc||
+\ptext{more|
+=======
+#include ^(\\s)*=+|18|copy_swap_cpp_content.bsmdoc
+}
+!}
+
+{!post|munkres.bsmdoc||
+\pimg{\image{width=260px|./image/step1_prime.svg}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|3|munkres_content.bsmdoc
+}
+!}
+
+{!post|smacof.bsmdoc||
+\pimg{\image{./image/smacof3.svg}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|7|smacof_content.bsmdoc
+}
+!}
+
+{!post|walk.bsmdoc||
+\pimg{\image{./image/walk.svg}}
+\ptext{more|
+=======
+{!div|quote|style="left: 0; transform: none;"||
+{!div|quote_content||
+If you torture the data long enough, it will confess.
+!}
+{!div|quote_by||
+Ronald H. Coase, Essays on Economics and Economists
+!}
+!}
+}
+!}
+
+{!post|http://bsmedit.feiyilin.com||
+\ptitle{bsmedit -- C/C++/SystemC simulation controller}
+\pimg{\image{./image/bsmedit.png}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|16|../bsmedit/docs/index_content.bsmdoc
+}
+!}
+
+{!post|http://bsmdoc.feiyilin.com||
+\ptitle{bsmdoc -- another technical html doc generator}
+\pimg{\image{./image/bsmdoc2.png}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|7|../bsmdoc/docs/index_content.bsmdoc
+}
+!}
+
+{!post|aec.bsmdoc||
+\pimg{\image{./image/aec_dtd.svg}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|4|aec_content.bsmdoc
+}
+!}
+
+== Basics of Digital Signal Processing in Communications System
+{!post|basics.bsmdoc||
+\ptitle{===|}
+\pimg{\image{./image/sampling_ambiguity.svg}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|2|basic_basics.bsmdoc
+}
+!}
+
+{!post|tx.bsmdoc||
+\ptitle{===|}
+\pimg{\image{./image/mapping_gray_table.svg}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|2|basic_tx.bsmdoc
+}
+!}
+
+{!post|src.bsmdoc||
+\ptitle{===|}
+\pimg{\image{./image/filter_fir_polyphase_down.svg}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|2|basic_src.bsmdoc
+}
+!}
+
+{!post|sync.bsmdoc||
+\ptitle{===|}
+\pimg{\image{./image/sync_rx_df.svg}}
+\ptext{more|
+=======
+#include ^(\\s)*=+|2|basic_sync.bsmdoc
+}
+!}
+
+== Small tools
+- {[https://github.com/tianzhuqiao/tikz_export|tikz_export]:
+generate pdf/svg/eps file from tikzpicture.
+}
+- {[pinyin2hanzi.html|Pinyin to Hanzi.]
+A online tool to convert pinyin to hanzi.
+}
+- { [progarg.html|Console program arguments processing utility.]
+Simple C functions to easily process the console program arguments.
+}.

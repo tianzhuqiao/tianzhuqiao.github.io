@@ -1,0 +1,17 @@
+\alias{title|A Tutorial on C++ Copy and Swap Idiom}
+\config{title|\alias{title}}
+\config{heading_numbering|True}
+\config{image_numbering|True}
+\config{table_numbering|True}
+\config{bsmdoc_conf|bsmdoc.cfg}
+{!div|menu||
+#makecontent
+!}
+{!div|main||
+{!div|toptitle||
+\alias{title}
+!}
+{!div|content||
+#include copy_swap_cpp_content.bsmdoc
+!}
+!}

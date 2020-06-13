@@ -1,0 +1,173 @@
+= Introduction
+Someone once shows me the following code
+{!highlight|c++||{%
+struct Widget {
+    Widget() = default;
+    Widget(const Widget& w) = default;
+    Widget(Widget&& w) = default;
+    Widget& operator=(Widget obj) {
+        // swap obj and this
+        ...
+        return *this;
+    }
+
+    // member variables
+    int id;
+    ...
+};
+%}!}
+The struct is supposed to contain some parameters only. I can't convince myself
+* The majority of the code is to bring the default constructor and assignment operator back.
+* Why we do a swap in the assign operator.
+
+The answer eventually I got is
+* It implements a \tag{b|copy and swap idiom}, which is powerful;
+* It is safe to do a swap in the assign operator as \tag{b|obj} is a \tag{b|pass by value} argument; the copy constructor will handle the copy if necessary.
+* We need to define the move constructors here; otherwise the compiler will not generate the default one for us as we declare the assignment operator. Similar for default constructor and copy constructor.
+
+The reasons look complicated and solid. But wait, what will be the difference if it is implemented like this
+{!highlight|c++||{%
+struct Widget {
+    // member variables
+    int id;
+    ...
+};
+%}!}
+Do we lose anything? Remember the struct only contains some simple parameters, and no need to maintain any resources (e.g., allocate/deallocate memory). The above simple implementation actually makes things slightly better. For the following example,
+{!highlight|c++|autogobble||{%
+    Widget w;
+    ...
+    Widget w2;
+    w2 = w;
+%}!}
+for line \tag{b|w2=w}, the naive implementation only needs to call the default assignment operator, while the "copy and swap" implementation needs one copy constructor (as pass by value for the assignment operator) and one assignment operator (to swap the data). For the struct in the example, it is unnecessary as the default assignment operator gets the job done.
+
+So it doesn't look like a good idea to blindly bring the idiom to all classes, although I do agree it is powerful. Then when shall we implement it?
+
+= Copy and Swap Idiom
+As shown [https://www.geeksforgeeks.org/copy-swap-idiom-c/|here], let's check the case when the default copy constructor is not enough. For example (not a good example, never do this in production), the following class is used to manager a resource (i.e., memory).
+{!highlight|c++||{%
+class Widget {
+public:
+    Widget(unsigned int size=16)
+    :size(size),
+     data(nullptr)
+    {
+        data = new int[size];
+    }
+    ~Widget() {
+        if(data) {
+            delete data;
+            data = nullptr;
+        }
+    }
+protected:
+    // member variables
+    int* data;
+    unsigned int  size;
+    ...
+};
+%}!}
+
+In this case, line \tag{b|w2=w} from the above example will just make \tag{b|w2.data} point to \tag{b|w.data}. When \tag{b|w} is deleted, the actual memory will be freed; \tag{b|w2.data} will point to a de-allocated memory (dangling pointer). To solve this problem, we need to define the copy constructor by ourselves
+{!highlight|c++||{%
+class Widget {
+public:
+    ...
+    Widget(const Widget& obj)
+    :size(obj.size),
+     data(nullptr)
+    {
+        data = new int[size];
+        memmove(data, obj.data, size*sizeof(int));
+    }
+    ...
+};
+%}!}
+
+As usual, we also need to define the assignment operator, e.g.,
+{!highlight|c++||{%
+class Widget {
+public:
+    ...
+    Widget& operator=(const Widget& obj)
+    {
+        if(this != &obj) {
+            clear();
+
+            data = new int[size];
+            memmove(data, obj.data, size*sizeof(int));
+        }
+        return *this;
+    }
+
+    void clear() {
+        if(data) {
+            delete data;
+            data = nullptr;
+        }
+    }
+    ...
+};
+%}!}
+The above code will work, but it has some potential issues
+* {copy constructor and assignment operator shares similar code. It will be nice if we can avoid it. One way is to put the code in a function. However, it will not solve all issues. If the below code fails (e.g., fails to allocate memory), \tag{b|this->data} in assignment operator will not point to any memory (the old memory has already been freed).
+{!highlight|c++||{%
+data = new int[size];
+memmove(data, obj.data, size*sizeof(int));
+%}!}
+}
+* In assignment operator, we need to check if \tag{b|obj} and \tag{b|this} are actually same object.
+
+To solve the above issues, copy-and-swap idiom comes to rescue. No need to change the copy constructor, but we do need to update the assignment operator:
+* Change its argument to by value, so that the copy constructor can help to create the object if necessary.
+* {Assignment operator body (\tag{b|operator=})
+** No need to check \tag{b|this} any more (\tag{b|obj} is a temporary object).
+** No need to allocate new memory as it shall be handled by the copy constructor. And we only need to swap \tag{b|this} and \tag{b|obj}, which usually will not throw exception. If there is failure in memory allocation, it will be before calling the assignment operator (so assignment operator will not be executed). It is nice since it will not leave \tag{b|this} to be \tag{b|nullptr}.
+** No need to free the memory originally allocated in \tag{b|this}, as it will be freed when \tag{b|obj} is deleted.
+{!highlight|c++||{%
+class Widget {
+    ...
+    Widget& operator=(Widget obj)
+    {
+        swap(obj);
+        return *this;
+    }
+    void swap(widget& obj) {
+        std::swap(this->size, obj.size);
+        std::swap(this->data, obj.data);
+    }
+};
+%}!}
+}
+
+And we also need to add the move constructor, as the compiler will not generate the default one for us. Otherwise, in the following example, line \tag{b|list.push_back(Widget())} will call the expensive (but unnecessary) copy constructor.
+{!highlight|c++||{%
+vector<Widget> list;
+list.push_back(Widget(10));
+%}!}
+
+Can we simply bring the default move constructor back?
+{!highlight|c++||{%
+class Widget {
+    ...
+    Widget(Widget&& obj) = default;
+    ...
+};
+%}!}
+
+Actually it will not work. Since we have a raw pointer member, the default move constructors will just copy the pointer, which will create a dangling pointer when \tag{b|obj} is destroyed. Instead, we shall do something like
+{!highlight|c++||{%
+class Widget {
+    ...
+    Widget(Widget&& obj)
+    :size(0),
+     data(nullptr)
+    {
+        swap(obj);
+    }
+    ...
+};
+%}!}
+
+
