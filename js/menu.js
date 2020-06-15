@@ -1,4 +1,4 @@
-$(window).load(function() {
+$(window).on("load", function() {
 // Cache selectors
 var lastId,
     topMenu = $(".menu"),

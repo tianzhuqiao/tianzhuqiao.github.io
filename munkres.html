@@ -1,33 +1,35 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
-processClass: "mathjax",
-ignoreClass: "tex2jax_ignore|nomathjax"
-});
-MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
-</script>
-<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+<meta name="generator" content="bsmdoc 0.0.4">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<link rel="stylesheet" href="css/menu.css" type="text/css">
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js></script>
 <script src="js/bsmdoc.js"></script>
-<link rel="stylesheet" href="css/menu.css" type="text/css" />
+<script src="js/menu.js"></script>
+<script>
+MathJax = {
+tex: {
+inlineMath: [['$', '$'], ['\\(', '\\)']],
+tags: "all"
+}
+};
+</script>
+
+<script id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
+</script>
 <title>Munkres Algorithm For Assignment Problem: A Tutorial</title>
 </head>
 <body class="nomathjax">
-<div id="layout" class="">
+<div class="layout">
 
 <div class="menu">
 <ul>
 <li><a href="#sec-1">1 Introduction</a></li>
-<li><a href="#sec-2">2 Munkres algorithm</a> 
+<li><a href="#sec-2">2 Munkres algorithm</a>
 <ul>
 <li><a href="#sec-2-1">2.1 Step 0</a></li>
 <li><a href="#step1">2.2 Step 1</a></li>
@@ -69,7 +71,7 @@ $$
 \end{align}
 $$
 </div>
-<p>where $c_{i,j}$ is the correlation between $i^{th}$ touch in previous frame and $j^{th}$ touch in current frame. 
+<p>where $c_{i,j}$ is the correlation between $i^{th}$ touch in previous frame and $j^{th}$ touch in current frame.
 Then, the problem is to find one element from each row and each column, which maximizes the total correlation.</p>
 <p><b>Example 3</b><a name="example3"><sup>&#x2693;</sup></a>, instead of a capacitive touch screen, now you are using radar installed on an self-driving vehicle to detect vehicles in front of you. And you want to determine whether the vehicles detected in current frame is same as the vehicles from the previous frame.</p>
 <h1 id="sec-2">2 Munkres algorithm</h1>
@@ -152,7 +154,7 @@ $$
 <figcaption class="caption"><span class="tag">Fig.1.</span> Initial cover</figcaption>
 </figure></li>
 </ol>
-<p>It is easy to see that for $N \times N$ cost matrix, if we can find $N$ starred zeros, we are done. Otherwise, go to <a href="#step1">Step 1</a>. 
+<p>It is easy to see that for $N \times N$ cost matrix, if we can find $N$ starred zeros, we are done. Otherwise, go to <a href="#step1">Step 1</a>.
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">step_zero</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; preliminaries step &quot;&quot;&quot;</span>
     <span class="c1"># subtract minimum from each row &quot;&quot;&quot;</span>
@@ -173,7 +175,7 @@ $$
 <p>This step is to find uncovered zeros and prime it.</p>
 <ul>
 <li>If there is no more uncovered zeros, go to <a href="#step3">Step 3</a>, where we will create more zeros by subtracting/adding constant to rows and columns.</li>
-<li>Otherwise, 
+<li>Otherwise,
 <ul>
 <li>if there is a starred zero in the same row as the current primed zero, uncover the column of the starred zero, and cover the row. It is easy to see that there is at most one primed zero in each row.</li>
 <li>otherwise, go to <a href="#step2">Step 2</a> (we find a better sequence of starred zero to cover more rows/columns, more details in <a href="#step2">Step 2</a>). The current primed zero is the only uncovered primed zero.</li>
@@ -247,7 +249,7 @@ $$
 \end{align}
 $$
 </div>
-<p>Now, we have 2 distinct zeros, which is better than we have before. 
+<p>Now, we have 2 distinct zeros, which is better than we have before.
 Clear the current covered rows/columns and cover all the columns with starred zeros</p>
 <figure class="figure">
 <img src="./image/step2_cover.svg" alt="./image/step2_cover.svg" width="120px">
@@ -341,9 +343,8 @@ $$
 </div>
 
 <div class="footer">
-<div class="footer-text"> Last updated 2020-01-10 20:48:47 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-01-09 05:32:32 GMT, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
-<script src="js/menu.js"></script>
 </body>
 </html>

@@ -30,14 +30,16 @@ def bsmdoc_post(data, *args, **kwargs):
     img = ""
     if 'image' in post:
         img = bsmdoc_tag(post.get('image', ''), 'a', 'href="%s"'%html)
-        img = bsmdoc_div(img, 'image-post', 'pure-u-1', 'pure-u-lg-1-3')
+        img = bsmdoc_div(img, 'image-post')
+        img = bsmdoc_div(img, 'pure-u-1', 'pure-u-lg-1-3')
     text = post['text']
     if post.get('more', False):
         text += '<p><a href="%s">More...</a></p>'%html
+        text = bsmdoc_div(text, 'text-post')
         if img:
-            text = bsmdoc_div(text, 'text-post', 'pure-u-1', 'pure-u-lg-2-3')
+            text = bsmdoc_div(text, 'pure-u-1', 'pure-u-lg-2-3')
         else:
-            text = bsmdoc_div(text, 'text-post', 'pure-u-1', 'pure-u-lg-1')
+            text = bsmdoc_div(text, 'pure-u-1', 'pure-u-lg-1')
         data = img + text
 
     post.clear()

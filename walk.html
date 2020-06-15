@@ -1,28 +1,30 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="css/bsmdoc.css" type="text/css" />
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
-processClass: "mathjax",
-ignoreClass: "tex2jax_ignore|nomathjax"
-});
-MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
-</script>
-<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
+<meta name="generator" content="bsmdoc 0.0.4">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<link rel="stylesheet" href="css/menu.css" type="text/css">
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js></script>
 <script src="js/bsmdoc.js"></script>
-<link rel="stylesheet" href="css/menu.css" type="text/css" />
+<script src="js/menu.js"></script>
+<script>
+MathJax = {
+tex: {
+inlineMath: [['$', '$'], ['\\(', '\\)']],
+tags: "all"
+}
+};
+</script>
+
+<script id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
+</script>
 <title>A tutorial on time series with neural network</title>
 </head>
 <body class="nomathjax">
-<div id="layout" class="">
+<div class="layout">
 
 <div class="menu">
 <ul>
@@ -37,7 +39,7 @@ A tutorial on time series with neural network
 </div>
 <div class="content">
 <h1 id="sec-1">1 Introduction</h1>
-<p>I was once asked to use the accelerometer and gyroscope data (i.e., from a sensor attached to a shoe) to detect the events that whether the shoe is taken off or put on. 
+<p>I was once asked to use the accelerometer and gyroscope data (i.e., from a sensor attached to a shoe) to detect the events that whether the shoe is taken off or put on.
 In other words, you are given a time series (e.g., 50 samples per second),</p>
 <div class="mathjax">
 $$
@@ -61,9 +63,7 @@ Ronald H. Coase, Essays on Economics and Economists
 </div>
 <p>My first intuition is that accelerator and gyroscope are not the right data to solve this problem. Someone may argue that there are many neural networks available to solve much more difficult problems very well, e.g., recognize the cat in the following image.</p>
 <figure class="figure">
-<img src="https://images.freeimages.com/images/large-previews/5c9/cat-1058028.jpg 
-" alt="https://images.freeimages.com/images/large-previews/5c9/cat-1058028.jpg 
-" width="300">
+<img src="https://images.freeimages.com/images/large-previews/5c9/cat-1058028.jpg" alt="https://images.freeimages.com/images/large-previews/5c9/cat-1058028.jpg" width="300">
 </figure>
 <p>But why? Why do we believe it will work? One reason is that the image (the specific way that RGB values are combined together) obviously has the information about a cat, since our brain can easily recognize it, although it may not be obvious how our brain can build a mapping between these RGB values and its label (e.g., cat). In this case, we may be able to "mimic" the way how brain may work to recognize it.</p>
 <p>How about the aforementioned "shoe event" case? What will be the right intuition behind it? Does the event fundamental different from others (e.g., lift a shoe without put it on, walk with a shoe in your bag/car etc.)? In my opinion, trying to solve the problem without understanding is dangerous. Of cause, we can always "train" a system to let it outputs what we "expected". But, eventually we need to deal with all kinds of weird corner cases.</p>
@@ -80,7 +80,7 @@ $$
 $$
 </div>
 <p>where $\textbf{x}$ is the input (features), which is usually a vector or matrix, $y$ is the expected output or label (e.g., 0 or 1).</p>
-<p>For example, <a href="https://github.com/wchill/HMP_Dataset ">this dataset</a> records the accelerometer data when user was doing various tasks (e.g., walk). Let's try a simpler problem: differentiate <b>walk</b> event from <b>climb chair</b> event. 
+<p>For example, <a href="https://github.com/wchill/HMP_Dataset ">this dataset</a> records the accelerometer data when user was doing various tasks (e.g., walk). Let's try a simpler problem: differentiate <b>walk</b> event from <b>climb chair</b> event.
 First, download the data</p>
 <div class="syntax"><pre><span></span><span class="c1"># download data file if necessary</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
@@ -96,15 +96,11 @@ First, download the data</p>
 <li>Roughly the first 2 sec data (i.e., 64 samples) looks very different from the remaining. I guess during that time the user was preparing to start the event. So we need to ignore these data for training and test. For simplicity, we ignore first 2 sec data for the whole dataset; however it may not be a good use of the data since the preparing period for some data may be longer (e.g., 3 sec) or shorter. We really should clean each data separately. Same for the last 2 sec data, we cut the last 2 sec data for the whole dataset for simplicity.</li>
 </ol>
 <figure id="img-walk" class="figure">
-<img src="image/walk.svg 
-" alt="image/walk.svg 
-">
+<img src="image/walk.svg" alt="image/walk.svg">
 <figcaption class="caption"><span class="tag">Fig.1.</span> Accelerometer reading for walk event</figcaption>
 </figure>
 <figure id="img-climb_chair" class="figure">
-<img src="image/walk_climb_chair.svg 
-" alt="image/walk_climb_chair.svg 
-">
+<img src="image/walk_climb_chair.svg" alt="image/walk_climb_chair.svg">
 <figcaption class="caption"><span class="tag">Fig.2.</span> Accelerometer reading for climb chair event</figcaption>
 </figure>
 <p>Besides the raw senor data, we may also use some statistics and aggregator. For example, in <a href="https://dl.acm.org/citation.cfm?id=3330761">this paper</a>, $\textbf{x}$ is a $31\times 50$ matrix. That is, 31 features are generated for each frame (e.g., mean/std over the last 10/20/50 samples separately (e.g., $mean(v_x[i-9:i])$), differential signal between current sample and the samples 20/40/50 steps before (e.g., $v_x[i]- v_x[i-20]$), and the absolute values). Then current frame is combined with the features from the last 49 frames (2D image with dimension $31\times 50$) is feed into a 1D CNN (along time axis, not very useful to learn across feature axis in this case).</p>
@@ -117,62 +113,60 @@ First, download the data</p>
 <li>FFT. In some case, FFT is useful. For example for the above $31\times 50$ input, the 'actual' event can happen at any samples, FFT may be able to mitigate such uncertainty. As shown in Fig. (<a href="#img-fft">3</a>), <b>data 1</b> and <b>data 2</b> are two samples from same data source (a sine wave). Their time domain representations looks different (time shift); however, their frequency domain representation (magnitude) are same (right plot), which may help neural network to learn fast.</li>
 </ul>
 <figure id="img-fft" class="figure">
-<img src="image/walk_fft.svg 
-" alt="image/walk_fft.svg 
-">
+<img src="image/walk_fft.svg" alt="image/walk_fft.svg">
 <figcaption class="caption"><span class="tag">Fig.3.</span> Accelerometer reading for climb chair event</figcaption>
 </figure>
 <ul>
-<li>normalization: 
-As usual, it may be useful to normalize each feature with the corresponding training data, e.g., zero mean, unit variance, i.e., 
-   <div class="mathjax">
+<li><p>normalization:
+As usual, it may be useful to normalize each feature with the corresponding training data, e.g., zero mean, unit variance, i.e.,</p>
+<div class="mathjax">
 $$
-    \begin{align}
-        f_{train} &= (f_{train} - \mu_{f_{train}})/\sigma_{f_{train}},\nonumber \\
-        f_{test} &= (f_{test} - \mu_{f_{train}})/\sigma_{f_{train}},
-    \end{align}
-	$$
+\begin{align}
+    f_{train} &= (f_{train} - \mu_{f_{train}})/\sigma_{f_{train}},\nonumber \\
+    f_{test} &= (f_{test} - \mu_{f_{train}})/\sigma_{f_{train}},
+\end{align}
+$$
 </div>
 <p>where $f_{train}$ is a feature from training samples, $f_{test}$ is the same feature from test samples, and</p>
 <div class="mathjax">
 $$
-    \begin{align}
-        \mu_{f_{train}} = \frac{1}{N}\sum_{i=0}^{N-1}{f_{train}[i]}, \nonumber \\
-        \sigma_{f_{train}} = \frac{1}{N}\sum_{i=0}^{N-1}{\left(f_{train}[i]-\mu_{f_{train}}\right)^2}.
-    \end{align}
-	$$
+\begin{align}
+    \mu_{f_{train}} = \frac{1}{N}\sum_{i=0}^{N-1}{f_{train}[i]}, \nonumber \\
+    \sigma_{f_{train}} = \frac{1}{N}\sum_{i=0}^{N-1}{\left(f_{train}[i]-\mu_{f_{train}}\right)^2}.
+\end{align}
+$$
 </div></li>
-<li><p>differencing: 
-In some case, if a feature is not stationary, we may need to compute the difference between consecutive samples. 
+<li><p>differencing:
+In some case, if a feature is not stationary, we may need to compute the difference between consecutive samples.
 1st order differencing</p>
 <div class="mathjax">
 $$
-    \begin{align}
-        df_1[n] = f[n] - f[n-1],
-    \end{align}
-	$$
+\begin{align}
+    df_1[n] = f[n] - f[n-1],
+\end{align}
+$$
 </div>
 <p>2nd order differencing</p>
 <div class="mathjax">
 $$
-    \begin{align}
-        df_2[n] &= df_1[n] - df_1[n-1]\nonumber\\
-        &= f[n]-2f[n-1]+f[n-2],
-    \end{align}
-	$$
+\begin{align}
+    df_2[n] &= df_1[n] - df_1[n-1]\nonumber\\
+    &= f[n]-2f[n-1]+f[n-2],
+\end{align}
+$$
 </div>
 <p>Lag-m differences (seasonal differencing)</p>
 <div class="mathjax">
 $$
-    \begin{align}
-        d_m[n] &= f[n] - f[n-m].
-    \end{align}
-	$$
+\begin{align}
+    d_m[n] &= f[n] - f[n-m].
+\end{align}
+$$
 </div></li>
 </ul>
 <p>Back to the example, as the raw accelerometer data shows different pattern, let's try to use raw data (within a window) for classification. Let's define</p>
 <ol>
-<li>event $y$: 
+<li>event $y$:
 <ul>
 <li>1 $\rightarrow$ walk,</li>
 <li>0 $\rightarrow$ climb chair;</li>
@@ -217,7 +211,7 @@ $$
 <span class="n">x_walk</span><span class="p">,</span> <span class="n">y_walk</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">&#39;walk&#39;</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">x_climb_chair</span><span class="p">,</span> <span class="n">y_climb_chair</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">&#39;Climb_stairs&#39;</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
-<p>As usual, to test our model, the data loaded shall be split into two parts: training and test. 
+<p>As usual, to test our model, the data loaded shall be split into two parts: training and test.
 Here for both <b>walk</b> and <b>climb chair</b> data, $80\%$ data is used for training and remaining is for test.</p>
 <div class="syntax"><pre><span></span><span class="n">walk_train_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_walk</span><span class="p">)</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
 <span class="n">climb_train_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_climb_chair</span><span class="p">)</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
@@ -258,9 +252,7 @@ Here for both <b>walk</b> and <b>climb chair</b> data, $80\%$ data is used for t
 </pre></div>
 <p>Here we define the callback to evaluate the accuracy on test data after each epoch. Fig. (<a href="#img-accuracy">4</a>) shows that after 10 epochs, the test data achieves $\sim 97\%$ accuracy.</p>
 <figure id="img-accuracy" class="figure">
-<img src="image/walk_accuracy.svg 
-" alt="image/walk_accuracy.svg 
-">
+<img src="image/walk_accuracy.svg" alt="image/walk_accuracy.svg">
 <figcaption class="caption"><span class="tag">Fig.4.</span> Accuracy of training and testing dataset</figcaption>
 </figure>
 <p>Full code can be download <a href="./downloads/walk.py">here</a>. The "performance" may be improved by choosing the hyper-parameters or adjusting the model; however, considering that the data may not be labeled correctly (remember we just simply ignore the first/last 2sec data) and accelerometer data may not contain all the information to differentiate the events, the result looks pretty good.</p>
@@ -283,9 +275,8 @@ $$
 </div>
 
 <div class="footer">
-<div class="footer-text"> Last updated 2019-12-28 10:04:05 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2019-12-28 19:15:55 GMT, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
-<script src="js/menu.js"></script>
 </body>
 </html>

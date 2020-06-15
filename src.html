@@ -1,27 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta name="generator" content="bsmdoc, see http://bsmdoc.feiyilin.com/" />
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
-processClass: "mathjax",
-ignoreClass: "tex2jax_ignore|nomathjax"
-});
-MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
-</script>
+<meta name="generator" content="bsmdoc 0.0.4">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
 <link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
 <link rel="stylesheet" href="css/menu.css" type="text/css">
-<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-<script type="text/javascript" language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>
+MathJax = {
+tex: {
+inlineMath: [['$', '$'], ['\\(', '\\)']],
+tags: "all"
+}
+};
+</script>
+
+<script id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
+</script>
+<script type="text/javascript" language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
 <script type="text/javascript" language="javascript" src="js/menu.js"></script>
 <title>Sampling Rate Conversion</title>
 </head>
 <body class="nomathjax">
-<div id="layout" class="">
+<div class="layout">
 
 <div class="menu">
 <ul>
@@ -39,7 +43,8 @@ Sampling Rate Conversion
 </div>
 <div class="content">
 <h1 id="sec-sample_rate_convert">1 Sampling Rate Conversion</h1>
-<p>As suggested by the name, sampling rate conversion (SRC) is to change the sampling rate without distorting the signal. There are several purpose to do that. For example, the ADC at the receiver may always working in a certain sampling frequency, while the digital processing block may work in a different frequency. Thus, an SRC block is needed to fill the gap between the ADC and the following digital blocks. I once worked on a project for a communication chip. The chip belongs to a big family, which shares the same ADC. So that it will be easy to integrate multiple chips into a big one later. However, it also means that you can not choose the ideal ADC clock for each chip. Instead, you choose the one that is 'optimal' for the whole family in certain sense, and use digital SRC to adapt to each chip.</p>
+<p>As suggested by the name, sampling rate conversion (SRC) is to change the sampling rate without distorting the signal. There are several purpose to do that. For example, the ADC at the receiver may always working in a certain sampling frequency, while the digital processing block may work in a different frequency. Thus, an SRC block is needed to fill the gap between the ADC and the following digital blocks.
+I once worked on a project for a communication chip. The chip belongs to a big family, which shares the same ADC. So that it will be easy to integrate multiple chips into a big one later. However, it also means that you can not choose the ideal ADC clock for each chip. Instead, you choose the one that is 'optimal' for the whole family in certain sense, and use digital SRC to adapt to each chip.</p>
 <p>There is a very good description about the sampling rate conversion in this book [<a id="cite-1-1" href="#reference-1">1</a>]. Here we shortly describe how it work (refer to the book for more details).</p>
 <p>There are two kinds of sampling rate conversation: down-sampling (or decimation) and up-sampling (or interpolation).</p>
 <h2 id="sec-1-1">1.1 Integral Down-Sampling</h2>
@@ -490,7 +495,7 @@ Richard G. Lyons, "Understanding Digital Signal Processing", Pearson Education; 
 </div>
 
 <div class="footer">
-<div class="footer-text"> Last updated 2020-01-14 21:37:58 PST, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-01-15 04:21:29 GMT, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>

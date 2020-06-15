@@ -47,12 +47,12 @@ where $\textbf{x}$ is the input (features), which is usually a vector or matrix,
 For example, [https://github.com/wchill/HMP_Dataset | this dataset] records the accelerometer data when user was doing various tasks (e.g., walk). Let's try a simpler problem: differentiate \tag{b|walk} event from \tag{b|climb chair} event.
 First, download the data
 {!highlight|python|autogobble||{%
-	# download data file if necessary
-	if not os.path.isdir(folder):
-	    dataurl = "https://github.com/wchill/HMP_Dataset/archive/master.zip"
-	    filename, header = urllib.request.urlretrieve(dataurl, "HMP_Dataset.zip")
-	    with  zipfile.ZipFile(filename, 'r') as zf:
-	        zf.extractall()
+    # download data file if necessary
+    if not os.path.isdir(folder):
+        dataurl = "https://github.com/wchill/HMP_Dataset/archive/master.zip"
+        filename, header = urllib.request.urlretrieve(dataurl, "HMP_Dataset.zip")
+        with  zipfile.ZipFile(filename, 'r') as zf:
+            zf.extractall()
 %}!}
 
 Fig. (\ref{img-walk}) and (\ref{img-climb_chair}) show a sample accelerometer data for \tag{b|walk} and \tag{b|climb chair} event. Here are some observations
@@ -116,42 +116,42 @@ Some useful statistics and features
     image/walk_fft.svg
 !}
 - {normalization:
-	As usual, it may be useful to normalize each feature with the corresponding training data, e.g., zero mean, unit variance, i.e.,
-   	$$
+    As usual, it may be useful to normalize each feature with the corresponding training data, e.g., zero mean, unit variance, i.e.,
+    $$
     \begin{align}
         f_{train} &= (f_{train} - \mu_{f_{train}})/\sigma_{f_{train}},\nonumber \\
         f_{test} &= (f_{test} - \mu_{f_{train}})/\sigma_{f_{train}},
     \end{align}
-	$$
+    $$
     where $f_{train}$ is a feature from training samples, $f_{test}$ is the same feature from test samples, and
-	$$
+    $$
     \begin{align}
         \mu_{f_{train}} = \frac{1}{N}\sum_{i=0}^{N-1}{f_{train}[i]}, \nonumber \\
         \sigma_{f_{train}} = \frac{1}{N}\sum_{i=0}^{N-1}{\left(f_{train}[i]-\mu_{f_{train}}\right)^2}.
     \end{align}
-	$$
+    $$
 }
 - {differencing:
     In some case, if a feature is not stationary, we may need to compute the difference between consecutive samples.
     1st order differencing
-	$$
+    $$
     \begin{align}
         df_1[n] = f[n] - f[n-1],
     \end{align}
-	$$
+    $$
     2nd order differencing
-	$$
+    $$
     \begin{align}
         df_2[n] &= df_1[n] - df_1[n-1]\nonumber\\
         &= f[n]-2f[n-1]+f[n-2],
     \end{align}
-	$$
+    $$
     Lag-m differences (seasonal differencing)
-	$$
+    $$
     \begin{align}
         d_m[n] &= f[n] - f[n-m].
     \end{align}
-	$$
+    $$
 }
 
 Back to the example, as the raw accelerometer data shows different pattern, let's try to use raw data (within a window) for classification. Let's define
