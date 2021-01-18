@@ -3,36 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="bsmdoc 0.0.4">
-<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<meta name="generator" content="bsmdoc 0.0.8">
 <link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
 <link rel="stylesheet" href="css/menu.css" type="text/css">
 <script>
 MathJax = {
 tex: {
-inlineMath: [['$', '$'], ['\\(', '\\)']],
+inlineMath: [['\\(', '\\)']],
 tags: "all"
 }
 };
 </script>
-
 <script id="MathJax-script" async
 src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
 </script>
-<script type="text/javascript" language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
-<script type="text/javascript" language="javascript" src="js/menu.js"></script>
-<script type="text/javascript" language="javascript" src="js/raphel.min.js"></script>
-<script type="text/javascript" language="javascript" src="js/flowchart.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"
+integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+crossorigin="anonymous"></script>
+<script src="js/bsmdoc.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/raphael.min.js"></script>
+<script src="js/flowchart.js"></script>
 <title>basics of digital signal processing</title>
 </head>
 <body class="nomathjax">
 <div class="layout">
-
 <div class="menu">
 <ul>
-<li><a href="#sec-1">1 Basics</a>
-<ul>
+<li><a href="#sec-1">1 Basics</a><ul>
 <li><a href="#sec-1-1">1.1 Why Digital System</a></li>
 <li><a href="#sec-1-2">1.2 Sampling Theorem</a></li>
 <li><a href="#sec-1-3">1.3 LTI System</a></li>
@@ -50,7 +48,7 @@ basics of digital signal processing
 <h1 id="sec-1">1 Basics</h1>
 <p>In this section, we will review some basic principles in digital signal processing, which will be widely used in the following sections.</p>
 <h2 id="sec-1-1">1.1 Why Digital System</h2>
-<p>Fig. <a href="#img-comm_cont0">1</a> shows a naive continuous (analog) system. It is comprised of three components: input signal $x(t)$, processing $h_t$, and output signal $y(t)$. Here, the analog signal means:</p>
+<p>Fig. <a href="#img-comm_cont0">1</a> shows a naive continuous (analog) system. It is comprised of three components: input signal \(x(t)\), processing \(h_t\), and output signal \(y(t)\). Here, the analog signal means:</p>
 <ul>
 <li>signal is continuous in time domain;</li>
 <li>its amplitude is continuous too.</li>
@@ -59,7 +57,7 @@ basics of digital signal processing
 <img src="./image/comm_cont0.svg" alt="./image/comm_cont0.svg">
 <figcaption class="caption"><span class="tag">Fig.1.</span> Illustration of a naive communication system.</figcaption>
 </figure>
-<p>Conceptually, all processing can be done in analog domain. However, such procedure has many challenges. For example, in Fig. <a href="#img-comm_cont1">2</a>, the input $x(t)$ is multiplied by $\cos(2\pi ft)+j\sin(2\pi ft)$:</p>
+<p>Conceptually, all processing can be done in analog domain. However, such procedure has many challenges. For example, in Fig. <a href="#img-comm_cont1">2</a>, the input \(x(t)\) is multiplied by \(\cos(2\pi ft)+j\sin(2\pi ft)\):</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -71,13 +69,13 @@ $$
 </div>
 <figure id="img-comm_cont1" class="figure">
 <img src="./image/comm_cont1.svg" alt="./image/comm_cont1.svg">
-<figcaption class="caption"><span class="tag">Fig.2.</span> Modulate the signal $x(t)$ to carrier $f$ in analog domain.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.2.</span> Modulate the signal \(x(t)\) to carrier \(f\) in analog domain.</figcaption>
 </figure>
-<p>The input $x(t)$ is split into two paths: one is multiplied by $\cos(2\pi ft)$, and the other is multiplied by $\sin(2\pi ft)$. Ideally, these two reference signals needs to have:</p>
+<p>The input \(x(t)\) is split into two paths: one is multiplied by \(\cos(2\pi ft)\), and the other is multiplied by \(\sin(2\pi ft)\). Ideally, these two reference signals needs to have:</p>
 <ol>
-<li>same frequency (e.g., $f$),</li>
-<li>same amplitude (e.g, $1$),</li>
-<li>$90^{\circ}$ phase difference.</li>
+<li>same frequency (e.g., \(f\)),</li>
+<li>same amplitude (e.g, \(1\)),</li>
+<li>\(90^{\circ}\) phase difference.</li>
 </ol>
 <p>In practice, these reference signals will never be ideal. For example, they may have amplitude mismatch, as shown in Fig. <a href="#img-comm_cont2">3</a></p>
 <div class="mathjax">
@@ -93,15 +91,15 @@ $$
 <p>where the first term is the desired signal, and the second term is the distortion.</p>
 <figure id="img-comm_cont2" class="figure">
 <img src="./image/comm_cont2.svg" alt="./image/comm_cont2.svg">
-<figcaption class="caption"><span class="tag">Fig.3.</span> Modulate the signal $x(t)$ to carrier $f$ in analog domain with amplitude mismatch.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.3.</span> Modulate the signal \(x(t)\) to carrier \(f\) in analog domain with amplitude mismatch.</figcaption>
 </figure>
 <p>Similarly, any mismatch in phase or frequency will also cause distortion to the output signal.</p>
-<p>If it does not sound challenging, consider a system with $N$ inputs ($x_i(t)$, $i=[1,2,\cdots, N]$), and each one is multiplied by $e^{j2\pi f_i(t)}$, respectively. Now, the system requires to keep the amplitudes, frequencies and phases of all reference signals ($\cos(2\pi f_it)$, $\sin(2\pi f_it)$) for all the time. That's one major reason OFDM (Orthogonal Frequency Division Multiplexing)<a name="footnote_src-1" href="#footnote-1"><sup>1</sup></a> was not widely applied until such a process can be achieved with FFT in digital domain.</p>
+<p>If it does not sound challenging, consider a system with \(N\) inputs (\(x_i(t)\), \(i=[1,2,\cdots, N]\)), and each one is multiplied by \(e^{j2\pi f_i(t)}\), respectively. Now, the system requires to keep the amplitudes, frequencies and phases of all reference signals (\(\cos(2\pi f_it)\), \(\sin(2\pi f_it)\)) for all the time. That's one major reason OFDM (Orthogonal Frequency Division Multiplexing)<a id="footnote_src-1" href="#footnote-1"><sup>1</sup></a> was not widely applied until such a process can be achieved with FFT in digital domain.</p>
 <figure id="img-comm_cont4" class="figure">
 <img src="./image/comm_analog.svg" alt="./image/comm_analog.svg">
-<figcaption class="caption"><span class="tag">Fig.4.</span> Modulate the $N$ signals to $N$ carrier in analog domain.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.4.</span> Modulate the \(N\) signals to \(N\) carrier in analog domain.</figcaption>
 </figure>
-<p>How can digital signal help in this case? In digital domain, all analog signals are first sampled every $T_s = \frac{1}{f_s}$ seconds, where $f_s$ is the sampling frequency; that is</p>
+<p>How can digital signal help in this case? In digital domain, all analog signals are first sampled every \(T_s = \frac{1}{f_s}\) seconds, where \(f_s\) is the sampling frequency; that is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -118,15 +116,15 @@ $$
 </figure>
 <p>Of course, this is not the only advantage of the digital signal processing. For example, digital signal makes the error correction possible.</p>
 <h2 id="sec-1-2">1.2 Sampling Theorem</h2>
-<p>Fig. <a href="#img-comm_dsct">6</a> shows a digital signal processing system. Compared to Fig. <a href="#img-comm_cont0">1</a>, it has two more blocks. First, the input signal $x(t)$ is sampled (e.g., every $T_s$ second) and quantized to get a digital signal $x[n]$, so that the signal processing $h$ can be achieved in digital domain. Finally, the digital output $y[n]$ is converted to analog signal.</p>
+<p>Fig. <a href="#img-comm_dsct">6</a> shows a digital signal processing system. Compared to Fig. <a href="#img-comm_cont0">1</a>, it has two more blocks. First, the input signal \(x(t)\) is sampled (e.g., every \(T_s\) second) and quantized to get a digital signal \(x[n]\), so that the signal processing \(h\) can be achieved in digital domain. Finally, the digital output \(y[n]\) is converted to analog signal.</p>
 <figure id="img-comm_dsct" class="figure">
 <img src="./image/comm_dsct.svg" alt="./image/comm_dsct.svg">
 <figcaption class="caption"><span class="tag">Fig.6.</span> Illustration of a digital signal processing system: (1) the analog signal is sampled, (2) the digital signal is processed; (3) the output digital signal is converted to analog domain.</figcaption>
 </figure>
-<p>Fig. <a href="#img-sampling_ambiguity">7</a> shows the analog sinusoid signal and its discrete time signal by sampling every $T_s$ seconds. The red dots shows the discrete values after sampling. The two analog signals (shown as blue and green curves, respectively) result in the same discrete time signal. In other words, in discrete domain, they are identical, although in analog domain, they are totally different. This causes the ambiguity, that is, the discrete time signal does not uniquely determine one analog signal.</p>
+<p>Fig. <a href="#img-sampling_ambiguity">7</a> shows the analog sinusoid signal and its discrete time signal by sampling every \(T_s\) seconds. The red dots shows the discrete values after sampling. The two analog signals (shown as blue and green curves, respectively) result in the same discrete time signal. In other words, in discrete domain, they are identical, although in analog domain, they are totally different. This causes the ambiguity, that is, the discrete time signal does not uniquely determine one analog signal.</p>
 <figure id="img-sampling_ambiguity" class="figure">
 <img src="./image/sampling_ambiguity.svg" alt="./image/sampling_ambiguity.svg">
-<figcaption class="caption"><span class="tag">Fig.7.</span> The analog sinusoid signal (solid) is sampled every $T_s$ seconds to get its discrete version.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.7.</span> The analog sinusoid signal (solid) is sampled every \(T_s\) seconds to get its discrete version.</figcaption>
 </figure>
 <p>How could we make a one-to-one mapping between the discrete and analog signals? To answer this question, let us see what the discrete signal will look like after sampling. First, define a sampling sequence</p>
 <div class="mathjax">
@@ -136,7 +134,7 @@ $$
 \end{align}
 $$
 </div>
-<p>where $\delta(t)$ is the <a href="https://en.wikipedia.org/wiki/Dirac_delta_function">Dirac delta function</a>. Then,</p>
+<p>where \(\delta(t)\) is the <a href="https://en.wikipedia.org/wiki/Dirac_delta_function">Dirac delta function</a>. Then,</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -147,8 +145,8 @@ x_s(t) &= x(t)s(t)\nonumber\\
 \end{align}
 $$
 </div>
-<p>Do you see how to get $x[n]$ from $x_s(t)$, and visa versa?</p>
-<p>Eq. (\ref{eqn:sampling}) shows that $x_s(t)$ is the production of two signals $x(t)$ and $s(t)$. In frequency domain, $X_s(f)$ is the convolution between $X(f)$ and $S(f)$, that is [<a id="cite-1-1" href="#reference-1">1</a>]</p>
+<p>Do you see how to get \(x[n]\) from \(x_s(t)\), and visa versa?</p>
+<p>Eq. (\ref{eqn:sampling}) shows that \(x_s(t)\) is the production of two signals \(x(t)\) and \(s(t)\). In frequency domain, \(X_s(f)\) is the convolution between \(X(f)\) and \(S(f)\), that is [<a id="cite-1-1" href="#reference-1">1</a>]</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -169,32 +167,32 @@ X_s(f) &= \frac{1}{2\pi}S(f)\ast X(f)\nonumber\\
 \end{align}
 $$
 </div>
-<p>In other words, the frequency response of the discrete signal is the combination of the original analog signal and its shifted copies (i.e., shifted by $kf_s$).
+<p>In other words, the frequency response of the discrete signal is the combination of the original analog signal and its shifted copies (i.e., shifted by \(kf_s\)).
 Fig. <a href="#img-sampling_dsct">8</a> shows the frequency response of the discrete signal. From this frequency response, can we determine the frequency response of the original analog signal?</p>
 <figure id="img-sampling_dsct" class="figure">
 <img src="./image/sampling_dsct.svg" alt="./image/sampling_dsct.svg">
 <figcaption class="caption"><span class="tag">Fig.8.</span> Frequency response of the discrete signal.</figcaption>
 </figure>
-<p>Unfortunately, we can't. For example, as shown in Fig. <a href="#img-sampling_analog">9</a>, if the frequency response of the analog signal is either green line or blue line, its discrete signal will be same as shown in Fig. <a href="#img-sampling_dsct">8</a>, when sampled at $f_s$. Take some time to convince yourself, and can you find some other frequency response that will generate the same discrete signal?</p>
+<p>Unfortunately, we can't. For example, as shown in Fig. <a href="#img-sampling_analog">9</a>, if the frequency response of the analog signal is either green line or blue line, its discrete signal will be same as shown in Fig. <a href="#img-sampling_dsct">8</a>, when sampled at \(f_s\). Take some time to convince yourself, and can you find some other frequency response that will generate the same discrete signal?</p>
 <figure id="img-sampling_analog" class="figure">
 <img src="./image/sampling_analog.svg" alt="./image/sampling_analog.svg">
 <figcaption class="caption"><span class="tag">Fig.9.</span> Frequency response of the discrete signal.</figcaption>
 </figure>
-<p>For the example shown in Fig. <a href="#img-sampling_ambiguity">7</a>, if the frequency of the green signal is $f_g = 1Hz$, then the frequency of the blue signal is $f_b = 6Hz$, and the sampling frequency is $f_s = 5Hz$. Then, $f_b-f_s = 6 - 5 = 1Hz = f_g$. Thus, they generates the same discrete signal.</p>
-<p>So how to avoid such ambiguity? When we have a discrete signal, if we limit its original analog signal frequency to $[-fs/2, fs/2]$, then the analog signal is unique.</p>
+<p>For the example shown in Fig. <a href="#img-sampling_ambiguity">7</a>, if the frequency of the green signal is \(f_g = 1Hz\), then the frequency of the blue signal is \(f_b = 6Hz\), and the sampling frequency is \(f_s = 5Hz\). Then, \(f_b-f_s = 6 - 5 = 1Hz = f_g\). Thus, they generates the same discrete signal.</p>
+<p>So how to avoid such ambiguity? When we have a discrete signal, if we limit its original analog signal frequency to \([-fs/2, fs/2]\), then the analog signal is unique.</p>
 <figure id="img-sampling_dsct2" class="figure">
 <img src="./image/sampling_dsct2.svg" alt="./image/sampling_dsct2.svg">
 <figcaption class="caption"><span class="tag">Fig.10.</span> Frequency response of the discrete signal. Solid line shows the frequency response of its corresponding analog signal, and the dotted lines are the mirrors from sampling.</figcaption>
 </figure>
-<p>There is still a problem. How can we guarantee that the frequency response of the discrete signal within $[-f_s/2, fs/2]$ is same as the original analog signal? For example, as shown in Fig. <a href="#img-sampling_alias">11</a>, the mirror frequency response at $f_s$ will overlap with the base signal (green line). In this case, the frequency response of the discrete signal within $[-fs/2,fs/2]$ will be different from the original analog signal (green line). Such phenomenon is called <b>aliasing</b>.</p>
+<p>There is still a problem. How can we guarantee that the frequency response of the discrete signal within \([-f_s/2, fs/2]\) is same as the original analog signal? For example, as shown in Fig. <a href="#img-sampling_alias">11</a>, the mirror frequency response at \(f_s\) will overlap with the base signal (green line). In this case, the frequency response of the discrete signal within \([-fs/2,fs/2]\) will be different from the original analog signal (green line). Such phenomenon is called <b>aliasing</b>.</p>
 <figure id="img-sampling_alias" class="figure">
 <img src="./image/sampling_alias.svg" alt="./image/sampling_alias.svg">
 <figcaption class="caption"><span class="tag">Fig.11.</span> Frequency response of a discrete signal withing aliasing.</figcaption>
 </figure>
 <div class="info">
-<b>Why is aliasing not good?</b> Without aliasing, the discrete still keeps an exact copy of the original analog signal in frequency domain. Intuitively, we may be able to recover the analog signal from the discrete signal (e.g., $x[n]\rightarrow x_s(t)\rightarrow x(t)$). However, with aliasing, the original signal is distorted, and can not be recovered.
+<b>Why is aliasing not good?</b> Without aliasing, the discrete still keeps an exact copy of the original analog signal in frequency domain. Intuitively, we may be able to recover the analog signal from the discrete signal (e.g., \(x[n]\rightarrow x_s(t)\rightarrow x(t)\)). However, with aliasing, the original signal is distorted, and can not be recovered.
 </div>
-<p>So the next question is how to avoid aliasing? Fig. <a href="#img-sampling_dsct2">10</a> shows that if the signal bandwidth is $B$, then the lowest frequency component of mirror signal at $f_s$ is $f_s-B$. Thus, if $f_s-B&gt;B$, the frequency response within $[-f_s/2, fs/2]$ will not be overlapped with other mirrors, thus, no aliasing. In particular</p>
+<p>So the next question is how to avoid aliasing? Fig. <a href="#img-sampling_dsct2">10</a> shows that if the signal bandwidth is \(B\), then the lowest frequency component of mirror signal at \(f_s\) is \(f_s-B\). Thus, if \(f_s-B&gt;B\), the frequency response within \([-f_s/2, fs/2]\) will not be overlapped with other mirrors, thus, no aliasing. In particular</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -204,14 +202,14 @@ f_s&gt;2B.
 $$
 </div>
 <p>It is called the Nyquist sampling theorem.
-Eq. (\ref{eqn:nyquist_sampling}) tells us the absolute minimum of the sampling frequency. In practice,the sampling frequency is usually much higher. One reason is that if sampling frequency is close to $2B$, the transition band of the anti-aliasing filter will be extremely small, which makes the filter impractical.</p>
-<p>To test whether you understand the sampling theorem, what's the minimal sampling frequency of the following signal? Is it $2Hz$? (Hint: what's the frequency component of a triangle signal with period $1Hz$?)</p>
+Eq. (\ref{eqn:nyquist_sampling}) tells us the absolute minimum of the sampling frequency. In practice,the sampling frequency is usually much higher. One reason is that if sampling frequency is close to \(2B\), the transition band of the anti-aliasing filter will be extremely small, which makes the filter impractical.</p>
+<p>To test whether you understand the sampling theorem, what's the minimal sampling frequency of the following signal? Is it \(2Hz\)? (Hint: what's the frequency component of a triangle signal with period \(1Hz\)?)</p>
 <figure id="img-sampling_triangle" class="figure">
 <img src="./image/sampling_triangle.svg" alt="./image/sampling_triangle.svg">
 <figcaption class="caption"><span class="tag">Fig.12.</span> Triangle signal with period 1s.</figcaption>
 </figure>
 <h2 id="sec-1-3">1.3 LTI System</h2>
-<p>A system $f$ is called a linear system if and only if (iff)</p>
+<p>A system \(f\) is called a linear system if and only if (iff)</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -220,7 +218,7 @@ $$
 \end{align}
 $$
 </div>
-<p>Similarly, a system $f$ is a time invariant system iff</p>
+<p>Similarly, a system \(f\) is a time invariant system iff</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -229,9 +227,9 @@ y(n) = f(x(n)) \Rightarrow y(n-n_0) = f(x(n-n_0)),
 \end{align}
 $$
 </div>
-<p>for every input $x(n)$ and every time shift $n_0$.</p>
+<p>for every input \(x(n)\) and every time shift \(n_0\).</p>
 <p><b>Dirac delta function.</b>
-For LTI system, one of the most important signal is Dirac delta function ($\delta[n]$) (Fig. <a href="#img-delta">13</a>)</p>
+For LTI system, one of the most important signal is Dirac delta function (\(\delta[n]\)) (Fig. <a href="#img-delta">13</a>)</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -244,9 +242,9 @@ $$
 </div>
 <figure id="img-delta" class="figure">
 <img src="./image/delta.svg" alt="./image/delta.svg">
-<figcaption class="caption"><span class="tag">Fig.13.</span> Illustration of impulse function $\delta[n]$ ($-4 \leq n \leq 4$).</figcaption>
+<figcaption class="caption"><span class="tag">Fig.13.</span> Illustration of impulse function \(\delta[n]\) (\(-4 \leq n \leq 4\)).</figcaption>
 </figure>
-<p>Then, any discrete signal $x[n]$ can be represented by $\delta[n]$</p>
+<p>Then, any discrete signal \(x[n]\) can be represented by \(\delta[n]\)</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -254,7 +252,7 @@ $$
 \end{align}
 $$
 </div>
-<p>The output of the LTI system $f$ is</p>
+<p>The output of the LTI system \(f\) is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -265,8 +263,8 @@ $$
 \end{align}
 $$
 </div>
-<p>where the second and third equations come from the fact that the system $f$ is a linear system.
-From Eq. (\ref{eqn:time_invar}), $f(\delta[n-k])$ is just a shifted copy of $f(\delta[n])$. Thus, once we know $f(\delta[n])$, we can easily write down the output of any input signal. $f(\delta[n])$ is called the impulse response of the LTI system $f$, which is usually denoted by $h[n]$.
+<p>where the second and third equations come from the fact that the system \(f\) is a linear system.
+From Eq. (\ref{eqn:time_invar}), \(f(\delta[n-k])\) is just a shifted copy of \(f(\delta[n])\). Thus, once we know \(f(\delta[n])\), we can easily write down the output of any input signal. \(f(\delta[n])\) is called the impulse response of the LTI system \(f\), which is usually denoted by \(h[n]\).
 Thus, Eq. (\ref{eqn:convol}) can be written as</p>
 <div class="mathjax">
 $$
@@ -278,13 +276,13 @@ $$
 \end{align}
 $$
 </div>
-<p>where $A\ast B$ is the convolution between $A$ and $B$.
-So once $h[n]$ is known, the output of the LTI system can be easily got by taking the convolution between the input $x[n]$ and the impulse response $h[n]$. In other words, $h[n]$ contains all the information about the system.</p>
+<p>where \(A\ast B\) is the convolution between \(A\) and \(B\).
+So once \(h[n]\) is known, the output of the LTI system can be easily got by taking the convolution between the input \(x[n]\) and the impulse response \(h[n]\). In other words, \(h[n]\) contains all the information about the system.</p>
 <div class="info">
-If the input signal $x[n]$ is sent to multiple LTI systems in serial, for example, $f_1$ and $f_2$, then it can be shown that $x[n]\rightarrow f_1 \rightarrow f_2$<a name="footnote_src-2" href="#footnote-2"><sup>2</sup></a> is equal to $ x[n]\rightarrow f_2 \rightarrow f_1$. Can you prove it with convolution?
+If the input signal \(x[n]\) is sent to multiple LTI systems in serial, for example, \(f_1\) and \(f_2\), then it can be shown that \(x[n]\rightarrow f_1 \rightarrow f_2\)<a id="footnote_src-2" href="#footnote-2"><sup>2</sup></a> is equal to \( x[n]\rightarrow f_2 \rightarrow f_1\). Can you prove it with convolution?
 </div>
 <p><b>Eigen Function.</b>
-For an LTI system, if its input is a sinusoid (e.g., $e^{j\omega nT}$), then its output will also be a sinusoid with the same frequency (the amplitude and/or phase may change). For LTI system, we have</p>
+For an LTI system, if its input is a sinusoid (e.g., \(e^{j\omega nT}\)), then its output will also be a sinusoid with the same frequency (the amplitude and/or phase may change). For LTI system, we have</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -293,7 +291,7 @@ $$
 \end{align}
 $$
 </div>
-<p>for any time shift $n$ and $n_0$. Letting $n=0$, we have</p>
+<p>for any time shift \(n\) and \(n_0\). Letting \(n=0\), we have</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -301,7 +299,7 @@ $$
 \end{align}
 $$
 </div>
-<p>Finally, letting $n_0=-n$,</p>
+<p>Finally, letting \(n_0=-n\),</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -311,7 +309,7 @@ $$
 </div>
 <p>Thus, the output of an LTI system with sinusoid input is a sinusoid with the same frequency, although the amplitude and phase may be changed. That's also the main reason that sinusoid is used in Fourier transform.</p>
 <p><b>Discrete Time Fourier Transform.</b>
-The discrete time Fourier transform of a discrete sequence $x[n]$ is defined as:</p>
+The discrete time Fourier transform of a discrete sequence \(x[n]\) is defined as:</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -331,9 +329,9 @@ $$
 \end{align}
 $$
 </div>
-<p>In other words, in frequency domain, the output of the LTI system $f$ is simply the multiplication between the input and the impulse response. It is critical to digital signal processing. For example, to design a filter, we can simply focus on the $H(\omega)$.</p>
+<p>In other words, in frequency domain, the output of the LTI system \(f\) is simply the multiplication between the input and the impulse response. It is critical to digital signal processing. For example, to design a filter, we can simply focus on the \(H(\omega)\).</p>
 <h2 id="sec-1-4">1.4 FIR Filter</h2>
-<p>Many digital signal processing tasks can be solved by designing a filter. For example, a low pass filter can be used to filter the high frequency noise before down sampling the signal. Filters are generally grouped into two categories: finite impulse response (FIR) and infinite impulse response (IIR) filters. In this section, we will discuss the FIR. As indicitated by its name, the impulse response of an FIR filter is finite. In other words, the output of an FIR filter with an impulse as its input will be zero after a finite number of samples. Fig. <a href="#img-filter_fir">14</a> shows the basic structure of an FIR filter with order $N$, which can be written as</p>
+<p>Many digital signal processing tasks can be solved by designing a filter. For example, a low pass filter can be used to filter the high frequency noise before down sampling the signal. Filters are generally grouped into two categories: finite impulse response (FIR) and infinite impulse response (IIR) filters. In this section, we will discuss the FIR. As indicitated by its name, the impulse response of an FIR filter is finite. In other words, the output of an FIR filter with an impulse as its input will be zero after a finite number of samples. Fig. <a href="#img-filter_fir">14</a> shows the basic structure of an FIR filter with order \(N\), which can be written as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -350,17 +348,17 @@ $$
 $$
 </div>
 <p>where the <b>order</b> is defined as the maximum delay (in samples).
-If $x[n] = \delta[n]$, it is easy to see $y[0] = h[0]$, $y[1] = h[1]$, $\cdots$, $y[N] = h[N]$, $y[N+1] = 0$, $\cdots$, which is expected since $h$ is the impulse response of the filter by definition.</p>
+If \(x[n] = \delta[n]\), it is easy to see \(y[0] = h[0]\), \(y[1] = h[1]\), \(\cdots\), \(y[N] = h[N]\), \(y[N+1] = 0\), \(\cdots\), which is expected since \(h\) is the impulse response of the filter by definition.</p>
 <figure id="img-filter_fir" class="figure">
 <img src="./image/filter_fir.svg" alt="./image/filter_fir.svg">
 <figcaption class="caption"><span class="tag">Fig.14.</span> FIR filter structure.</figcaption>
 </figure>
 <p><b>Bonded Input Bounded Output.</b>
-An LTI system (e.g., FIR filter) is stable if for any bonded-input, its output is also bounded. In other words, for any bonded input (e.g., $|x[n]|&lt;M_x$, $\forall n$), $|y[n]|&lt;\infty$ if and only if $\sum_{k=0}^{N}{|h[k]|}&lt;\infty$.</p>
+An LTI system (e.g., FIR filter) is stable if for any bonded-input, its output is also bounded. In other words, for any bonded input (e.g., \(|x[n]|&lt;M_x\), \(\forall n\)), \(|y[n]|&lt;\infty\) if and only if \(\sum_{k=0}^{N}{|h[k]|}&lt;\infty\).</p>
 <div class="proof">
 <ol>
 <li>Sufficient.
-If $\sum_{k=0}^{N}{|h[k]|}&lt;\infty$, then
+If \(\sum_{k=0}^{N}{|h[k]|}&lt;\infty\), then
 <div class="mathjax">
 $$
 \begin{align}
@@ -370,9 +368,9 @@ $$
 \end{align}
 $$
 </div>
-Thus, the output $y[n]$ is bounded.</li>
+Thus, the output \(y[n]\) is bounded.</li>
 <li>Necessary.
-If the output $y[n]$ is bounded, in other words $|y[n]|&lt;\infty$ $\forall n$ for any bounded input $x[n]$. Let $x[n-k] = \textrm{sign}(h[k])$, where
+If the output \(y[n]\) is bounded, in other words \(|y[n]|&lt;\infty\) \(\forall n\) for any bounded input \(x[n]\). Let \(x[n-k] = \textrm{sign}(h[k])\), where
 <div class="mathjax">
 $$
 \begin{align}
@@ -382,7 +380,7 @@ $$
 \end{align}
 $$
 </div>
-It is easy to see $x[n]$ is bounded. So, $y[n]$ is also bounded, that is
+It is easy to see \(x[n]\) is bounded. So, \(y[n]\) is also bounded, that is
 <div class="mathjax">
 $$
 \begin{align}
@@ -406,8 +404,8 @@ $$
 \end{align}
 $$
 </div>
-<p>where $M\geq 0$, $N\geq 0$.
-In practice, such filter is infeasible, since it needs to know future inputs $x[n+1]$, $x[n+2]$, $\cdots$ to calculate the current output $y[n]$. That is, the filter is non-casual (the current output is determined by the future inputs). One solution is to introduce some delay to make the filter casual. For example, considering the non-casual filter</p>
+<p>where \(M\geq 0\), \(N\geq 0\).
+In practice, such filter is infeasible, since it needs to know future inputs \(x[n+1]\), \(x[n+2]\), \(\cdots\) to calculate the current output \(y[n]\). That is, the filter is non-casual (the current output is determined by the future inputs). One solution is to introduce some delay to make the filter casual. For example, considering the non-casual filter</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -418,7 +416,7 @@ $$
 \end{align}
 $$
 </div>
-<p>Let $y'[n] = y[n-M]$, $h'[k] = h[k-M]$, Eq. (\ref{eqn:fir}) can be written as</p>
+<p>Let \(y'[n] = y[n-M]\), \(h'[k] = h[k-M]\), Eq. (\ref{eqn:fir}) can be written as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -426,7 +424,7 @@ $$
 \end{align}
 $$
 </div>
-<p>In this case, the filter defined by $h'[k]$ is a casual filter ($y^\prime[n]$ only depends on the current and previous input samples), which introduces $M$ samples delay in both the filter coefficients and the outputs. For simplicity, we will also use $y[n]$ and $h[n]$ to indicate the output and coefficients of the causal FIR filter</p>
+<p>In this case, the filter defined by \(h'[k]\) is a casual filter (\(y^\prime[n]\) only depends on the current and previous input samples), which introduces \(M\) samples delay in both the filter coefficients and the outputs. For simplicity, we will also use \(y[n]\) and \(h[n]\) to indicate the output and coefficients of the causal FIR filter</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -435,7 +433,7 @@ $$
 $$
 </div>
 <p><b>Group Delay.</b>
-Let's assume the coefficients in Eq. (\ref{eqn:fir}) is symmetric; that is $h[-k]=h[k]$, and $M=N$. In this case, its frequency response is real</p>
+Let's assume the coefficients in Eq. (\ref{eqn:fir}) is symmetric; that is \(h[-k]=h[k]\), and \(M=N\). In this case, its frequency response is real</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -446,7 +444,7 @@ $$
 \end{align}
 $$
 </div>
-<p>For a causal filter $h'[k] = h[k-N]$</p>
+<p>For a causal filter \(h'[k] = h[k-N]\)</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -458,7 +456,7 @@ $$
 \end{align}
 $$
 </div>
-<p>And for input $x[n]=e^{j\omega_xn}$, the frequency response is:</p>
+<p>And for input \(x[n]=e^{j\omega_xn}\), the frequency response is:</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -493,7 +491,7 @@ $$
 \end{align}
 $$
 </div>
-<p>In other words, compared to the input, the output is delayed by $N$ samples, and the magnitude is scaled by $ H(\omega_x)$. Since $\omega_x$ is arbitrary, the delay is same for all frequency components, which is donated as group delay:</p>
+<p>In other words, compared to the input, the output is delayed by \(N\) samples, and the magnitude is scaled by \( H(\omega_x)\). Since \(\omega_x\) is arbitrary, the delay is same for all frequency components, which is donated as group delay:</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -503,11 +501,11 @@ $$
 \end{align}
 $$
 </div>
-<p>It is a general definition of group delay of a system. And in most practice case, the FIR filter you designed will be symmetric and the group delay can easily calculated as $(N_{\textrm{FIR}}-1)/2$, where $N_{\textrm{FIR}}$ is the number of filter coefficients.</p>
+<p>It is a general definition of group delay of a system. And in most practice case, the FIR filter you designed will be symmetric and the group delay can easily calculated as \((N_{\textrm{FIR}}-1)/2\), where \(N_{\textrm{FIR}}\) is the number of filter coefficients.</p>
 <div class="info">
-Prove $(N_{\textrm{FIR}}-1)/2$ is also true when $N_{\textrm{FIR}}$ is an even number.
+Prove \((N_{\textrm{FIR}}-1)/2\) is also true when \(N_{\textrm{FIR}}\) is an even number.
 </div>
-<p>For a general FIR filter, it is a little bit complicate. For example, how to calculate the group delay of the filter with coefficients $[M, M-1,\cdots, 1]$? Without lose of generality, let a filter have coefficients $[b_0, b_1, \cdots, b_{M-1}]$. Then the filter output is</p>
+<p>For a general FIR filter, it is a little bit complicate. For example, how to calculate the group delay of the filter with coefficients \([M, M-1,\cdots, 1]\)? Without lose of generality, let a filter have coefficients \([b_0, b_1, \cdots, b_{M-1}]\). Then the filter output is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -550,8 +548,8 @@ $$
 \end{align}
 $$
 </div>
-<p>where $H_i(\omega)^\prime$ and $H_r(\omega)^\prime$ are $\frac{\partial H_i(\omega)}{\partial \omega}$, $\frac{\partial H_r(\omega)}{\partial \omega}$, respectively.
-The delay at $\omega=0$ is</p>
+<p>where \(H_i(\omega)^\prime\) and \(H_r(\omega)^\prime\) are \(\frac{\partial H_i(\omega)}{\partial \omega}\), \(\frac{\partial H_r(\omega)}{\partial \omega}\), respectively.
+The delay at \(\omega=0\) is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -562,7 +560,7 @@ $$
 \end{align}
 $$
 </div>
-<p>Thus for filter with coefficients $[M, M-1, \cdots, 1]$,</p>
+<p>Thus for filter with coefficients \([M, M-1, \cdots, 1]\),</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -576,7 +574,7 @@ $$
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span><span class="p">,</span> <span class="n">pi</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">w</span><span class="p">,</span> <span class="n">gd</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">group_delay</span><span class="p">((</span><span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">w</span><span class="o">/</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">gd</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Group delay (samples)&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Normalized frequency&#39;</span><span class="p">)</span>
@@ -588,11 +586,11 @@ $$
 <div class="bs-demo-rst">
 <figure id="img-groupdelay" class="figure">
 <img src="./image/groupdelay.svg" alt="./image/groupdelay.svg">
-<figcaption class="caption"><span class="tag">Fig.15.</span> Group delay of FIR filter with coefficients $[10,9, \cdots, 1]$. The $x$-axis is the frequency normalized to sampling frequency ($f_n = f/f_s$).</figcaption>
+<figcaption class="caption"><span class="tag">Fig.15.</span> Group delay of FIR filter with coefficients \([10,9, \cdots, 1]\). The \(x\)-axis is the frequency normalized to sampling frequency (\(f_n = f/f_s\)).</figcaption>
 </figure>
 </div>
-<p>As shown in Fig. <a href="#img-groupdelay">15</a>, the group delay at normalized frequency $f_n=0$ is $3$ samples, which matches with Eq. (\ref{eqn:groupdelay_example1}). In other words, for the input signal near $f_n = 0$, the output will be delayed by 3 samples.</p>
-<p>What happens at normalized frequency $f_n \approx  0.1$, where the group delay is negative (e.g., $\approx$ -2)? Following the above group delay definition, it means that there is a time advance between the output and input. So, does it mean we actually create a non-causal system with a casual filter? The answer is no. As we know, for narrow band (band limited) signal, its current signal may be predicted by the previous samples. So at $f_n \approx 0.1$, the filter tries to predict the inputs from its previous samples, which causes an illusion of time advance (<a href="http://www-inst.eecs.berkeley.edu/~ee123/sp14/NegativeGroupDelay.pdf">further reading</a>).</p>
+<p>As shown in Fig. <a href="#img-groupdelay">15</a>, the group delay at normalized frequency \(f_n=0\) is \(3\) samples, which matches with Eq. (\ref{eqn:groupdelay_example1}). In other words, for the input signal near \(f_n = 0\), the output will be delayed by 3 samples.</p>
+<p>What happens at normalized frequency \(f_n \approx  0.1\), where the group delay is negative (e.g., \(\approx\) -2)? Following the above group delay definition, it means that there is a time advance between the output and input. So, does it mean we actually create a non-causal system with a casual filter? The answer is no. As we know, for narrow band (band limited) signal, its current signal may be predicted by the previous samples. So at \(f_n \approx 0.1\), the filter tries to predict the inputs from its previous samples, which causes an illusion of time advance (<a href="http://www-inst.eecs.berkeley.edu/~ee123/sp14/NegativeGroupDelay.pdf">further reading</a>).</p>
 <p><b>Implementation considerations.</b> The general equation of an FIR filter is,</p>
 <div class="mathjax">
 $$
@@ -600,16 +598,16 @@ y[n] = x[n]h[0] + x[n-1]h[1] + x[n-2]h[2] + \cdots + x[n-N+1]h[N-1],
 \label{eqn:fir_imp}
 $$
 </div>
-<p>where $N$ is the filter length.
-So for each input sample, it needs $N$ multiplications and $N-1$ additions to calculate the output. However, in practice, the coefficients of most FIR filter will be symmetric around the center coefficient, that is $h[n]=h[N-1-n], \forall n$. Thus, Eq. (\ref{eqn:fir_imp}) can be written as</p>
+<p>where \(N\) is the filter length.
+So for each input sample, it needs \(N\) multiplications and \(N-1\) additions to calculate the output. However, in practice, the coefficients of most FIR filter will be symmetric around the center coefficient, that is \(h[n]=h[N-1-n], \forall n\). Thus, Eq. (\ref{eqn:fir_imp}) can be written as</p>
 <div class="mathjax">
 $$
 y[n] = (x[n]+x[n-N+1])h[0] + (x[n-1]+x[n-N+2]))h[1] + \cdots,
 \label{eqn:fir_imp_symmetric}
 $$
 </div>
-<p>In this case, it only needs $\sim \frac{N}{2}$ multiplications and $N-1$ additions to calculate output $y[n]$.</p>
-<p>One special case is <b>half band filter</b>, which can be implemented more efficiently. To see how it works, assume its $2N+1$ coefficients are real ($[h[0],h[1],\cdots,h[2N]$), and symmetric $h[n] = h[2N-n]$. Thus, the frequency response is</p>
+<p>In this case, it only needs \(\sim \frac{N}{2}\) multiplications and \(N-1\) additions to calculate output \(y[n]\).</p>
+<p>One special case is <b>half band filter</b>, which can be implemented more efficiently. To see how it works, assume its \(2N+1\) coefficients are real (\([h[0],h[1],\cdots,h[2N]\)), and symmetric \(h[n] = h[2N-n]\). Thus, the frequency response is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -628,7 +626,7 @@ $$
 \end{align}
 $$
 </div>
-<p>Let $|H(0.25-f)|+|H(0.25+f)| = 1$. Thus</p>
+<p>Let \(|H(0.25-f)|+|H(0.25+f)| = 1\). Thus</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -639,7 +637,7 @@ $$
 \end{align}
 $$
 </div>
-<p>So, if $N-n$ is odd,</p>
+<p>So, if \(N-n\) is odd,</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -647,7 +645,7 @@ $$
 \end{align}
 $$
 </div>
-<p>if $N-n$ is even,</p>
+<p>if \(N-n\) is even,</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -655,7 +653,7 @@ $$
 \end{align}
 $$
 </div>
-<p>Thus, to make Eq. (\ref{eqn:fir_halfband}) hold for all $f$, $h[n]=0$ when $N-n$ is even. In other words, roughly half of the coefficients are zero! For example</p>
+<p>Thus, to make Eq. (\ref{eqn:fir_halfband}) hold for all \(f\), \(h[n]=0\) when \(N-n\) is even. In other words, roughly half of the coefficients are zero! For example</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">firwin</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 <span class="n">array</span><span class="p">([</span>  <span class="mf">5.06031712e-03</span><span class="p">,</span>  <span class="o">-</span><span class="mf">3.25061549e-18</span><span class="p">,</span>  <span class="o">-</span><span class="mf">4.19428794e-02</span><span class="p">,</span>
@@ -664,17 +662,17 @@ $$
         <span class="o">-</span><span class="mf">3.25061549e-18</span><span class="p">,</span>   <span class="mf">5.06031712e-03</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>Thus, it only needs roughly $N/4$ multiplications and $N/2$ additions to calculate the output.</p>
+<p>Thus, it only needs roughly \(N/4\) multiplications and \(N/2\) additions to calculate the output.</p>
 <p>Another special case is <b>polyphase filter</b>, which will be discussed later.
 In such case, the computation complexity can be further decrease by</p>
 <ol>
 <li>not calculating the output that will be discard by the following block,</li>
 <li>not calculating the multiplication when the input is zero.</li>
 </ol>
-<p>So far, we are focusing on reducing the number of multiplications. It makes sense for many hardware implementations (e.g., ASIC or FPGA), where multiplications is expensive (e.g., area, time). Occasionally, you may also needs to implement the filter in pure software. Here software is not something like Matlab, Scilab, or scipy, where you may always have access to some efficient pre-defined functions. For example, you may need to implement an FIR filter on a ARM MCU. As shown in Fig. <a href="#img-fir_flow">16</a>, at each input sample, you will need to calculate the multiplications between input samples $x[n]$ and filter coefficients $h[n]$, then shift the current input to the buffer.</p>
+<p>So far, we are focusing on reducing the number of multiplications. It makes sense for many hardware implementations (e.g., ASIC or FPGA), where multiplications is expensive (e.g., area, time). Occasionally, you may also needs to implement the filter in pure software. Here software is not something like Matlab, Scilab, or scipy, where you may always have access to some efficient pre-defined functions. For example, you may need to implement an FIR filter on a ARM MCU. As shown in Fig. <a href="#img-fir_flow">16</a>, at each input sample, you will need to calculate the multiplications between input samples \(x[n]\) and filter coefficients \(h[n]\), then shift the current input to the buffer.</p>
 <div class="figure">
 <figure id="img-fir_flow" class="figure">
-<img src="" alt="" id="diagram">
+    <div id="diagram"></div>
 <figcaption class="caption"><span class="tag">Fig.16.</span> Operations for FIR filter at each input sample.</figcaption>
 </figure>
 </div>
@@ -688,9 +686,9 @@ In such case, the computation complexity can be further decrease by</p>
                                 'st->op0->op1->op2(right)->op0');
   diagram.drawSVG('diagram');
 </script>
-<p>For some implementations, <b>Shift input to buffer</b> operation may also be expensive. For example, for a filter with length $N$, at $n^{th}$ sample, $x[n]$ is move to $b[0]$, $x[n-1]$ is moved from $b[0]$ to $b[1]$, $\cdots$, $x[n-N+1]$ is moved to $x[N-1]$, while $x[n-N]$ is discarded.</p>
+<p>For some implementations, <b>Shift input to buffer</b> operation may also be expensive. For example, for a filter with length \(N\), at \(n^{th}\) sample, \(x[n]\) is move to \(b[0]\), \(x[n-1]\) is moved from \(b[0]\) to \(b[1]\), \(\cdots\), \(x[n-N+1]\) is moved to \(x[N-1]\), while \(x[n-N]\) is discarded.</p>
 <p>As shown in <a href="https://github.com/gregnordin/LIFSrProj_F15/blob/master/DSP/digital_filter_explore/ScopeFIR-example%20files/fir_algs/FirAlgs.c">FirAlgs.c</a>, there are several ways to handle this.
-The naive solution may look like<a name="footnote_src-3" href="#footnote-3"><sup>3</sup></a></p>
+The naive solution may look like<a id="footnote_src-3" href="#footnote-3"><sup>3</sup></a></p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="n">SAMPLE</span> <span class="nf">fir_basic</span><span class="p">(</span><span class="n">SAMPLE</span> <span class="n">input</span><span class="p">,</span> <span class="kt">int</span> <span class="n">ntaps</span><span class="p">,</span> <span class="k">const</span> <span class="n">SAMPLE</span> <span class="n">h</span><span class="p">[],</span> <span class="n">SAMPLE</span> <span class="n">z</span><span class="p">[])</span>
 <span class="p">{</span>
@@ -747,12 +745,12 @@ The naive solution may look like<a name="footnote_src-3" href="#footnote-3"><sup
 </pre></div>
 </div>
 <p>Now it only has one <b>for</b> loop, and no need to shift the input samples. However, in this <b>for</b> loop, it needs to check the index overflow of the buffer, which is also expensive.</p>
-<p>In this case, we can use two filter coefficients copies to avoid checking the buffer index inside the loop. For example, assume the filter coefficients are $h[0] \sim h[4]$, and the inputs are $x[0]$, $x[1]$, $x[2]$, $\cdots$. Since the number of the filter coefficients is 5, we need to have a buffer of length 5 to hold all the inputs, and a buffer of length 10 to hold two copies of the filter coefficients<a name="footnote_src-4" href="#footnote-4"><sup>4</sup></a>. Fig. <a href="#img-filter_fir_dbl_h0">17</a> shows the buffer status when the first input $x[0]$ arrives. $x[0]$ is stored at position 0 of the data buffer, i.e., $b[0]$.</p>
+<p>In this case, we can use two filter coefficients copies to avoid checking the buffer index inside the loop. For example, assume the filter coefficients are \(h[0] \sim h[4]\), and the inputs are \(x[0]\), \(x[1]\), \(x[2]\), \(\cdots\). Since the number of the filter coefficients is 5, we need to have a buffer of length 5 to hold all the inputs, and a buffer of length 10 to hold two copies of the filter coefficients<a id="footnote_src-4" href="#footnote-4"><sup>4</sup></a>. Fig. <a href="#img-filter_fir_dbl_h0">17</a> shows the buffer status when the first input \(x[0]\) arrives. \(x[0]\) is stored at position 0 of the data buffer, i.e., \(b[0]\).</p>
 <figure id="img-filter_fir_dbl_h0" class="figure">
 <img src="./image/filter_fir_dbl_h0.svg" alt="./image/filter_fir_dbl_h0.svg">
-<figcaption class="caption"><span class="tag">Fig.17.</span> Status of buffers with double filter coefficients filtering, when $x[0]$ arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.17.</span> Status of buffers with double filter coefficients filtering, when \(x[0]\) arrives.</figcaption>
 </figure>
-<p>To calculate the filter output, align $b[0]$ with $h[0]$ (as show in Fig. <a href="#img-filter_fir_dbl_h0">17</a>), that is</p>
+<p>To calculate the filter output, align \(b[0]\) with \(h[0]\) (as show in Fig. <a href="#img-filter_fir_dbl_h0">17</a>), that is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -761,20 +759,20 @@ y[0] &= h[0] x[0] + h[1]\times 0 + h[2] \times 0 + h[3]\times 0 + h[4]\times 0\n
 \end{align}
 $$
 </div>
-<p>When the next input $x[1]$ arrives, it will be stored at position $0-1 = 4 (\textrm{mod 5})$ of the input buffer, rather than shifting $x[0]$. The buffer will look like</p>
+<p>When the next input \(x[1]\) arrives, it will be stored at position \(0-1 = 4 (\textrm{mod 5})\) of the input buffer, rather than shifting \(x[0]\). The buffer will look like</p>
 <figure id="img-filter_fir_dbl_h1" class="figure">
 <img src="./image/filter_fir_dbl_h1.svg" alt="./image/filter_fir_dbl_h1.svg">
-<figcaption class="caption"><span class="tag">Fig.18.</span> Status of buffers with double filter coefficients filtering, when $x[1]$ arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.18.</span> Status of buffers with double filter coefficients filtering, when \(x[1]\) arrives.</figcaption>
 </figure>
 <p>In naive implementation, we want the correlation to be done as</p>
 <figure id="img-filter_fir_dbl_h2" class="figure">
 <img src="./image/filter_fir_dbl_h2.svg" alt="./image/filter_fir_dbl_h2.svg">
-<figcaption class="caption"><span class="tag">Fig.19.</span> Naive filtering buffer status, when $x[1]$ arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.19.</span> Naive filtering buffer status, when \(x[1]\) arrives.</figcaption>
 </figure>
 <p>Fortunately, in double filter coefficients implementation, it can be achieved by aligning the data buffer and the filter coefficients buffer,</p>
 <figure id="img-filter_fir_dbl_h3" class="figure">
 <img src="./image/filter_fir_dbl_h3.svg" alt="./image/filter_fir_dbl_h3.svg">
-<figcaption class="caption"><span class="tag">Fig.20.</span> Align the filter coefficients buffer with data buffer properly for multiplication, when $x[1]$ arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.20.</span> Align the filter coefficients buffer with data buffer properly for multiplication, when \(x[1]\) arrives.</figcaption>
 </figure>
 <p>In other words, align the 1st element of data buffer with the 2nd element of the filter coefficients buffer. Then the multiplication and summation is done on two continuous buffers. In some MCU, it can be implemented efficiently. And due to the double copies of the filter coefficients, there is no need to check the overflow of the filter coefficients buffer.
 It is easy to see that</p>
@@ -787,10 +785,10 @@ y[1] &= h[1] \times x[0] + h[2] \times 0 + h[3] \times 0 + h[4] \times 0 + h[0] 
 $$
 </div>
 <p>which is same as the multiplication result from Fig. <a href="#img-filter_fir_dbl_h2">19</a>.</p>
-<p>Similarly, for 3rd inputs $x[2]$, it will be stored at position $4-1=3$ of data buffer, and the correlation can be done by aligning the input and filter coefficients buffer as</p>
+<p>Similarly, for 3rd inputs \(x[2]\), it will be stored at position \(4-1=3\) of data buffer, and the correlation can be done by aligning the input and filter coefficients buffer as</p>
 <figure id="img-filter_fir_dbl_h4" class="figure">
 <img src="./image/filter_fir_dbl_h4.svg" alt="./image/filter_fir_dbl_h4.svg">
-<figcaption class="caption"><span class="tag">Fig.21.</span> Align the filter coefficients buffer and data buffer properly for multiplication, when $x[2]$ arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.21.</span> Align the filter coefficients buffer and data buffer properly for multiplication, when \(x[2]\) arrives.</figcaption>
 </figure>
 <p>One possible implementation may look like</p>
 <div class="bs-demo">
@@ -838,7 +836,7 @@ For this trivial example, define the signal and noise</p>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;signal&#39;</span><span class="p">,</span> <span class="s1">&#39;noise&#39;</span><span class="p">])</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span> <span class="mi">20</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">s</span><span class="o">+</span><span class="n">n</span><span class="p">))))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="mi">20</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">s</span><span class="o">+</span><span class="n">n</span><span class="p">))))</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Normalized frequency&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -848,7 +846,7 @@ For this trivial example, define the signal and noise</p>
 <img src="./image/fir_demo_signal.svg" alt="./image/fir_demo_signal.svg">
 </figure>
 </div>
-<p>Next step is to make the fixed-point input. It basically relies on the system and the previous block. For example, if the previous block is an ADC, then it may have some fixed data bit-width (e.g., 8 or 10 bits per sample). For this example, we assume that each sample of input has 8 bits, and 3 bits before the decimal point. In particular, the range of the input values is $[-4, 3.96785]$<a name="footnote_src-5" href="#footnote-5"><sup>5</sup></a> with step 0.3125. Thus, as shown in the following figure, the difference between the fixed-point and float-point samples is $[-0.0156, 0.0156]$.</p>
+<p>Next step is to make the fixed-point input. It basically relies on the system and the previous block. For example, if the previous block is an ADC, then it may have some fixed data bit-width (e.g., 8 or 10 bits per sample). For this example, we assume that each sample of input has 8 bits, and 3 bits before the decimal point. In particular, the range of the input values is \([-4, 3.96785]\)<a id="footnote_src-5" href="#footnote-5"><sup>5</sup></a> with step 0.3125. Thus, as shown in the following figure, the difference between the fixed-point and float-point samples is \([-0.0156, 0.0156]\).</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># normalize the input signal to 8 bits (3 bits before the decimal point)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">s</span><span class="o">+</span><span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="o">**</span><span class="mi">5</span>
@@ -889,7 +887,7 @@ For this trivial example, define the signal and noise</p>
 </figure>
 </div>
 <p>As shown in the above figure, after the filter, the majority of the noise has been filtered out. And note there is a delay between the signal and the filtered output due to the filter.</p>
-<p>Everything looks fine. Now we start to design the fixed-point filter. The maximum filter coefficient is 0.17940155, thus the first 2 bits after the decimal point is always zero, for example, in binary format <b>b'.0010110111101101</b>. So if we want the coefficients to have 8 effective bits, we will keep the coefficients from bit -3 to bit -10, i.e., b'.00<b>10110111</b>101101<a name="footnote_src-6" href="#footnote-6"><sup>6</sup></a>. And since the 11th bit is <b>1</b>, add 1 to 10th bits as we use <b>round</b> for truncation. Thus, the final fixed-point coefficients for 0.17940155 is b'.00<b>10111000</b>.</p>
+<p>Everything looks fine. Now we start to design the fixed-point filter. The maximum filter coefficient is 0.17940155, thus the first 2 bits after the decimal point is always zero, for example, in binary format <b>b'.0010110111101101</b>. So if we want the coefficients to have 8 effective bits, we will keep the coefficients from bit -3 to bit -10, i.e., b'.00<b>10110111</b>101101<a id="footnote_src-6" href="#footnote-6"><sup>6</sup></a>. And since the 11th bit is <b>1</b>, add 1 to 10th bits as we use <b>round</b> for truncation. Thus, the final fixed-point coefficients for 0.17940155 is b'.00<b>10111000</b>.</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">Nc</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">bf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">b</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">Nc</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">Nc</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
@@ -945,7 +943,7 @@ Besides the <b>round</b>, you may also try some other truncation method (see <a 
 <img src="./image/fir_demo_signal_filtered_fix_mse2.svg" alt="./image/fir_demo_signal_filtered_fix_mse2.svg">
 </figure>
 </div>
-<p>One thing we haven't discussed yet is the output. For example, in above example, the input is 8 bits. If the filter coefficient is also 8 bits, the output will be 20 bits (8+8+4<a name="footnote_src-7" href="#footnote-7"><sup>7</sup></a>). However, it may be not necessary to output all these 20 bits to the next block, since, for example, the LSB bits may contain only noise, and/or the MSB bits may be always zero (or sign bits). For this example, the expected output is within $[-1,1]$, it may be reasonable to have 3 bits for integers (include 1 sign bit). To quantify the signal, we need additional saturation step to make sure the output value is within its range (e.g., no overflow). It is especially important when we try to ignore the MSB bits in the result.</p>
+<p>One thing we haven't discussed yet is the output. For example, in above example, the input is 8 bits. If the filter coefficient is also 8 bits, the output will be 20 bits (8+8+4<a id="footnote_src-7" href="#footnote-7"><sup>7</sup></a>). However, it may be not necessary to output all these 20 bits to the next block, since, for example, the LSB bits may contain only noise, and/or the MSB bits may be always zero (or sign bits). For this example, the expected output is within \([-1,1]\), it may be reasonable to have 3 bits for integers (include 1 sign bit). To quantify the signal, we need additional saturation step to make sure the output value is within its range (e.g., no overflow). It is especially important when we try to ignore the MSB bits in the result.</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">Nc</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">bf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">b</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">Nc</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">Nc</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
@@ -979,17 +977,17 @@ y[n] = \sum_{m=1}^{M}{a[m]y[n-m]} + \sum_{l=0}^{L}{b[l]x[n-l]}.
 \end{align}
 $$
 </div>
-<p>For simplicity, when $L=M=1$, the IIR filter structure is shown in Fig. <a href="#img-filter_iir">22</a>.</p>
+<p>For simplicity, when \(L=M=1\), the IIR filter structure is shown in Fig. <a href="#img-filter_iir">29</a>.</p>
 <figure id="img-filter_iir" class="figure">
 <img src="./image/filter_iir_s.svg" alt="./image/filter_iir_s.svg">
-<figcaption class="caption"><span class="tag">Fig.22.</span> IIR filter direct form I structure.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.29.</span> IIR filter direct form I structure.</figcaption>
 </figure>
 <p>We can interchange the left and right components to get</p>
 <figure id="img-filter_iir2" class="figure">
 <img src="./image/filter_iir2_s.svg" alt="./image/filter_iir2_s.svg">
-<figcaption class="caption"><span class="tag">Fig.23.</span> IIR filter structure.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.30.</span> IIR filter structure.</figcaption>
 </figure>
-<p>To see the filters in Figs. <a href="#img-filter_iir">22</a> and <a href="#img-filter_iir2">23</a> are identical,</p>
+<p>To see the filters in Figs. <a href="#img-filter_iir">29</a> and <a href="#img-filter_iir2">30</a> are identical,</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1009,19 +1007,19 @@ y[n] &= b[0](x[n]+a[1]w[n-1])+b[1](x[n-1]+a[1]w[n-2])\nonumber\\
 \end{align}
 $$
 </div>
-<p>which is identical to the Fig. <a href="#img-filter_iir">22</a>. It is easy to see that both delay units in Fig. <a href="#img-filter_iir2">23</a> store the same data $w[n-1]$. So one can be eliminated</p>
+<p>which is identical to the Fig. <a href="#img-filter_iir">29</a>. It is easy to see that both delay units in Fig. <a href="#img-filter_iir2">30</a> store the same data \(w[n-1]\). So one can be eliminated</p>
 <figure id="img-filter_iir3" class="figure">
 <img src="./image/filter_iir3_s.svg" alt="./image/filter_iir3_s.svg">
-<figcaption class="caption"><span class="tag">Fig.24.</span> IIR filter direct form II structure.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.31.</span> IIR filter direct form II structure.</figcaption>
 </figure>
-<p>As mentioned above, the FIR filter is always stable (i.e., bonded input bounded output); however, it is not true for IIR filter. For example, if $a[1]= 2$ and $b[0]=b[1]=1$, that is</p>
+<p>As mentioned above, the FIR filter is always stable (i.e., bonded input bounded output); however, it is not true for IIR filter. For example, if \(a[1]= 2\) and \(b[0]=b[1]=1\), that is</p>
 <div class="mathjax">
 $$
 y[n] = 2y[n-1] + x[n]+x[n-1],
 $$
 </div>
-<p>it is easy to see that for bounded input $x[n]=\delta(n)$, $y[n]$ approaches infinity.
-To see when the IIR filter is stable, let's solve the difference equations defined by Eq. (\ref{eqn:filter_iir}). First let $x[n]=0$, $\forall n$, that is</p>
+<p>it is easy to see that for bounded input \(x[n]=\delta(n)\), \(y[n]\) approaches infinity.
+To see when the IIR filter is stable, let's solve the difference equations defined by Eq. (\ref{eqn:filter_iir}). First let \(x[n]=0\), \(\forall n\), that is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1030,7 +1028,7 @@ y[n] = a[1]y[n-1],
 \end{align}
 $$
 </div>
-<p>which is called homogeneous difference equation. Its general solution is $y[n] = A\lambda^n$. Substitute it into Eq. (\ref{eqn:iir_homogeneous}),</p>
+<p>which is called homogeneous difference equation. Its general solution is \(y[n] = A\lambda^n\). Substitute it into Eq. (\ref{eqn:iir_homogeneous}),</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1038,7 +1036,7 @@ A\lambda^n = a[1]A\lambda^{n-1},
 \end{align}
 $$
 </div>
-<p>which leads to $\lambda = a[1]$ and $y[n] = Aa[1]^n$. It is easy to see that if $|a[1]|&gt;1$, $y[n]$ will approach infinity.</p>
+<p>which leads to \(\lambda = a[1]\) and \(y[n] = Aa[1]^n\). It is easy to see that if \(|a[1]|&gt;1\), \(y[n]\) will approach infinity.</p>
 <p>Even sometime the filter is stable, its intermittent value may approach infinity. For example, consider a filter</p>
 <div class="mathjax">
 $$
@@ -1047,7 +1045,7 @@ y[n] = y[n-1] + x[n] - x[n-2]
 \end{align}
 $$
 </div>
-<p>which is stable since it is equivalent to filter $y[n] = x[n]+x[n-1]$. However, if it is implemented as (direct II form)</p>
+<p>which is stable since it is equivalent to filter \(y[n] = x[n]+x[n-1]\). However, if it is implemented as (direct II form)</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1056,7 +1054,7 @@ y[n] &= w[n] - w[n-2],
 \end{align}
 $$
 </div>
-<p>it is easy to see $w[n]$ is not stable. So when implementing a filter, we need to make sure all internal values are also bounded; otherwise, the filter may not work correctly.</p>
+<p>it is easy to see \(w[n]\) is not stable. So when implementing a filter, we need to make sure all internal values are also bounded; otherwise, the filter may not work correctly.</p>
 <p><b>Group delay.</b> As shown in previous section, for FIR filter with symmetric coefficients, the group delay is a constant. In other words, each frequency component will experience a same phase delay after the filter. It is a very nice feature since the signal will not be distorted. However, it is not true for IIR filter. Thus, it is good idea to check the group delay carefully, especially when the signal bandwidth is so large that the group delay within that band may not be roughly a constant.</p>
 <p><b>Fixed-point design.</b> Let use the simplest first order IIR filter as an example.</p>
 <div class="mathjax">
@@ -1087,7 +1085,7 @@ $$
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>As usual, for fixed-point design, we need to determine the input ($x[n]$), output ($y[n]$), and the filter coefficient ($\alpha$) bit-widths. As mentioned before, this can be done with simulation. For example, we may try 6 bits input and keep the output/filter coefficients unchanged (float or double), then compared the difference between the output with the previous all float filter. If the performance is within the specification (e.g., SNR), we are done. Otherwise, try 7 bits, 8 bits..., until we are satisfied.</p>
+<p>As usual, for fixed-point design, we need to determine the input (\(x[n]\)), output (\(y[n]\)), and the filter coefficient (\(\alpha\)) bit-widths. As mentioned before, this can be done with simulation. For example, we may try 6 bits input and keep the output/filter coefficients unchanged (float or double), then compared the difference between the output with the previous all float filter. If the performance is within the specification (e.g., SNR), we are done. Otherwise, try 7 bits, 8 bits..., until we are satisfied.</p>
 <p>Once we determine the input bit-width (e.g., 10bits after decimal point, total bits 12 bits); we can continue to determine the bit-width of filter coefficients and output with same method.
 After all bit-widths are determined, we can implement the fixed-point IIR.</p>
 <p>For example, if we determine that input has 10 bits after decimal point (total 12 bits); coefficient has 8 bits after decimal point (total 8 bits); output 12 bits after decimal point (total 16 bits)</p>
@@ -1101,7 +1099,7 @@ y_i[n] &= y[n]\times 2^{12},
 \end{align}
 $$
 </div>
-<p>where $x_i[n]$, $y_i[n]$, and $\alpha_i$ are the fixed-point input, output and filter coefficient, respectively (represented by integer).
+<p>where \(x_i[n]\), \(y_i[n]\), and \(\alpha_i\) are the fixed-point input, output and filter coefficient, respectively (represented by integer).
 Substitute Eq. (\ref{eqn:iir_1st_fixed_def}) into Eq. (\ref{eqn:iir_1st})</p>
 <div class="mathjax">
 $$
@@ -1143,7 +1141,7 @@ x = s + n,
 \end{align}
 $$
 </div>
-<p>where $s$ is a either 1 or -1, $n$ is noise. How to detect $s$ by receiving $x$? One reasonable idea is to check whether $x$ is more likely to be received when $s=1$ is transmitted. In other words, if the probability of receiving $x$ given $s=1$ is sent ($p(x|s=1)$) is larger than the probability of receiving $x$ given $s=-1$ is sent ($p(x|s=-1)$), then we can says that $s=1$ is transmitted, and visa versa. That is</p>
+<p>where \(s\) is a either 1 or -1, \(n\) is noise. How to detect \(s\) by receiving \(x\)? One reasonable idea is to check whether \(x\) is more likely to be received when \(s=1\) is transmitted. In other words, if the probability of receiving \(x\) given \(s=1\) is sent (\(p(x|s=1)\)) is larger than the probability of receiving \(x\) given \(s=-1\) is sent (\(p(x|s=-1)\)), then we can says that \(s=1\) is transmitted, and visa versa. That is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1152,7 +1150,7 @@ p(x|s=1) \mathrel{\mathop\gtrless\limits^{1}_{-1}}  p(x|s=-1).
 \end{align}
 $$
 </div>
-<p>Eq. (\ref{eqn:det_binary}) is called ML (maximum likelihood) detection. If $n$ is AWGN (additive white Gaussian noise), both $p(x|s=1)$ and $p(x|s=-1)$ follow Gaussian distribution, i.e.,</p>
+<p>Eq. (\ref{eqn:det_binary}) is called ML (maximum likelihood) detection. If \(n\) is AWGN (additive white Gaussian noise), both \(p(x|s=1)\) and \(p(x|s=-1)\) follow Gaussian distribution, i.e.,</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1161,7 +1159,7 @@ p(x|s=-1) &= \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x+1)^2}{2\sigma^2}},
 \end{align}
 $$
 </div>
-<p>where $\sigma^2$ is the variance of $n$. In this case, Eq. (\ref{eqn:det_binary}) can be written as</p>
+<p>where \(\sigma^2\) is the variance of \(n\). In this case, Eq. (\ref{eqn:det_binary}) can be written as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1175,12 +1173,12 @@ x &\mathrel{\mathop\gtrless\limits^{1}_{-1}}  0.
 \end{align}
 $$
 </div>
-<p>Thus, the ML detection rule is very simple, that is, if $x$ is large than 0, $s=1$ is sent, otherwise $s=-1$ is sent. It can also be read from Fig. <a href="#img-basic_det_ml_prop">25</a>. For example, when $x&gt;0$, $p(x|s=1)&gt;p(x|s=-1)$.</p>
+<p>Thus, the ML detection rule is very simple, that is, if \(x\) is large than 0, \(s=1\) is sent, otherwise \(s=-1\) is sent. It can also be read from Fig. <a href="#img-basic_det_ml_prop">32</a>. For example, when \(x&gt;0\), \(p(x|s=1)&gt;p(x|s=-1)\).</p>
 <figure id="img-basic_det_ml_prop" class="figure">
 <img src="./image/basics_det_ml_prop.png" alt="./image/basics_det_ml_prop.png">
-<figcaption class="caption"><span class="tag">Fig.25.</span> Conditional probability of the received signal $x$ given the transmitted signal $s$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.32.</span> Conditional probability of the received signal \(x\) given the transmitted signal \(s\).</figcaption>
 </figure>
-<p>Such procedure may have a drawback since it does not take the probability of $s=1$ or $s=-1$ into consideration. For example, if $p(s=1)=1$ (i.e., the system keeps sending 1), the optimal detection procedure should also always determine $s=1$ is sent, instead of the one shown in Eq. (\ref{eqn:det_binary_ml}). In this case, the object function is changed to</p>
+<p>Such procedure may have a drawback since it does not take the probability of \(s=1\) or \(s=-1\) into consideration. For example, if \(p(s=1)=1\) (i.e., the system keeps sending 1), the optimal detection procedure should also always determine \(s=1\) is sent, instead of the one shown in Eq. (\ref{eqn:det_binary_ml}). In this case, the object function is changed to</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1190,7 +1188,7 @@ p(s=1|x) &\mathrel{\mathop\gtrless\limits^{1}_{-1}}  p(s=-1|x).
 $$
 </div>
 <p>It is also called MAP (Maximum A Posteriori) estimation.
-This time, we compare the probability of $s=1$ and $s=-1$ given $x$ is received. Thanks to Bayes' theorem,</p>
+This time, we compare the probability of \(s=1\) and \(s=-1\) given \(x\) is received. Thanks to Bayes' theorem,</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1213,17 +1211,17 @@ x &\mathrel{\mathop\gtrless\limits^{1}_{-1}} \frac{\sigma^2}{2}\ln(\frac{p(s=-1)
 \end{align}
 $$
 </div>
-<p>So, if $p(s=-1)&gt;p(s=1)$, compared to ML, the decision boundary of MAP will shift to the right, as shown in Fig. <a href="#img-basic_det_map_prop">26</a>.</p>
+<p>So, if \(p(s=-1)&gt;p(s=1)\), compared to ML, the decision boundary of MAP will shift to the right, as shown in Fig. <a href="#img-basic_det_map_prop">33</a>.</p>
 <figure id="img-basic_det_map_prop" class="figure">
 <img src="./image/basics_det_map_prop.png" alt="./image/basics_det_map_prop.png">
-<figcaption class="caption"><span class="tag">Fig.26.</span> Conditional probability of the transmitted signal $s$ given the received signal $x$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.33.</span> Conditional probability of the transmitted signal \(s\) given the received signal \(x\).</figcaption>
 </figure>
-<p>Similarly if $p(s=-1)&lt;p(s=1)$, the MAP decision boundary will look like</p>
+<p>Similarly if \(p(s=-1)&lt;p(s=1)\), the MAP decision boundary will look like</p>
 <figure id="img-basic_det_map_prop2" class="figure">
 <img src="./image/basics_det_map_prop2.png" alt="./image/basics_det_map_prop2.png">
-<figcaption class="caption"><span class="tag">Fig.27.</span> Conditional probability of the transmitted signal $s$ given the received signal $x$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.34.</span> Conditional probability of the transmitted signal \(s\) given the received signal \(x\).</figcaption>
 </figure>
-<p>MAP looks more reasonable than ML, however, in practice, ML is widely used to detect/estimate the signal. One reason is that the signal from the transmitter is almost always randomized (or with scramble block), in other words roughly $p(s=1)=p(s=-1)=0.5$.</p>
+<p>MAP looks more reasonable than ML, however, in practice, ML is widely used to detect/estimate the signal. One reason is that the signal from the transmitter is almost always randomized (or with scramble block), in other words roughly \(p(s=1)=p(s=-1)=0.5\).</p>
 <p>So far we discuss the detection of a constant signal from noise. How about detecting a waveform, instead of a constant, from noise? For example</p>
 <div class="mathjax">
 $$
@@ -1241,7 +1239,7 @@ y &= \sum_{k=-\infty}^{\infty}{x[k]h[k]}\nonumber\\
 \end{align}
 $$
 </div>
-<p>where the first item is the signal, the second item is the noise, and $h[k]$ is the local reference signal. The goal here is to choose $h[k]$ to maximize the SNR (signal noise ratio), that is</p>
+<p>where the first item is the signal, the second item is the noise, and \(h[k]\) is the local reference signal. The goal here is to choose \(h[k]\) to maximize the SNR (signal noise ratio), that is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1258,7 +1256,7 @@ E((\sum_{k=-\infty}^{\infty}{s[k]h[k]})^2) &= (\sum_{k=-\infty}^{\infty}{s[k]h[k
 \end{align}
 $$
 </div>
-<p>where the inequality comes from the <a href="https://en.wikipedia.org/wiki/Cauchy%E2%80%93Schwarz_inequality">Cauchy-Schwarz inequality</a>. And two sides are equal if and only if $h[k]=c\cdot s[k]$, $\forall k$, where $c$ is a constant.
+<p>where the inequality comes from the <a href="https://en.wikipedia.org/wiki/Cauchy%E2%80%93Schwarz_inequality">Cauchy-Schwarz inequality</a>. And two sides are equal if and only if \(h[k]=c\cdot s[k]\), \(\forall k\), where \(c\) is a constant.
 The denominator can be simplified as</p>
 <div class="mathjax">
 $$
@@ -1268,7 +1266,7 @@ E((\sum_{k=-\infty}^{\infty}{n[k]h[k]})^2) &= \sum_{k=-\infty}^{\infty}{E(n[k]^2
 \end{align}
 $$
 </div>
-<p>where $E(n[k]^2)=\sigma^2$. Here we assume $n[k]$ and $n[m]$ $\forall k\neq m$ are uncorrelated, that is $E(n[k]n[m])=0$.
+<p>where \(E(n[k]^2)=\sigma^2\). Here we assume \(n[k]\) and \(n[m]\) \(\forall k\neq m\) are uncorrelated, that is \(E(n[k]n[m])=0\).
 Thus</p>
 <div class="mathjax">
 $$
@@ -1279,10 +1277,9 @@ $$
 \end{align}
 $$
 </div>
-<p>The SNR achieve its maximum when $h[k]=c\cdot s[k]$, $\forall k$, where $c$ is constant (e.g., $c=1$). It is also called matched filter.</p>
+<p>The SNR achieve its maximum when \(h[k]=c\cdot s[k]\), \(\forall k\), where \(c\) is constant (e.g., \(c=1\)). It is also called matched filter.</p>
 </div>
 </div>
-
 <div class="reference">
 <ol>
 <li><div id="reference-1">
@@ -1298,7 +1295,7 @@ Alan V. Oppenheim, Ronald W. Schafer, "Discrete-Time Signal Processing," Pearson
 In OFDM, the original data is modulated to multiple orthogonal sub-carriers. <a href="#footnote_src-1">&#8617;</a>
 </div></li>
 <li><div id="footnote-2">
-Apply $x[n]$ to system $f_1$ first, then apply the output from $f_1$ to $f_2$. <a href="#footnote_src-2">&#8617;</a>
+Apply \(x[n]\) to system \(f_1\) first, then apply the output from \(f_1\) to \(f_2\). <a href="#footnote_src-2">&#8617;</a>
 </div></li>
 <li><div id="footnote-3">
 Here we use C code in <a href="https://github.com/gregnordin/LIFSrProj_F15/blob/master/DSP/digital_filter_explore/ScopeFIR-example%20files/fir_algs/FirAlgs.c">FirAlgs.c</a> as example. <a href="#footnote_src-3">&#8617;</a>
@@ -1307,7 +1304,7 @@ Here we use C code in <a href="https://github.com/gregnordin/LIFSrProj_F15/blob/
 We do not take the symmetric filter coefficients into consideration. The procedure for symmetric coefficients is very similar. <a href="#footnote_src-4">&#8617;</a>
 </div></li>
 <li><div id="footnote-5">
-The range for 8 bit integer is <a href="-128,127">-128,127</a>. Since there are 3 bits before the decimal point, its range is $[-128/2^5, 127/2^5]$ <a href="#footnote_src-5">&#8617;</a>
+The range for 8 bit integer is <a href="-128,127">-128,127</a>. Since there are 3 bits before the decimal point, its range is \([-128/2^5, 127/2^5]\) <a href="#footnote_src-5">&#8617;</a>
 </div></li>
 <li><div id="footnote-6">
 In this trivial example, all filter coefficient is positive. Thus, there is no need to save the sign. <a href="#footnote_src-6">&#8617;</a>
@@ -1318,7 +1315,7 @@ The filter has 12 coefficients, which requires additional 4 bits. <a href="#foot
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2020-01-15 04:21:29 GMT, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2021-01-18 06:56:44 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>
