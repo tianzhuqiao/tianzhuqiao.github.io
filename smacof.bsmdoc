@@ -3,15 +3,6 @@
 \config{heading_numbering|True}
 \config{image_numbering|True}
 \config{table_numbering|True}
+\config{show_table_of_contents|True}
 
-{!div|menu||
-#makecontent
-!}
-{!div|main||
-{!div|toptitle||
-SMACOF: A Tutorial
-!}
-{!div|content||
 #include smacof_content.bsmdoc
-!}
-!}

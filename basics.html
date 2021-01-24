@@ -846,7 +846,7 @@ For this trivial example, define the signal and noise</p>
 <img src="./image/fir_demo_signal.svg" alt="./image/fir_demo_signal.svg">
 </figure>
 </div>
-<p>Next step is to make the fixed-point input. It basically relies on the system and the previous block. For example, if the previous block is an ADC, then it may have some fixed data bit-width (e.g., 8 or 10 bits per sample). For this example, we assume that each sample of input has 8 bits, and 3 bits before the decimal point. In particular, the range of the input values is \([-4, 3.96785]\)<a id="footnote_src-5" href="#footnote-5"><sup>5</sup></a> with step 0.3125. Thus, as shown in the following figure, the difference between the fixed-point and float-point samples is \([-0.0156, 0.0156]\).</p>
+<p>Next step is to make the fixed-point input. It basically relies on the system and the previous block. For example, if the previous block is an ADC, then it may have some fixed data bit-width (e.g., 8 or 10 bits per sample). For this example, we assume that each sample of input has 8 bits, and 3 bits before the decimal point. In particular, the range of the input values is \([-4, 3.96875]\)<a id="footnote_src-5" href="#footnote-5"><sup>5</sup></a> with step 0.3125. Thus, as shown in the following figure, the difference between the fixed-point and float-point samples is \([-0.0156, 0.0156]\).</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># normalize the input signal to 8 bits (3 bits before the decimal point)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">s</span><span class="o">+</span><span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="o">**</span><span class="mi">5</span>
@@ -887,7 +887,7 @@ For this trivial example, define the signal and noise</p>
 </figure>
 </div>
 <p>As shown in the above figure, after the filter, the majority of the noise has been filtered out. And note there is a delay between the signal and the filtered output due to the filter.</p>
-<p>Everything looks fine. Now we start to design the fixed-point filter. The maximum filter coefficient is 0.17940155, thus the first 2 bits after the decimal point is always zero, for example, in binary format <b>b'.0010110111101101</b>. So if we want the coefficients to have 8 effective bits, we will keep the coefficients from bit -3 to bit -10, i.e., b'.00<b>10110111</b>101101<a id="footnote_src-6" href="#footnote-6"><sup>6</sup></a>. And since the 11th bit is <b>1</b>, add 1 to 10th bits as we use <b>round</b> for truncation. Thus, the final fixed-point coefficients for 0.17940155 is b'.00<b>10111000</b>.</p>
+<p>Everything looks fine. Now we start to design the fixed-point filter. The maximum filter coefficient is 0.14407105, thus the first 2 bits after the decimal point is always zero, for example, in binary format <b>b'.0010010011100001</b>. So if we want the coefficients to have 8 effective bits, we will keep the coefficients from bit -3 to bit -10, i.e., b'.00<b>10010011</b>100001<a id="footnote_src-6" href="#footnote-6"><sup>6</sup></a>. And since the 11th bit is <b>1</b>, add 1 to 10th bits as we use <b>round</b> for truncation. Thus, the final fixed-point coefficient for 0.14407105 is b'.00<b>10010100</b>.</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">Nc</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">bf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">b</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">Nc</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">Nc</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
@@ -1315,7 +1315,7 @@ The filter has 12 coefficients, which requires additional 4 bits. <a href="#foot
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2021-01-18 06:56:44 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2021-01-22 00:59:46 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>

@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="bsmdoc 0.0.4">
+<meta name="generator" content="bsmdoc 0.0.8">
 <link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
 <link rel="stylesheet" href="css/menu.css" type="text/css">
-<script src=https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js></script>
-<script src="js/bsmdoc.js"></script>
-<script src="js/menu.js"></script>
 <script>
 MathJax = {
 tex: {
-inlineMath: [['$', '$'], ['\\(', '\\)']],
+inlineMath: [['\\(', '\\)']],
 tags: "all"
 }
 };
 </script>
-
 <script id="MathJax-script" async
 src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
 </script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"
+integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+crossorigin="anonymous"></script>
+<script src="js/bsmdoc.js"></script>
+<script src="js/menu.js"></script>
 <title>A tutorial on time series with neural network</title>
 </head>
 <body class="nomathjax">
 <div class="layout">
-
 <div class="menu">
 <ul>
 <li><a href="#sec-1">1 Introduction</a></li>
@@ -51,7 +51,7 @@ $$
 \end{align*}
 $$
 </div>
-<p>where $v_x$, $v_y$, $v_z$ are speed for axis $x$, $y$ and $z$ respectively, and $a_x$, $a_y$, $a_z$ are the angle speed for each axis. The problem is to detect the human event (take off/put on shoes) from this data.</p>
+<p>where \(v_x\), \(v_y\), \(v_z\) are speed for axis \(x\), \(y\) and \(z\) respectively, and \(a_x\), \(a_y\), \(a_z\) are the angle speed for each axis. The problem is to detect the human event (take off/put on shoes) from this data.</p>
 <p>Before diving into building models and starting training with the data, I think the first question we shall ask is whether the information we get can solve the problem (maybe this is the second question; the first one should be why we want to detect the event?); that is, does it have information for the problem.</p>
 <div class="quote">
 <div class="quote_content">
@@ -79,7 +79,7 @@ $$
 \end{align}
 $$
 </div>
-<p>where $\textbf{x}$ is the input (features), which is usually a vector or matrix, $y$ is the expected output or label (e.g., 0 or 1).</p>
+<p>where \(\textbf{x}\) is the input (features), which is usually a vector or matrix, \(y\) is the expected output or label (e.g., 0 or 1).</p>
 <p>For example, <a href="https://github.com/wchill/HMP_Dataset ">this dataset</a> records the accelerometer data when user was doing various tasks (e.g., walk). Let's try a simpler problem: differentiate <b>walk</b> event from <b>climb chair</b> event.
 First, download the data</p>
 <div class="syntax"><pre><span></span><span class="c1"># download data file if necessary</span>
@@ -89,32 +89,32 @@ First, download the data</p>
     <span class="k">with</span>  <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
         <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">()</span>
 </pre></div>
-<p>Fig. (<a href="#img-walk">1</a>) and (<a href="#img-climb_chair">2</a>) show a sample accelerometer data for <b>walk</b> and <b>climb chair</b> event. Here are some observations</p>
+<p>Fig. (<a href="#img-walk">2</a>) and (<a href="#img-climb_chair">3</a>) show a sample accelerometer data for <b>walk</b> and <b>climb chair</b> event. Here are some observations</p>
 <ol>
 <li>Both data shows some kind of periodicity. It makes sense since each data repeats same events multiple times.</li>
-<li><b>Climb chair</b> data looks different from <b>walk</b>. For example, for <b>climb chair</b> event, $y$ and $z$ data look more periodic than <b>walk</b>. It may make sense since the user will move up and down to finish each event. It gives us some confidence/intuition that some classification algorithm may work to differentiate them.</li>
+<li><b>Climb chair</b> data looks different from <b>walk</b>. For example, for <b>climb chair</b> event, \(y\) and \(z\) data look more periodic than <b>walk</b>. It may make sense since the user will move up and down to finish each event. It gives us some confidence/intuition that some classification algorithm may work to differentiate them.</li>
 <li>Roughly the first 2 sec data (i.e., 64 samples) looks very different from the remaining. I guess during that time the user was preparing to start the event. So we need to ignore these data for training and test. For simplicity, we ignore first 2 sec data for the whole dataset; however it may not be a good use of the data since the preparing period for some data may be longer (e.g., 3 sec) or shorter. We really should clean each data separately. Same for the last 2 sec data, we cut the last 2 sec data for the whole dataset for simplicity.</li>
 </ol>
 <figure id="img-walk" class="figure">
 <img src="image/walk.svg" alt="image/walk.svg">
-<figcaption class="caption"><span class="tag">Fig.1.</span> Accelerometer reading for walk event</figcaption>
+<figcaption class="caption"><span class="tag">Fig.2.</span> Accelerometer reading for walk event</figcaption>
 </figure>
 <figure id="img-climb_chair" class="figure">
 <img src="image/walk_climb_chair.svg" alt="image/walk_climb_chair.svg">
-<figcaption class="caption"><span class="tag">Fig.2.</span> Accelerometer reading for climb chair event</figcaption>
+<figcaption class="caption"><span class="tag">Fig.3.</span> Accelerometer reading for climb chair event</figcaption>
 </figure>
-<p>Besides the raw senor data, we may also use some statistics and aggregator. For example, in <a href="https://dl.acm.org/citation.cfm?id=3330761">this paper</a>, $\textbf{x}$ is a $31\times 50$ matrix. That is, 31 features are generated for each frame (e.g., mean/std over the last 10/20/50 samples separately (e.g., $mean(v_x[i-9:i])$), differential signal between current sample and the samples 20/40/50 steps before (e.g., $v_x[i]- v_x[i-20]$), and the absolute values). Then current frame is combined with the features from the last 49 frames (2D image with dimension $31\times 50$) is feed into a 1D CNN (along time axis, not very useful to learn across feature axis in this case).</p>
+<p>Besides the raw senor data, we may also use some statistics and aggregator. For example, in <a href="https://dl.acm.org/citation.cfm?id=3330761">this paper</a>, \(\textbf{x}\) is a \(31\times 50\) matrix. That is, 31 features are generated for each frame (e.g., mean/std over the last 10/20/50 samples separately (e.g., \(mean(v_x[i-9:i])\)), differential signal between current sample and the samples 20/40/50 steps before (e.g., \(v_x[i]- v_x[i-20]\)), and the absolute values). Then current frame is combined with the features from the last 49 frames (2D image with dimension \(31\times 50\)) is feed into a 1D CNN (along time axis, not very useful to learn across feature axis in this case).</p>
 <p>Some useful statistics and features</p>
 <ul>
 <li>mean, std, max, min, median</li>
-<li>signal magnitude area, e.g. $\sum_{k=i-N+1}^{i}{v_x[k]}$</li>
-<li>energy, e.g. $\frac{1}{N}\sum_{k=i-N+1}^{i}{v_x[k]^2}$</li>
+<li>signal magnitude area, e.g. \(\sum_{k=i-N+1}^{i}{v_x[k]}\)</li>
+<li>energy, e.g. \(\frac{1}{N}\sum_{k=i-N+1}^{i}{v_x[k]^2}\)</li>
 <li>logarithm</li>
-<li>FFT. In some case, FFT is useful. For example for the above $31\times 50$ input, the 'actual' event can happen at any samples, FFT may be able to mitigate such uncertainty. As shown in Fig. (<a href="#img-fft">3</a>), <b>data 1</b> and <b>data 2</b> are two samples from same data source (a sine wave). Their time domain representations looks different (time shift); however, their frequency domain representation (magnitude) are same (right plot), which may help neural network to learn fast.</li>
+<li>FFT. In some case, FFT is useful. For example for the above \(31\times 50\) input, the 'actual' event can happen at any samples, FFT may be able to mitigate such uncertainty. As shown in Fig. (<a href="#img-fft">4</a>), <b>data 1</b> and <b>data 2</b> are two samples from same data source (a sine wave). Their time domain representations looks different (time shift); however, their frequency domain representation (magnitude) are same (right plot), which may help neural network to learn fast.</li>
 </ul>
 <figure id="img-fft" class="figure">
 <img src="image/walk_fft.svg" alt="image/walk_fft.svg">
-<figcaption class="caption"><span class="tag">Fig.3.</span> Accelerometer reading for climb chair event</figcaption>
+<figcaption class="caption"><span class="tag">Fig.4.</span> Accelerometer reading for climb chair event</figcaption>
 </figure>
 <ul>
 <li><p>normalization:
@@ -127,7 +127,7 @@ $$
 \end{align}
 $$
 </div>
-<p>where $f_{train}$ is a feature from training samples, $f_{test}$ is the same feature from test samples, and</p>
+<p>where \(f_{train}\) is a feature from training samples, \(f_{test}\) is the same feature from test samples, and</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -166,16 +166,16 @@ $$
 </ul>
 <p>Back to the example, as the raw accelerometer data shows different pattern, let's try to use raw data (within a window) for classification. Let's define</p>
 <ol>
-<li>event $y$:
+<li>event \(y\):
 <ul>
-<li>1 $\rightarrow$ walk,</li>
-<li>0 $\rightarrow$ climb chair;</li>
+<li>1 \(\rightarrow\) walk,</li>
+<li>0 \(\rightarrow\) climb chair;</li>
 </ul></li>
-<li>features: $\textbf{x}[N, 3]$. It contains last $N$ frames of raw accelerometer data, each frame has 3 values (i.e., $v_x$, $v_y$, $v_z$)</li>
+<li>features: \(\textbf{x}[N, 3]\). It contains last \(N\) frames of raw accelerometer data, each frame has 3 values (i.e., \(v_x\), \(v_y\), \(v_z\))</li>
 </ol>
-<p>Next step is to determine the value of $N$. Each step of walk can be viewed as roughly same; in this case, the reading from accelerometer shall also roughly periodic (based on how long each step lasts). We may want to choose $N$ such that the data will cover the whole period. A reasonable walk speed is usually larger than 3600m/hour; that is $3600m/3600s = 1m/s$. And if the step length (either left or right step) is roughly <a href="https://www.healthline.com/health/stride-length#average-step-and-stride-length">0.75m</a>, which will take $0.75m/(1m/s) = 0.75s$. Thus, a stride (two steps, one left, one right) will take $0.75s*2=1.5s$ to finish. In this case, we can take $2s$ accelerator data as features (i.e., $N=2s*32samples/s=64samples$).</p>
-<p>In reality, the above assumption may not be true. For example, older people may walk more slowly with smaller stride length. We may need to find some way to train each group separately. Or we can treat $N$ as an hyper-parameter to be determined with cross validation.</p>
-<p>Now we have all the information to load the data: $\textbf{x}[:, 64, 3]$, $y \in [0, 1]$</p>
+<p>Next step is to determine the value of \(N\). Each step of walk can be viewed as roughly same; in this case, the reading from accelerometer shall also roughly periodic (based on how long each step lasts). We may want to choose \(N\) such that the data will cover the whole period. A reasonable walk speed is usually larger than 3600m/hour; that is \(3600m/3600s = 1m/s\). And if the step length (either left or right step) is roughly <a href="https://www.healthline.com/health/stride-length#average-step-and-stride-length">0.75m</a>, which will take \(0.75m/(1m/s) = 0.75s\). Thus, a stride (two steps, one left, one right) will take \(0.75s*2=1.5s\) to finish. In this case, we can take \(2s\) accelerator data as features (i.e., \(N=2s*32samples/s=64samples\)).</p>
+<p>In reality, the above assumption may not be true. For example, older people may walk more slowly with smaller stride length. We may need to find some way to train each group separately. Or we can treat \(N\) as an hyper-parameter to be determined with cross validation.</p>
+<p>Now we have all the information to load the data: \(\textbf{x}[:, 64, 3]\), \(y \in [0, 1]\)</p>
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; load data in folder</span>
 <span class="sd">        return (x[:, steps, 3], y)</span>
@@ -212,7 +212,7 @@ $$
 <span class="n">x_climb_chair</span><span class="p">,</span> <span class="n">y_climb_chair</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">&#39;Climb_stairs&#39;</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
 <p>As usual, to test our model, the data loaded shall be split into two parts: training and test.
-Here for both <b>walk</b> and <b>climb chair</b> data, $80\%$ data is used for training and remaining is for test.</p>
+Here for both <b>walk</b> and <b>climb chair</b> data, \(80\%\) data is used for training and remaining is for test.</p>
 <div class="syntax"><pre><span></span><span class="n">walk_train_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_walk</span><span class="p">)</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
 <span class="n">climb_train_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_climb_chair</span><span class="p">)</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
 
@@ -244,19 +244,19 @@ Here for both <b>walk</b> and <b>climb chair</b> data, $80\%$ data is used for t
     <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">{}):</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_data</span>
         <span class="n">loss</span><span class="p">,</span> <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Testing loss: {}, acc: {}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">acc</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Testing loss: </span><span class="si">{}</span><span class="s1">, acc: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">acc</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">logs</span><span class="p">[</span><span class="s2">&quot;accuracy&quot;</span><span class="p">],</span> <span class="n">acc</span><span class="p">])</span>
 <span class="n">test</span> <span class="o">=</span> <span class="n">TestCallback</span><span class="p">((</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">))</span>
 
 <span class="n">h</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
 </pre></div>
-<p>Here we define the callback to evaluate the accuracy on test data after each epoch. Fig. (<a href="#img-accuracy">4</a>) shows that after 10 epochs, the test data achieves $\sim 97\%$ accuracy.</p>
+<p>Here we define the callback to evaluate the accuracy on test data after each epoch. Fig. (<a href="#img-accuracy">5</a>) shows that after 10 epochs, the test data achieves \(\sim 97\%\) accuracy.</p>
 <figure id="img-accuracy" class="figure">
 <img src="image/walk_accuracy.svg" alt="image/walk_accuracy.svg">
-<figcaption class="caption"><span class="tag">Fig.4.</span> Accuracy of training and testing dataset</figcaption>
+<figcaption class="caption"><span class="tag">Fig.5.</span> Accuracy of training and testing dataset</figcaption>
 </figure>
 <p>Full code can be download <a href="./downloads/walk.py">here</a>. The "performance" may be improved by choosing the hyper-parameters or adjusting the model; however, considering that the data may not be labeled correctly (remember we just simply ignore the first/last 2sec data) and accelerometer data may not contain all the information to differentiate the events, the result looks pretty good.</p>
-<p>Back to the "shoe event" problem, could we use the similar procedure to achieve the similar performance? I am afraid not. The above simplified problem is just try to differentiate two events from each other (walk, climb chair). To make "shoe event" detector useful, it needs to detect "shoe event" from all other events. Furthermore, compared to other events, "shoe event" may be very rare; that's how often will you put on/take off your shoes? Let's say we have a model that can detect $99\%$ "shoe event" when it happens; that is $p(\hat{s}/s) = 0.99$. And $1\%$ false detection when other events happen($p(\hat{s}/\bar{s}) = 0.01$). Does such model work? For example, for a certain day, the sensor is active for 8 hours (e.g., wear shoes for 8 hours every day), and all "shoe events" take 5 mins. Then $p(s) = 5 mins/8 hours = 0.01$. In this case, when our model shows it detects the event ($\hat{s}$), the probability that it is triggered by a true "shoe event" is</p>
+<p>Back to the "shoe event" problem, could we use the similar procedure to achieve the similar performance? I am afraid not. The above simplified problem is just try to differentiate two events from each other (walk, climb chair). To make "shoe event" detector useful, it needs to detect "shoe event" from all other events. Furthermore, compared to other events, "shoe event" may be very rare; that's how often will you put on/take off your shoes? Let's say we have a model that can detect \(99\%\) "shoe event" when it happens; that is \(p(\hat{s}/s) = 0.99\). And \(1\%\) false detection when other events happen(\(p(\hat{s}/\bar{s}) = 0.01\)). Does such model work? For example, for a certain day, the sensor is active for 8 hours (e.g., wear shoes for 8 hours every day), and all "shoe events" take 5 mins. Then \(p(s) = 5 mins/8 hours = 0.01\). In this case, when our model shows it detects the event (\(\hat{s}\)), the probability that it is triggered by a true "shoe event" is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -266,16 +266,15 @@ p(s/\hat{s}) &= \frac{p(\hat{s}/s)*p(s)}{p(\hat{s}/s)*p(s) + p(\hat{s}/\bar{s})*
 \end{align}
 $$
 </div>
-<p>So when the model detects a event, we have half-half chance that the detection is triggered by the actual "shoe event", which is not particularly assuring. The problem is that the event we are interested in happens rarely. To improve the performance, we need to decrease $p(\hat{s}/\bar{s})$, for example</p>
+<p>So when the model detects a event, we have half-half chance that the detection is triggered by the actual "shoe event", which is not particularly assuring. The problem is that the event we are interested in happens rarely. To improve the performance, we need to decrease \(p(\hat{s}/\bar{s})\), for example</p>
 <ul>
 <li>have more data to cover more cases</li>
 <li>more features (e.g., pressure sensor)</li>
 </ul>
 </div>
 </div>
-
 <div class="footer">
-<div class="footer-text"> Last updated 2019-12-28 19:15:55 GMT, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-07-20 18:24:44 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>

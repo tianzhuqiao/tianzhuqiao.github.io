@@ -2,15 +2,4 @@
 
 #include basic_config.bsmdoc
 
-{!div|menu||
-#makecontent
-!}
-{!div|main||
-{!div|toptitle||
-basics of digital signal processing
-!}
-{!div|content||
 #include basic_basics.bsmdoc
-!}
-!}
-

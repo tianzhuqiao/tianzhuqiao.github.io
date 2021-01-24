@@ -2,15 +2,5 @@
 
 #include basic_config.bsmdoc
 
-{!div|menu||
-#makecontent
-!}
-{!div|main||
-{!div|toptitle||
-Sampling Rate Conversion
-!}
-{!div|content||
 #include basic_src.bsmdoc
-!}
-!}
 

@@ -1,16 +1,9 @@
-\config{title|Munkres Algorithm For Assignment Problem: A Tutorial}
+\newfun{title|Munkres Algorithm For Assignment Problem: A Tutorial}
+\config{title|\title}
+\config{doctitle|\title}
 \config{heading_numbering|True}
 \config{image_numbering|True}
 \config{table_numbering|True}
+\config{show_table_of_contents|True}
 \config{bsmdoc_conf|bsmdoc.cfg}
-{!div|menu||
-#makecontent
-!}
-{!div|main||
-{!div|toptitle||
-Munkres Algorithm For Assignment Problem: A Tutorial
-!}
-{!div|content||
 #include munkres_content.bsmdoc
-!}
-!}

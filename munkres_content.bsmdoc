@@ -34,8 +34,10 @@ import inspect
 import os, sys
 sys.path.append(os.path.join(os.path.abspath('.'), 'downloads'))
 import munkres
+@BFunction('pycode')
 def bsmdoc_pycode(fun, *args, **kwargs):
-	return bsmdoc_highlight(inspect.getsource(eval("munkres.Munkres.%s"%(fun))), 'python', 'autogobble')
+    kwargs.pop('inline', None)
+    return BFunction().highlight(inspect.getsource(eval("munkres.Munkres.%s"%(fun))), 'python', 'autogobble', **kwargs)
 %}!}
 
 The following tutorial is based on [http://csclab.murraystate.edu/~bob.pilgrim/445/munkres.html|this ] and [https://pdfs.semanticscholar.org/848c/717ba51e48afef714dfef4bd6ab1cc050dab.pdf|this]. The main difference are

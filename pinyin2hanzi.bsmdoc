@@ -3,6 +3,16 @@
 \config{head_tag|1}
 \config{head_tag_start|2}
 \config{bsmdoc_conf|bsmdoc.cfg}
+\config{header:content|{%
+<style>
+.main {
+    max-width: 880px;
+    margin: auto;
+}
+</style>
+%}
+}
+
 说明：
 * 这个拼音转汉字程序的灵感来自 Laurence Gonsalves 的 [http://xenomachina.com/toys/pinyin2hanzi.html |  Hanyu Pinyin to Hanzi converter]
 * 汉字字库来源于：[http://lingua.mtsu.edu/chinese\-computing/statistics/char/list.php?Which\=TO | 汉字单字字频总表]

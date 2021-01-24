@@ -2,15 +2,4 @@
 
 #include basic_config.bsmdoc
 
-{!div|menu||
-#makecontent
-!}
-{!div|main||
-{!div|toptitle||
-Transmitter
-!}
-{!div|content||
 #include basic_tx.bsmdoc
-!}
-!}
-

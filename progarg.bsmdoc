@@ -3,7 +3,17 @@
 \config{title|Program arguments processing utility}
 \config{doctitle|Program arguments processing utility}
 \config{bsmdoc_conf|bsmdoc.cfg}
-\config{source|1}
+\config{show_source|True}
+\config{header:content|{%
+<style>
+.main {
+    max-width: 880px;
+    margin: auto;
+}
+</style>
+%}
+}
+
 
 [downloads/progarg.zip| Download V1.2]
 

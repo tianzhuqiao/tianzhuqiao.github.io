@@ -3,46 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="bsmdoc 0.0.4">
-<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<meta name="generator" content="bsmdoc 0.0.8">
 <link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
 <link rel="stylesheet" href="css/menu.css" type="text/css">
 <script>
 MathJax = {
 tex: {
-inlineMath: [['$', '$'], ['\\(', '\\)']],
+inlineMath: [['\\(', '\\)']],
 tags: "all"
 }
 };
 </script>
-
 <script id="MathJax-script" async
 src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
 </script>
-<script type="text/javascript" language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
-<script type="text/javascript" language="javascript" src="js/menu.js"></script>
-<script type="text/javascript" language="javascript" src="js/paper-full.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"
+integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+crossorigin="anonymous"></script>
+<script src="js/bsmdoc.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/paper-full.js"></script>
 <title>Transmitter</title>
 </head>
 <body class="nomathjax">
 <div class="layout">
-
 <div class="menu">
 <ul>
-<li><a href="#sec-1">1 Scrambler</a>
-<ul>
+<li><a href="#sec-1">1 Scrambler</a><ul>
 <li><a href="#sec-1-1">1.1 Additive scrambler</a></li>
 <li><a href="#sec-1-2">1.2 Multiplicative scrambler</a></li>
 </ul></li>
-<li><a href="#sec-2">2 Interleaver</a>
-<ul>
+<li><a href="#sec-2">2 Interleaver</a><ul>
 <li><a href="#sec-2-1">2.1 Block interleaver</a></li>
 <li><a href="#sec-2-2">2.2 Convolutional interleaver</a></li>
 </ul></li>
 <li><a href="#sec-3">3 Mapping</a></li>
-<li><a href="#sec-4">4 Random Number</a>
-<ul>
+<li><a href="#sec-4">4 Random Number</a><ul>
 <li><a href="#sec-4-1">4.1 Uniform Random Number</a></li>
 <li><a href="#sec-4-2">4.2 Gaussian Random Number</a></li>
 </ul></li>
@@ -71,9 +67,9 @@ In practice, when sending signal as shown in Fig. <a href="#img-scrambler_tx">1<
 <img src="./image/scrambler_rx_shape.svg" alt="./image/scrambler_rx_shape.svg">
 <figcaption class="caption"><span class="tag">Fig.3.</span> Sample the non-ideal signal at the receiver side.</figcaption>
 </figure>
-<p>It is easy to see that the sampling time (or phase) indicated by red dash line is better than the blue dash line, since the signal at red sampling time is generally larger than the blue one. Thus, for the same noise, the SNR (signal noise ratio) will be higher. How could the receiver know where is the current sampling position? For example, is it close to the blue dash lines or the red dash lines? As we will shown later, one solution is to monitor the zero-crossing positions. For example, the zero-crossing position should be in the middle of two adjacent symbols, which leads to the worst sampling position. In this example, we assume the receiver knows the interval between two neighbour symbols (i.e., $T$), but not the sampling phase. The receiver can detect all the zero-crossing positions in the received signals, and adjust its sampling phase such that all the sampling positions are as far away from the zero-crossing position as possible. For example, if the receiver detect a zero-crossing position at $t_0$, since the symbol interval is $T$, then the next possible zero-crossing position will be $t_0+T$, and the sampling position will be chosen as $t_0+T/2$ (far away from its neighbour zero-crossing positions).</p>
+<p>It is easy to see that the sampling time (or phase) indicated by red dash line is better than the blue dash line, since the signal at red sampling time is generally larger than the blue one. Thus, for the same noise, the SNR (signal noise ratio) will be higher. How could the receiver know where is the current sampling position? For example, is it close to the blue dash lines or the red dash lines? As we will shown later, one solution is to monitor the zero-crossing positions. For example, the zero-crossing position should be in the middle of two adjacent symbols, which leads to the worst sampling position. In this example, we assume the receiver knows the interval between two neighbour symbols (i.e., \(T\)), but not the sampling phase. The receiver can detect all the zero-crossing positions in the received signals, and adjust its sampling phase such that all the sampling positions are as far away from the zero-crossing position as possible. For example, if the receiver detect a zero-crossing position at \(t_0\), since the symbol interval is \(T\), then the next possible zero-crossing position will be \(t_0+T\), and the sampling position will be chosen as \(t_0+T/2\) (far away from its neighbour zero-crossing positions).</p>
 <p>With that said, if the original data has a long run of <code>1</code> or <code>-1</code>, during that period, there will be no zero-crossing position. In other words, the receiver can not adjust its sampling phase accordingly. By applying the scrambler, we can decrease the probability of such annoying long run of <code>1</code> or <code>-1</code>.</p>
-<p>Another benefit of the scrambler block is to reduce the correlation in the data, that is, to make the data more random. For example, if the data is a sine wave with frequency $f$, then the majority of its power will locate in a narrow band (around $f$). It is not an efficient use of the available signal band (usually much larger than the band occupied by such sine wave). If there is a noise near frequency $f$<a name="footnote_src-1" href="#footnote-1"><sup>1</sup></a>, the signal will be totally lost. By applying the scrambler, we can spread the signal power to all available signal band, which makes the system less sensitive to such narrow band noise. One way to think about it is that imaging you have 10 eggs, and 10 bags. If you put all 10 eggs in one bag, you lose all your eggs when that bag is broken. The scrambler will randomly distribute your eggs to all bags. In this case, even if some bag is broken, you will still have 'enough' eggs left.</p>
+<p>Another benefit of the scrambler block is to reduce the correlation in the data, that is, to make the data more random. For example, if the data is a sine wave with frequency \(f\), then the majority of its power will locate in a narrow band (around \(f\)). It is not an efficient use of the available signal band (usually much larger than the band occupied by such sine wave). If there is a noise near frequency \(f\)<a id="footnote_src-1" href="#footnote-1"><sup>1</sup></a>, the signal will be totally lost. By applying the scrambler, we can spread the signal power to all available signal band, which makes the system less sensitive to such narrow band noise. One way to think about it is that imaging you have 10 eggs, and 10 bags. If you put all 10 eggs in one bag, you lose all your eggs when that bag is broken. The scrambler will randomly distribute your eggs to all bags. In this case, even if some bag is broken, you will still have 'enough' eggs left.</p>
 <h2 id="sec-1-1">1.1 Additive scrambler</h2>
 <p>One way to randomize the data is by adding a random binary sequence to the data. For example, for each input bit, retrieve 1 bit from the random sequence and add it to the input bit (mod 2, such that the result is still 1 bit), that is</p>
 <div class="mathjax">
@@ -83,8 +79,8 @@ y[n] = \mathrm{mod}(x[n] + s[n], 2),
 \end{align}
 $$
 </div>
-<p>where $x[n]$ is the input binary sequence, $s[n]$ is the random binary sequence, and $y[n]$ is the output sequence.
-It is easy to see it is equivalent to the <code>xor</code> ($\oplus$) operator,</p>
+<p>where \(x[n]\) is the input binary sequence, \(s[n]\) is the random binary sequence, and \(y[n]\) is the output sequence.
+It is easy to see it is equivalent to the <code>xor</code> (\(\oplus\)) operator,</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -94,8 +90,8 @@ y[n] = x[n] \oplus s[n].
 $$
 </div>
 <p>Does the above scrambler guarantee to eliminate the long run of <b>1</b> or <b>0</b>? Actually not. It is easy to find a data sequence such that the output from the scrambler is constant (e.g, 1) (do you see how?). Wait, if the scrambler does not guarantee to eliminate the long run of 1/0, why do we still use it? The answer is the probability.
-For example, if we toss one fair coin (i.e., the probability of head/tail from each toss is 0.5), you will still have a chance to get a long run of heads<a name="footnote_src-2" href="#footnote-2"><sup>2</sup></a>. In a fortunate (or unfortunate) case, when a fair coin is tossed 100 times, the longest run of heads/tails may exceed 10, but the probability is small (e.g., $\sim 2.2\%$). However, if the coin is biased (e.g., head is more likely than tail for each toss), then the probability that the longest heads/tails exceeds 10 will be much higher. What the scrambler does is to make the biased coin (input to the scrambler block) unbiased (output of the scrambler block)<a name="footnote_src-3" href="#footnote-3"><sup>3</sup></a></p>
-<p>Let's see how it works. Assume at time $n$, for a biased coin $x$, the probability to get head is $p_x[n]$. Then the probability to get tail is $1-p_x[n]$. And now we choose another fair coin $s$, that is, $p_s[n] = 0.5$. At time $n$, we toss both coins, and</p>
+For example, if we toss one fair coin (i.e., the probability of head/tail from each toss is 0.5), you will still have a chance to get a long run of heads<a id="footnote_src-2" href="#footnote-2"><sup>2</sup></a>. In a fortunate (or unfortunate) case, when a fair coin is tossed 100 times, the longest run of heads/tails may exceed 10, but the probability is small (e.g., \(\sim 2.2\%\)). However, if the coin is biased (e.g., head is more likely than tail for each toss), then the probability that the longest heads/tails exceeds 10 will be much higher. What the scrambler does is to make the biased coin (input to the scrambler block) unbiased (output of the scrambler block)<a id="footnote_src-3" href="#footnote-3"><sup>3</sup></a></p>
+<p>Let's see how it works. Assume at time \(n\), for a biased coin \(x\), the probability to get head is \(p_x[n]\). Then the probability to get tail is \(1-p_x[n]\). And now we choose another fair coin \(s\), that is, \(p_s[n] = 0.5\). At time \(n\), we toss both coins, and</p>
 <ol>
 <li>if both coins are heads or tails, output tail;</li>
 <li>if one is head and the other is tail, output head.</li>
@@ -113,8 +109,8 @@ p_y[n] &= p_s[n]\cdot (1-p_x[n]) + (1-p_s[n])\cdot p_x[n]\nonumber\\
 \end{align}
 $$
 </div>
-<p>Wow, it is a fair coin! The nice thing is that it does not make any assumption about the probability of the biased coin ($p_x[n]$). It does not matter whether each toss is independent (but biased), or correlated (e.g., the probability of the current toss may be affected by the previous toss.), the output will be same as the one from a fair coin.</p>
-<p>The next question is how to de-scramble the randomized data? It does not make any sense if you can not recover the original data from the randomized out. Fortunately, it turns out the de-scrambling is very easy, which can be achieved by applying the same scrambler again. That is, at the receiver side, the data can be retrieved by<a name="footnote_src-4" href="#footnote-4"><sup>4</sup></a></p>
+<p>Wow, it is a fair coin! The nice thing is that it does not make any assumption about the probability of the biased coin (\(p_x[n]\)). It does not matter whether each toss is independent (but biased), or correlated (e.g., the probability of the current toss may be affected by the previous toss.), the output will be same as the one from a fair coin.</p>
+<p>The next question is how to de-scramble the randomized data? It does not make any sense if you can not recover the original data from the randomized out. Fortunately, it turns out the de-scrambling is very easy, which can be achieved by applying the same scrambler again. That is, at the receiver side, the data can be retrieved by<a id="footnote_src-4" href="#footnote-4"><sup>4</sup></a></p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -123,16 +119,16 @@ x[n] = \mathrm{mod}(y[n] + s[n], 2).
 \end{align}
 $$
 </div>
-<p>The only thing left is how to create a random sequence ($s[n]$) at both the transmitter and receiver side. In practice, pseudo random binary sequence (<a href="https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence">PRBS</a>) is widely used in many systems to generate a 'random' sequence. PRBS can be generated in advance and stored in a lookup table. Or, it can be generated by a linear feedback shift register (LFSR). Fig. <a href="#img-scramble_lfsr">4</a> shows a LFSR corresponding to generator polynomial $1+x^6+x^7$, and its current status is $b[1]\sim b[7]$. It is easy to see that given the generator polynomial and the status, its output is fully determined.</p>
+<p>The only thing left is how to create a random sequence (\(s[n]\)) at both the transmitter and receiver side. In practice, pseudo random binary sequence (<a href="https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence">PRBS</a>) is widely used in many systems to generate a 'random' sequence. PRBS can be generated in advance and stored in a lookup table. Or, it can be generated by a linear feedback shift register (LFSR). Fig. <a href="#img-scramble_lfsr">4</a> shows a LFSR corresponding to generator polynomial \(1+x^6+x^7\), and its current status is \(b[1]\sim b[7]\). It is easy to see that given the generator polynomial and the status, its output is fully determined.</p>
 <div class="info">
 To generate useful PRBS, the initial status of LFSR should not be all zeros. Can you see why?
 </div>
 <figure id="img-scramble_lfsr" class="figure">
 <img src="./image/scramble_lfsr.svg" alt="./image/scramble_lfsr.svg">
-<figcaption class="caption"><span class="tag">Fig.4.</span> Structure of a LFSR, where the generator polynomial is $1+x^6+x^7$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.4.</span> Structure of a LFSR, where the generator polynomial is \(1+x^6+x^7\).</figcaption>
 </figure>
-<p>How long should we choose the length of the PRBS? Apparently, if it is too short, then the PRBS itself is not random enough to randomize the input. In an extreme case, if the length of the PRBS is 1, then $s[n]==1$. In this case, $y[n]=x[n]\oplus 1 = 1-x[n]$. The scrambler has no effect on the data at all.
-The one used in 802.11a standard is 127 bits with generator polynomial $1+x^4+x^7$.
+<p>How long should we choose the length of the PRBS? Apparently, if it is too short, then the PRBS itself is not random enough to randomize the input. In an extreme case, if the length of the PRBS is 1, then \(s[n]==1\). In this case, \(y[n]=x[n]\oplus 1 = 1-x[n]\). The scrambler has no effect on the data at all.
+The one used in 802.11a standard is 127 bits with generator polynomial \(1+x^4+x^7\).
 The naive LFSR can be implemented in python as</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">gen_prbs</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
@@ -157,7 +153,7 @@ The naive LFSR can be implemented in python as</p>
     <span class="k">return</span> <span class="p">(</span><span class="n">prbs</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The output of the LFSR is fully determined by the generator polynomial and the initial status. To generate the proper PRBS, the receiver needs to know both. The generator polynomial is usually not a problem, since it is generally determined by the standard and both the transmitter and receiver know in advance. Potentially, the same way can be used for the receiver to determine the initial status, for example, by predefining a initial status. However, such method may not fully utilized the PRBS. Should the transmitter 'randomly' choose the initial phase, the PRBS would less likely be correlated to the input sequence. In this case, some way should be developed to synchronize the initial status between the transmitter and the receiver. For many communication systems, besides the data, the transmitter will also send additional information to the receiver, e.g., the data length, status, etc. Thus, initial status may be embedded in such field, so that the receiver can retrieve it before receiving the data block. For example, as shown in Eq. (\ref{eqn:scrambler_encode}), if $x[n]=0$, the output $y[n]$ will be equal to $s[n]$,</p>
+<p>The output of the LFSR is fully determined by the generator polynomial and the initial status. To generate the proper PRBS, the receiver needs to know both. The generator polynomial is usually not a problem, since it is generally determined by the standard and both the transmitter and receiver know in advance. Potentially, the same way can be used for the receiver to determine the initial status, for example, by predefining a initial status. However, such method may not fully utilized the PRBS. Should the transmitter 'randomly' choose the initial phase, the PRBS would less likely be correlated to the input sequence. In this case, some way should be developed to synchronize the initial status between the transmitter and the receiver. For many communication systems, besides the data, the transmitter will also send additional information to the receiver, e.g., the data length, status, etc. Thus, initial status may be embedded in such field, so that the receiver can retrieve it before receiving the data block. For example, as shown in Eq. (\ref{eqn:scrambler_encode}), if \(x[n]=0\), the output \(y[n]\) will be equal to \(s[n]\),</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -167,7 +163,7 @@ y[n] &= x[n] \oplus s[n]\nonumber\\
 \end{align}
 $$
 </div>
-<p>Thus, if we prepend enough zeros to the data bits, we can easily send the initial status to the receiver. For example, for the PRBS shown in Fig. <a href="#img-scramble_lfsr">4</a>, we may prepend 7 zeros, so the data ($x^\prime[n]$) may look like</p>
+<p>Thus, if we prepend enough zeros to the data bits, we can easily send the initial status to the receiver. For example, for the PRBS shown in Fig. <a href="#img-scramble_lfsr">4</a>, we may prepend 7 zeros, so the data (\(x^\prime[n]\)) may look like</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -175,29 +171,29 @@ $$
 \end{align}
 $$
 </div>
-<p>The LFSR is initialized with arbitrary initial status as shown in Fig. <a href="#img-scramble_lfsr0">5</a>, where $X$ in the block indicated either 1 or 0.</p>
+<p>The LFSR is initialized with arbitrary initial status as shown in Fig. <a href="#img-scramble_lfsr0">5</a>, where \(X\) in the block indicated either 1 or 0.</p>
 <figure id="img-scramble_lfsr0" class="figure">
 <img src="./image/scramble_lfsr0.svg" alt="./image/scramble_lfsr0.svg">
-<figcaption class="caption"><span class="tag">Fig.5.</span> Structure of a LFSR with arbitrarily initial status, where the generator polynomial is $1+x^6+x^7$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.5.</span> Structure of a LFSR with arbitrarily initial status, where the generator polynomial is \(1+x^6+x^7\).</figcaption>
 </figure>
-<p>At time $n=0$, $s[0]$ is retrieved from the LFSR, and $y[0] = 0 \oplus s[0] = s[0]$. $s[0]$ is also sent to $b[1]$ (i.e., $b[1] = s[0]$). The status of LFSR is shown in Fig. <a href="#img-scramble_lfsr1">6</a>.</p>
+<p>At time \(n=0\), \(s[0]\) is retrieved from the LFSR, and \(y[0] = 0 \oplus s[0] = s[0]\). \(s[0]\) is also sent to \(b[1]\) (i.e., \(b[1] = s[0]\)). The status of LFSR is shown in Fig. <a href="#img-scramble_lfsr1">6</a>.</p>
 <figure id="img-scramble_lfsr1" class="figure">
 <img src="./image/scramble_lfsr1.svg" alt="./image/scramble_lfsr1.svg">
-<figcaption class="caption"><span class="tag">Fig.6.</span> Status LFSR at time $n=0$, where $x^\prime[0]=0$. The current output $s[0]$ is shown in red.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.6.</span> Status LFSR at time \(n=0\), where \(x^\prime[0]=0\). The current output \(s[0]\) is shown in red.</figcaption>
 </figure>
-<p>Similarly, at time $n=1$ (Fig. <a href="#img-scramble_lfsr2">7</a>), LFSR outputs $s[1]$, and $y[1] = 0 \oplus s[1] = s[1]$. Simultaneously, $s[1]$ is sent to $b[1]$ ($b[1] = s[0]$), and the original value in $b[1]$ is shifted to $b[2]$ (i.e., $b[2]=s[0]$).</p>
+<p>Similarly, at time \(n=1\) (Fig. <a href="#img-scramble_lfsr2">7</a>), LFSR outputs \(s[1]\), and \(y[1] = 0 \oplus s[1] = s[1]\). Simultaneously, \(s[1]\) is sent to \(b[1]\) (\(b[1] = s[0]\)), and the original value in \(b[1]\) is shifted to \(b[2]\) (i.e., \(b[2]=s[0]\)).</p>
 <figure id="img-scramble_lfsr2" class="figure">
 <img src="./image/scramble_lfsr2.svg" alt="./image/scramble_lfsr2.svg">
-<figcaption class="caption"><span class="tag">Fig.7.</span> Status LFSR at time $n=1$, where $x^\prime[1]=0$ and current output $y[1]=s[1]$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.7.</span> Status LFSR at time \(n=1\), where \(x^\prime[1]=0\) and current output \(y[1]=s[1]\).</figcaption>
 </figure>
-<p>Following this procedure, at time $n=6$, the status of LFSR will look like</p>
+<p>Following this procedure, at time \(n=6\), the status of LFSR will look like</p>
 <figure id="img-scramble_lfsr7" class="figure">
 <img src="./image/scramble_lfsr7.svg" alt="./image/scramble_lfsr7.svg">
-<figcaption class="caption"><span class="tag">Fig.8.</span> Status LFSR at time $n=6$, where $x^\prime[6]=0$ and current output $y[6]=s[6]$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.8.</span> Status LFSR at time \(n=6\), where \(x^\prime[6]=0\) and current output \(y[6]=s[6]\).</figcaption>
 </figure>
-<p>So far, we have output 7 bits (i.e., $y[0]\sim y[6]$), which are same as the ones in LFSR buffer.</p>
-<p>Then, at time $n=7$, when the actual data bit comes ($x^\prime[7]=x[0]$), the status of the LFSR is as shown in Fig. <a href="#img-scramble_lfsr7">8</a>. In other words, the initial status of the LFSR for the data bits is $s[0]\sim s[6]$ (or $y[0]\sim y[6]$). Thus, at the receiver side, it can simply use the first 7 received bits as the initial status of its LFSR to descramble the following data bits.</p>
-<p>One nice thing to note about Eq. (\ref{eqn:additive_descramble}) is that the descrambler output $x[n]$ only relies on the current input $y[n]$, not any other inputs. Thus, if there is some error in $y[n]$, the error is localized, which will only affect the current output $x[n]$.</p>
+<p>So far, we have output 7 bits (i.e., \(y[0]\sim y[6]\)), which are same as the ones in LFSR buffer.</p>
+<p>Then, at time \(n=7\), when the actual data bit comes (\(x^\prime[7]=x[0]\)), the status of the LFSR is as shown in Fig. <a href="#img-scramble_lfsr7">8</a>. In other words, the initial status of the LFSR for the data bits is \(s[0]\sim s[6]\) (or \(y[0]\sim y[6]\)). Thus, at the receiver side, it can simply use the first 7 received bits as the initial status of its LFSR to descramble the following data bits.</p>
+<p>One nice thing to note about Eq. (\ref{eqn:additive_descramble}) is that the descrambler output \(x[n]\) only relies on the current input \(y[n]\), not any other inputs. Thus, if there is some error in \(y[n]\), the error is localized, which will only affect the current output \(x[n]\).</p>
 <p>The implementation is straightforward. The naive code may look like</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">scramble_add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">s0</span><span class="p">):</span>
@@ -231,7 +227,7 @@ $$
 <span class="o">&gt;&gt;&gt;</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">scramble_add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">s0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We can do a sanity check by scrambling output $y$ with the same setup, which should give us the original data $x$</p>
+<p>We can do a sanity check by scrambling output \(y\) with the same setup, which should give us the original data \(x\)</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">scramble_add</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">s0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
 <span class="mf">0.0</span>
@@ -250,7 +246,7 @@ $$
 <p>Its structure may look like</p>
 <figure id="img-scrambler_mul" class="figure">
 <img src="./image/scramble_mul.svg" alt="./image/scramble_mul.svg">
-<figcaption class="caption"><span class="tag">Fig.9.</span> Structure of a multiplicative scrambler, where the generator polynomial is $1+x^{14}+x^{17}$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.9.</span> Structure of a multiplicative scrambler, where the generator polynomial is \(1+x^{14}+x^{17}\).</figcaption>
 </figure>
 <p>Eq. (\ref{eqn:scramble_mul}) shows that the multiplicative scrambler may be implemented by an IIR filter. The only difference between the classical IIR filter and Eq. (\ref{eqn:scramble_mul}) is that here all the additions are mod 2. Could we implement the above scrambler by connecting a conventional IIR filter with a mod 2 block in serial?</p>
 <p>And the de-scrambler is straightforward. For the one shown in Eq. (\ref{eqn:scramble_mul}), the corresponding de-scrambler is</p>
@@ -274,16 +270,16 @@ $$
 <p>And its structure may look like</p>
 <figure id="img-descrambler_mul" class="figure">
 <img src="./image/descramble_mul.svg" alt="./image/descramble_mul.svg">
-<figcaption class="caption"><span class="tag">Fig.10.</span> Structure of a multiplicative descrambler, where the generator polynomial is $1+x^{14}+x^{17}$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.10.</span> Structure of a multiplicative descrambler, where the generator polynomial is \(1+x^{14}+x^{17}\).</figcaption>
 </figure>
-<p>As we mentioned above, the error in the additive scrambler is localized. However, it is not true for the multiplicative scrambler. Eq. (\ref{eqn:scramble_mul_de2}) shows that the current output $x[n]$ relies both on the current input $y[n]$ and the previous inputs $y[n-14]$, $y[n-17]$. Thus, if there is any errors in all this received data, the current output $x[n]$ may be wrong<a name="footnote_src-5" href="#footnote-5"><sup>5</sup></a>. This is called error propagation.</p>
+<p>As we mentioned above, the error in the additive scrambler is localized. However, it is not true for the multiplicative scrambler. Eq. (\ref{eqn:scramble_mul_de2}) shows that the current output \(x[n]\) relies both on the current input \(y[n]\) and the previous inputs \(y[n-14]\), \(y[n-17]\). Thus, if there is any errors in all this received data, the current output \(x[n]\) may be wrong<a id="footnote_src-5" href="#footnote-5"><sup>5</sup></a>. This is called error propagation.</p>
 <div class="info">
-For the above example, how many outputs $x$ will be effected if the current input $y[n]$ is wrong? You may find it helpful to write all the equations of $x$ that involve $y[n]$ (Eq.(\ref{eqn:scramble_mul_de2}) is one example).
+For the above example, how many outputs \(x\) will be effected if the current input \(y[n]\) is wrong? You may find it helpful to write all the equations of \(x\) that involve \(y[n]\) (Eq.(\ref{eqn:scramble_mul_de2}) is one example).
 </div>
 <p>Different from the additive scrambler, the multiplicative scrambler only uses the data to randomize. If the bits from the input data are highly correlate to each other, the output may not be well randomized. In practice, you may need to detect the long sequence of 1 or 0 at the output, and use some heuristics to break it (e.g., invert the next input bit).</p>
 <p>The multiplicative scrambler may be implemented as</p>
 <div class="bs-demo">
-<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">scramble_mul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">z0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">):</span>
+<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">scramble_mul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">z0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    randomize the data with multiplicative scrambler</span>
 
@@ -327,27 +323,27 @@ For the above example, how many outputs $x$ will be effected if the current inpu
 </pre></div>
 </div>
 <h1 id="sec-2">2 Interleaver</h1>
-<p>In practice, the communication system usually contains some kind of error correction mechanism (e.g., forward error correction (FEC)). So that if some errors occur in the received data, they can be detected or corrected. Generally such error correction method can only deal with certain amount of error bits within a window (e.g., every $M$ bits). For example, every time, the error correction block will take $M$ bits, then detect or correct the error bits. However, if the total number of errors exceed the limit, it will fail to correct/detect the error.</p>
-<p>Considering two cases, where the total number of bit errors are same (e.g., $N_e$),</p>
+<p>In practice, the communication system usually contains some kind of error correction mechanism (e.g., forward error correction (FEC)). So that if some errors occur in the received data, they can be detected or corrected. Generally such error correction method can only deal with certain amount of error bits within a window (e.g., every \(M\) bits). For example, every time, the error correction block will take \(M\) bits, then detect or correct the error bits. However, if the total number of errors exceed the limit, it will fail to correct/detect the error.</p>
+<p>Considering two cases, where the total number of bit errors are same (e.g., \(N_e\)),</p>
 <ul>
-<li>in one case, such $N_e$ bits errors are uniformly distributed along the whole window (e.g., $N$),</li>
-<li>in the other case, such $N_e$ bits errors are concentrated in one error correction block window,</li>
+<li>in one case, such \(N_e\) bits errors are uniformly distributed along the whole window (e.g., \(N\)),</li>
+<li>in the other case, such \(N_e\) bits errors are concentrated in one error correction block window,</li>
 </ul>
 <p>Which case is easy to deal with?
-For the first case, the error correction block needs to correct roughly $\frac{M}{N}N_e$ errors. However, for the second case, the error correction block needs to correct $N_e$ errors, which is apparently a much harder problem.</p>
+For the first case, the error correction block needs to correct roughly \(\frac{M}{N}N_e\) errors. However, for the second case, the error correction block needs to correct \(N_e\) errors, which is apparently a much harder problem.</p>
 <p>Interleaver is used to deal with the burst errors: we can not stop the burst errors, but we can spread the burst errors to a much wilder window, such that in each error correction block window, the number of error bits may be still within the limit.</p>
 <h2 id="sec-2-1">2.1 Block interleaver</h2>
-<p>Block interleaver can be easily understood with an example. As shown in Fig. <a href="#img-interleaver_block">11</a>, a $3\times 4$ block interleaver can be viewed as a $3\times 4$ matrix .</p>
+<p>Block interleaver can be easily understood with an example. As shown in Fig. <a href="#img-interleaver_block">11</a>, a \(3\times 4\) block interleaver can be viewed as a \(3\times 4\) matrix .</p>
 <figure id="img-interleaver_block" class="figure">
 <img src="./image/interleaver_block.svg" alt="./image/interleaver_block.svg">
-<figcaption class="caption"><span class="tag">Fig.11.</span> Illustration of a block interleaver with size $3\times 4$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.11.</span> Illustration of a block interleaver with size \(3\times 4\).</figcaption>
 </figure>
-<p>For example, when the input ($x[0]\sim x[11]$) comes, it will fill the 1st row first, thus, the first row will contain $x[0]$, $x[1]$, $x[2]$, and $x[3]$. Then the 2nd row, so on and so forth. At time $n=9$, the buffer will look like (Fig. <a href="#img-interleaver_block9">12</a>)</p>
+<p>For example, when the input (\(x[0]\sim x[11]\)) comes, it will fill the 1st row first, thus, the first row will contain \(x[0]\), \(x[1]\), \(x[2]\), and \(x[3]\). Then the 2nd row, so on and so forth. At time \(n=9\), the buffer will look like (Fig. <a href="#img-interleaver_block9">12</a>)</p>
 <figure id="img-interleaver_block9" class="figure">
 <img src="./image/interleaver_block9.svg" alt="./image/interleaver_block9.svg">
-<figcaption class="caption"><span class="tag">Fig.12.</span> Status of interleaver buffer at time $n=9$.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.12.</span> Status of interleaver buffer at time \(n=9\).</figcaption>
 </figure>
-<p>Once the matrix is filled, the first column will be output first, that is, $x[0]$, $x[3]$, $x[6]$. Then the 2nd and 3rd columns. In summary, the output will be</p>
+<p>Once the matrix is filled, the first column will be output first, that is, \(x[0]\), \(x[3]\), \(x[6]\). Then the 2nd and 3rd columns. In summary, the output will be</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -368,7 +364,7 @@ Click on the grid to start the demo.
 <canvas id="interleaver_canvas"></canvas>
 </div>
 </div>
-<p>The deinterleaving is straightforward: just swap the input and output order. In particular, for the example in Fig. <a href="#img-interleaver_block">11</a>, when the input ($y[0]\sim y[11]$) comes, it will fill the 1st column first, then the 2nd column...</p>
+<p>The deinterleaving is straightforward: just swap the input and output order. In particular, for the example in Fig. <a href="#img-interleaver_block">11</a>, when the input (\(y[0]\sim y[11]\)) comes, it will fill the 1st column first, then the 2nd column...</p>
 <div class="bs-example">
 Block deinterleaver demo.
 Click on the grid to start the demo.
@@ -376,8 +372,8 @@ Click on the grid to start the demo.
 <canvas id="deinterleaver_canvas"></canvas>
 </div>
 </div>
-<p>It is easy to see in general, the interleaver/deinterleaver will not be able to output any data until its internal 'matrix' is filled, which introduces a delay. The delay is proportional to the interleaver size ($N$). The interleaver/deinterleaver also needs to have enough memory to hold all $N$ samples.</p>
-<p>Now, if there is a 3 bits burst error, e.g., $y[1]$, $y[2]$, $y[3]$</p>
+<p>It is easy to see in general, the interleaver/deinterleaver will not be able to output any data until its internal 'matrix' is filled, which introduces a delay. The delay is proportional to the interleaver size (\(N\)). The interleaver/deinterleaver also needs to have enough memory to hold all \(N\) samples.</p>
+<p>Now, if there is a 3 bits burst error, e.g., \(y[1]\), \(y[2]\), \(y[3]\)</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -420,7 +416,7 @@ $$
     <span class="k">return</span> <span class="n">y</span>
 </pre></div>
 </div>
-<p>Same code can also be used for de-interleaving. In particular, if the interleaver size is $N$ ($= R\times C$), the interleaving can be done by</p>
+<p>Same code can also be used for de-interleaving. In particular, if the interleaver size is \(N\) (\(= R\times C\)), the interleaving can be done by</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="c1"># assume len(x) = C*R</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">interleaver_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
@@ -439,7 +435,7 @@ $$
 <span class="o">&gt;&gt;&gt;</span> <span class="c1"># deinterleaver</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">xd</span> <span class="o">=</span> <span class="n">interleaver_block</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xd</span><span class="p">)</span>
-<span class="bp">True</span>
+<span class="kc">True</span>
 </pre></div>
 </div>
 <h2 id="sec-2-2">2.2 Convolutional interleaver</h2>
@@ -448,7 +444,7 @@ $$
 <img src="./image/interleaver_conv.svg" alt="./image/interleaver_conv.svg">
 <figcaption class="caption"><span class="tag">Fig.13.</span> Illustration of a convolutional interleaver.</figcaption>
 </figure>
-<p>For example, at time $n=0$, both <b>input</b> ($x[0]$) and <b>output</b> ($y[0]$) are connected to the first row. And since there is no shift register in first row, $y[0] = x[0]$. At time $n=1$, both <b>input</b> ($x[1]$) and <b>output</b> ($y[1]$) are connected to the second row. There is a shift register $s_{10}$ in second row. In this case, $s_{10}$ is output as $y[1]$, while $x[1]$ is shifted into $s_{10}$, that is</p>
+<p>For example, at time \(n=0\), both <b>input</b> (\(x[0]\)) and <b>output</b> (\(y[0]\)) are connected to the first row. And since there is no shift register in first row, \(y[0] = x[0]\). At time \(n=1\), both <b>input</b> (\(x[1]\)) and <b>output</b> (\(y[1]\)) are connected to the second row. There is a shift register \(s_{10}\) in second row. In this case, \(s_{10}\) is output as \(y[1]\), while \(x[1]\) is shifted into \(s_{10}\), that is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -457,7 +453,7 @@ s_{10} &= x[1].
 \end{align}
 $$
 </div>
-<p>Similarly, at $n=2$, both the <b>input</b> and <b>output</b> are connected to the third row.</p>
+<p>Similarly, at \(n=2\), both the <b>input</b> and <b>output</b> are connected to the third row.</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -467,7 +463,7 @@ s_{20} &= x[2].
 \end{align}
 $$
 </div>
-<p>So for each input sample, $x[n]$ is shifted into the shift register in current row, and the sample shifted out of the registers will be sent to the output. After that, both the input and output will move to the next row until the last row, when they will move to the first row again.</p>
+<p>So for each input sample, \(x[n]\) is shifted into the shift register in current row, and the sample shifted out of the registers will be sent to the output. After that, both the input and output will move to the next row until the last row, when they will move to the first row again.</p>
 
 <script type="text/paperscript" src="js/interleaver_conv.js" canvas="interleaver_conv_canvas"></script>
 <div class="bs-example">
@@ -492,7 +488,7 @@ The input is the output from the above convolutional interleaver output.
 <canvas id="deinterleaver_conv_canvas"></canvas>
 </div>
 </div>
-<p>To see why the de-interleaver works, we can count the total delay of a particular input, e.g., $x[1]$. At the interleaver $x[1]$ is connected to the second row, where there is 1 register. Then, at the de-interleaver, $x[1]$ is also connected to the second row (why?), where there are 3 registers. The total delay is $(1+3)*5=20$ samples. It is easy to see that it is true to all inputs. In other words, after the interleaver and de-interleaver processes, each samples will be delayed by 20 samples. So their relative positions do not change. In general, the total delay can be calculated as</p>
+<p>To see why the de-interleaver works, we can count the total delay of a particular input, e.g., \(x[1]\). At the interleaver \(x[1]\) is connected to the second row, where there is 1 register. Then, at the de-interleaver, \(x[1]\) is also connected to the second row (why?), where there are 3 registers. The total delay is \((1+3)*5=20\) samples. It is easy to see that it is true to all inputs. In other words, after the interleaver and de-interleaver processes, each samples will be delayed by 20 samples. So their relative positions do not change. In general, the total delay can be calculated as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -500,9 +496,9 @@ d = R \times S_R,
 \end{align}
 $$
 </div>
-<p>where $R$ is the number of rows in interleaver or de-interleaver (e.g., 5 in Fig. <a href="#img-deinterleaver_conv">14</a>), and $S_R$ is the number of shift register in row $R$ (e.g., 4 in Fig. <a href="#img-deinterleaver_conv">14</a>).</p>
+<p>where \(R\) is the number of rows in interleaver or de-interleaver (e.g., 5 in Fig. <a href="#img-deinterleaver_conv">14</a>), and \(S_R\) is the number of shift register in row \(R\) (e.g., 4 in Fig. <a href="#img-deinterleaver_conv">14</a>).</p>
 <div class="bs-demo">
-<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">interleaver_conv</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nrows</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">):</span>
+<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">interleaver_conv</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nrows</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    convolutional interleaver</span>
 
@@ -517,7 +513,7 @@ $$
 <span class="sd">            &#39;normal&#39;: interleaver</span>
 <span class="sd">            &#39;deintlv&#39;: de-interleaver</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># the only difference between the interleaver and de-interleaver is the</span>
         <span class="c1"># order of the shift registers.</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;normal&#39;</span><span class="p">:</span>
@@ -551,7 +547,7 @@ $$
 <span class="o">&gt;&gt;&gt;</span> <span class="c1"># equal to the total number of the shift registers</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">delay</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="n">delay</span><span class="p">],</span> <span class="n">xd</span><span class="p">[</span><span class="n">delay</span><span class="p">:])</span>
-<span class="bp">True</span>
+<span class="kc">True</span>
 </pre></div>
 </div>
 <h1 id="sec-3">3 Mapping</h1>
@@ -590,9 +586,9 @@ $$
 r = s + n,
 $$
 </div>
-<p>where $r$ and $s$ the received and transmitted signal, respectively, $n$ is a additive white Gaussian noise (AWGN $\sim\mathcal{N}(0, \sigma)$. In this example, the signal $s$ will be either 0, 1, 2, or 3, which is determined by the data bits.</p>
+<p>where \(r\) and \(s\) the received and transmitted signal, respectively, \(n\) is a additive white Gaussian noise (AWGN \(\sim\mathcal{N}(0, \sigma)\). In this example, the signal \(s\) will be either 0, 1, 2, or 3, which is determined by the data bits.</p>
 <p>What's the problem of the above mapping scheme?</p>
-<p>If we want to send signal 2 (e.g., $s = 2$ or data bits b'10 ), what's the probability of receiving a signal $r=1$ at the receiver, compared to the probability of receiving a signal with amplitude 0? It is easy to see that the former should be much higher. In particular, receiving the signal with smaller amplitude (e.g., $r= 0$), which implies that signal is impacted by a larger noise (e.g., $n=-2$), is less likely to happen.</p>
+<p>If we want to send signal 2 (e.g., \(s = 2\) or data bits b'10 ), what's the probability of receiving a signal \(r=1\) at the receiver, compared to the probability of receiving a signal with amplitude 0? It is easy to see that the former should be much higher. In particular, receiving the signal with smaller amplitude (e.g., \(r= 0\)), which implies that signal is impacted by a larger noise (e.g., \(n=-2\)), is less likely to happen.</p>
 <p>For example, if the transmitted signal is <b>2</b> (i.e., bits b'10), the number of bit errors vs the received signal will be</p>
 <table id="tbl-mapping_bcd_biterr">
 <caption><span class="tag">Table.2.</span> Bit error of the corresponding received signal when 2 (bits b'10) is sent, where the error bits are shown in red.</caption>
@@ -616,8 +612,8 @@ $$
 </tr>
 </tbody>
 </table>
-<p>Thus, if the received signal is <b>1</b> (i.e., the noise is <b>-1</b>), there will be 2 bit errors (e.g., b'10 $\Rightarrow$ b'01). However, if the received signal is <b>0</b>, which is resulted from a much larger noise (i.e., -2), there will be only 1 bit error (i.e., b'10 $\Rightarrow$ b'00 ). That's not intuitive, and does not look like a good idea<a name="footnote_src-6" href="#footnote-6"><sup>6</sup></a>. It's the main reason to use Gray code. As to be shown below, Gray code guarantees to have only 1 bit difference for adjacent codes.</p>
-<p>There is an easy way to generate a Gray code from the <a href="https://en.wikipedia.org/wiki/Binary-coded_decimal">binary coded decimal</a> (BCD). Let $g$ be the corresponding Gray code of N bits BCD $b$, then one corresponding Gray code can be generated by (Fig. <a href="#img-mapping_bcd2gray">16</a>)</p>
+<p>Thus, if the received signal is <b>1</b> (i.e., the noise is <b>-1</b>), there will be 2 bit errors (e.g., b'10 \(\Rightarrow\) b'01). However, if the received signal is <b>0</b>, which is resulted from a much larger noise (i.e., -2), there will be only 1 bit error (i.e., b'10 \(\Rightarrow\) b'00 ). That's not intuitive, and does not look like a good idea<a id="footnote_src-6" href="#footnote-6"><sup>6</sup></a>. It's the main reason to use Gray code. As to be shown below, Gray code guarantees to have only 1 bit difference for adjacent codes.</p>
+<p>There is an easy way to generate a Gray code from the <a href="https://en.wikipedia.org/wiki/Binary-coded_decimal">binary coded decimal</a> (BCD). Let \(g\) be the corresponding Gray code of N bits BCD \(b\), then one corresponding Gray code can be generated by (Fig. <a href="#img-mapping_bcd2gray">16</a>)</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -628,7 +624,7 @@ g_i = \begin{cases} b_i & i=N-1\\
 \end{align}
 $$
 </div>
-<p>where $g_i$ and $b_i$ are $i^{th}$ bit of Gray and BCD codes, respectively.</p>
+<p>where \(g_i\) and \(b_i\) are \(i^{th}\) bit of Gray and BCD codes, respectively.</p>
 <figure id="img-mapping_bcd2gray" class="figure">
 <img src="./image/mapping_bcd2gray.svg" alt="./image/mapping_bcd2gray.svg">
 <figcaption class="caption"><span class="tag">Fig.16.</span> Conversion from BCD to Gray code.</figcaption>
@@ -656,7 +652,7 @@ $$
 </tr>
 </tbody>
 </table>
-<p>Fig. <a href="#img-mapping_gray">17</a> shows the constellation with Gray code, where $x$-axis is the BCD code and text shows its corresponding Gray code.</p>
+<p>Fig. <a href="#img-mapping_gray">17</a> shows the constellation with Gray code, where \(x\)-axis is the BCD code and text shows its corresponding Gray code.</p>
 <figure id="img-mapping_gray" class="figure">
 <img src="./image/mapping_gray.svg" alt="./image/mapping_gray.svg">
 <figcaption class="caption"><span class="tag">Fig.17.</span> Constellation for 4-ASK (amplitude shift keying) with Gray code.</figcaption>
@@ -664,10 +660,10 @@ $$
 <p>You can see that any adjacent Gray codes only differ in one bit.
 How does BCD to Gray mapping work? First, it is easy to see that the mapping is one to one</p>
 <ol>
-<li>apparently, one BCD code $b$ will only generate one Gray code $g$;</li>
-<li>if $b1\neq b2$, then $g1\neq g2$. For example, let $i$ be the first position (when scanning from MSB) such that $b1_i\neq b2_i$. Then, from Eq. (\ref{eqn:bcd2gray}), $g1_i \neq g2_i$.</li>
+<li>apparently, one BCD code \(b\) will only generate one Gray code \(g\);</li>
+<li>if \(b1\neq b2\), then \(g1\neq g2\). For example, let \(i\) be the first position (when scanning from MSB) such that \(b1_i\neq b2_i\). Then, from Eq. (\ref{eqn:bcd2gray}), \(g1_i \neq g2_i\).</li>
 </ol>
-<p>Next, we want to show that the there is only one bit difference between the corresponding Gray codes of two adjacent BCD codes. Let $j$ be the first position (when scanning from LSB) of BCD $b$, such that $b[i]==0$. For example, $b$ can be written in binary form as</p>
+<p>Next, we want to show that the there is only one bit difference between the corresponding Gray codes of two adjacent BCD codes. Let \(j\) be the first position (when scanning from LSB) of BCD \(b\), such that \(b[i]==0\). For example, \(b\) can be written in binary form as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -675,7 +671,7 @@ b_{N-1}, b_{N-2}, \cdots, b_{j+1}, 0, 1, \cdots, 1.
 \end{align}
 $$
 </div>
-<p>Then, the next BCD code ($b+1$) can be written as</p>
+<p>Then, the next BCD code (\(b+1\)) can be written as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -683,7 +679,7 @@ b_{N-1}, b_{N-2}, \cdots, b_{j+1}, 1, 0, \cdots, 0.
 \end{align}
 $$
 </div>
-<p>It is easy to see that their corresponding Gray code only differ in one position, that is, at $j^{th}$ position.</p>
+<p>It is easy to see that their corresponding Gray code only differ in one position, that is, at \(j^{th}\) position.</p>
 <div class="info">
 Gray code is not unique. Can you find other mapping schemes?
 </div>
@@ -709,8 +705,8 @@ $$
 <li><p>split the source bits (e.g., 2N bits) into two groups evenly (i.e., each with N bits).
 For example, if the input is 4 bits, then each group will have 2 bits. For example,</p>
 <ul>
-<li>group 1: $b_3$, $b_2$;</li>
-<li>group 2: $b_1$, $b_0$.</li>
+<li>group 1: \(b_3\), \(b_2\);</li>
+<li>group 2: \(b_1\), \(b_0\).</li>
 </ul>
 <div class="bs-example">
 Thus, in this case, 4-bits input b'<b>1011</b> will be split into:
@@ -719,7 +715,7 @@ Thus, in this case, 4-bits input b'<b>1011</b> will be split into:
 <li>group 2: b'11</li>
 </ul>
 </div>
-<p>Basic, what we did here is to split the source bits in to two independent groups. It makes sense since the $x$- and $y$- axis on the 2-dimensional constellation are orthogonal to each other.</p></li>
+<p>Basic, what we did here is to split the source bits in to two independent groups. It makes sense since the \(x\)- and \(y\)- axis on the 2-dimensional constellation are orthogonal to each other.</p></li>
 <li><p>Apply the "Gray to BCD" mapping (Eq. (\ref{eqn:gray2bcd})) for each group.
 For the above example, the corresponding Gray code for each group is</p>
 <div class="bs-example">
@@ -807,7 +803,7 @@ x(n+1) = (a*x(n) + c) \mod m,
 \end{align}
 $$
 </div>
-<p>where $a$, $c$ and $m$ are constant, and $x(n)$ is the last random number. There are many popular choices of these parameters; one implementation shown in <b>man srand</b> looks like</p>
+<p>where \(a\), \(c\) and \(m\) are constant, and \(x(n)\) is the last random number. There are many popular choices of these parameters; one implementation shown in <b>man srand</b> looks like</p>
 <div class="syntax"><pre><span></span><span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">next</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
 
 <span class="cm">/* RAND_MAX assumed to be 32767 */</span>
@@ -820,7 +816,7 @@ $$
     <span class="n">next</span> <span class="o">=</span> <span class="n">seed</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
-<p>It will give you a pseudo random number between 0 and RAND_MAX. If you want to generate a random number between $L$ and $U$, you may follow the suggestion <a href="https://eternallyconfuzzled.com/using-rand-c-c-advice-for-the-c-standard-librarys-rand-function/">here</a> if the following simple way doesn't give you good result.</p>
+<p>It will give you a pseudo random number between 0 and RAND_MAX. If you want to generate a random number between \(L\) and \(U\), you may follow the suggestion <a href="https://eternallyconfuzzled.com/using-rand-c-c-advice-for-the-c-standard-librarys-rand-function/">here</a> if the following simple way doesn't give you good result.</p>
 <div class="syntax"><pre><span></span><span class="kt">int</span> <span class="n">r</span> <span class="o">=</span> <span class="n">L</span> <span class="o">+</span> <span class="n">myrand</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">U</span><span class="o">-</span><span class="n">L</span><span class="p">)</span><span class="o">/</span><span class="n">RAND_MAX</span><span class="p">;</span>
 </pre></div>
 <h2 id="sec-4-2">4.2 Gaussian Random Number</h2>
@@ -834,7 +830,7 @@ y &= \sqrt{-2\ln{u_1}}\sin(2\pi u_2),
 \end{align}
 $$
 </div>
-<p>where $u_1$, $u_2$ are from uniform distribution between 0 and 1, that is $u_1\sim U(0, 1)$.</p>
+<p>where \(u_1\), \(u_2\) are from uniform distribution between 0 and 1, that is \(u_1\sim U(0, 1)\).</p>
 <p>To see why this is the case, let us first define</p>
 <div class="mathjax">
 $$
@@ -843,7 +839,7 @@ r = \sqrt{-2\ln{u_1}},
 \end{align}
 $$
 </div>
-<p>The cumulative distribution function (CDF) of $r$ is defined as</p>
+<p>The cumulative distribution function (CDF) of \(r\) is defined as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -863,8 +859,8 @@ f(R) &= \frac{\partial P(r&lt;R)}{\partial R} \nonumber \\
 $$
 </div>
 <p>This is the PDF for <a href="https://en.wikipedia.org/wiki/Rayleigh_distribution">Rayleigh distribution</a>.</p>
-<p>Similarly, the PDF of $\theta = 2\pi u_2$ ($u_2\sim U(0, 1)$) is $\sim U(0, 2\pi)$.</p>
-<p>Now, $x$, $y$ can be defined as</p>
+<p>Similarly, the PDF of \(\theta = 2\pi u_2\) (\(u_2\sim U(0, 1)\)) is \(\sim U(0, 2\pi)\).</p>
+<p>Now, \(x\), \(y\) can be defined as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -873,7 +869,7 @@ y &= r\sin(\theta).
 \end{align}
 $$
 </div>
-<p>To get the joined PDF of $x$, $y$ (i.e., $f(x, y)$), first we need to calculate the Jacobian</p>
+<p>To get the joined PDF of \(x\), \(y\) (i.e., \(f(x, y)\)), first we need to calculate the Jacobian</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -885,7 +881,7 @@ $$
 \end{align}
 $$
 </div>
-<p>Then, $f(x, y)$ can be written as</p>
+<p>Then, \(f(x, y)\) can be written as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -895,15 +891,14 @@ f(x, y) &= \frac{f(r, \theta)}{\frac{\partial x, y}{\partial r, \theta}} \nonumb
 \end{align}
 $$
 </div>
-<p>It is easy to see that $x$, $y$ are independent standard normal distribution.</p>
+<p>It is easy to see that \(x\), \(y\) are independent standard normal distribution.</p>
 </div>
 </div>
-
 <div class="footer">
 <div class="footnote">
 <ol>
 <li><div id="footnote-1">
-Due to the modulation, the data frequency $f$ may be mapped to some other (e.g., higher) frequency. <a href="#footnote_src-1">&#8617;</a>
+Due to the modulation, the data frequency \(f\) may be mapped to some other (e.g., higher) frequency. <a href="#footnote_src-1">&#8617;</a>
 </div></li>
 <li><div id="footnote-2">
 See <a href="https://www.maa.org/sites/default/files/pdf/upload_library/22/Polya/07468342.di020742.02p0021g.pdf">here</a> if you are interested in how to calculate the probability exactly. <a href="#footnote_src-2">&#8617;</a>
@@ -912,7 +907,7 @@ See <a href="https://www.maa.org/sites/default/files/pdf/upload_library/22/Polya
 Thus, if the input data is random, then there is no need to apply the scrambler block. However, in practice, it is generally not the case! <a href="#footnote_src-3">&#8617;</a>
 </div></li>
 <li><div id="footnote-4">
-This is an ideal case. In practice, $y[n]$ may contain errors. Thus, the descrambled data may not be identical to the original data. <a href="#footnote_src-4">&#8617;</a>
+This is an ideal case. In practice, \(y[n]\) may contain errors. Thus, the descrambled data may not be identical to the original data. <a href="#footnote_src-4">&#8617;</a>
 </div></li>
 <li><div id="footnote-5">
 Can you figure out a case such that the current output is correct even when there are errors in the inputs? <a href="#footnote_src-5">&#8617;</a>
@@ -923,7 +918,7 @@ Imaging if your phone is built this way, hold your phone tight to block more sig
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2020-01-15 04:21:29 GMT, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2020-07-20 18:23:24 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>

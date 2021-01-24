@@ -1,17 +1,10 @@
-\config{title|Acoustic Echo Cancellation Overview}
+\newfun{title|Acoustic Echo Cancellation Overview}
+\config{title|\title}
+\config{doctitle|\title}
 \config{bsmdoc_conf|bsmdoc.cfg}
 \config{heading_numbering|True}
 \config{image_numbering|True}
 \config{table_numbering|True}
+\config{show_table_of_contents|True}
 
-{!div|menu||
-#makecontent
-!}
-{!div|main||
-{!div|toptitle||
-Acoustic Echo Cancellation Overview
-!}
-{!div|content||
 #include aec_content.bsmdoc
-!}
-!}

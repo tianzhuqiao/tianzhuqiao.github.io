@@ -1,8 +1,9 @@
 {!exec|firstRunOnly||{%
+@BFunction('ccodesnippet')
 def bsmdoc_ccodesnippet(data, *args, **kwargs):
     filename, func = data.strip().split('|')
     if not os.path.exists(filename):
-        bsmdoc_error_('no file %s'%filename, **kwargs)
+        _bsmdoc_error('no file %s'%filename, **kwargs)
         return
     with open(filename, 'r') as f:
         s = -1
@@ -596,7 +597,7 @@ In such case, the computation complexity can be further decrease by
 * not calculating the multiplication when the input is zero.
 
 So far, we are focusing on reducing the number of multiplications. It makes sense for many hardware implementations (e.g., ASIC or FPGA), where multiplications is expensive (e.g., area, time). Occasionally, you may also needs to implement the filter in pure software. Here software is not something like Matlab, Scilab, or scipy, where you may always have access to some efficient pre-defined functions. For example, you may need to implement an FIR filter on a ARM MCU. As shown in Fig. \ref{img-fir_flow}, at each input sample, you will need to calculate the multiplications between input samples $x[n]$ and filter coefficients $h[n]$, then shift the current input to the buffer.
-\config{js|add|js/raphel.min.js js/flowchart.js}
+\config{js|add|js/raphael.min.js js/flowchart.js}
 {!div|figure||
 {!image|id="diagram"||
 \label{img-fir_flow}
@@ -691,7 +692,7 @@ common.fir_test_fixed
 {!div|bs-demo-rst||image||
 ./image/fir_demo_signal.svg
 !}
-Next step is to make the fixed-point input. It basically relies on the system and the previous block. For example, if the previous block is an ADC, then it may have some fixed data bit-width (e.g., 8 or 10 bits per sample). For this example, we assume that each sample of input has 8 bits, and 3 bits before the decimal point. In particular, the range of the input values is $[-4, 3.96785]$\footnote{The range for 8 bit integer is [-128,127]. Since there are 3 bits before the decimal point, its range is $[-128/2^5, 127/2^5]$} with step 0.3125. Thus, as shown in the following figure, the difference between the fixed-point and float-point samples is $[-0.0156, 0.0156]$.
+Next step is to make the fixed-point input. It basically relies on the system and the previous block. For example, if the previous block is an ADC, then it may have some fixed data bit-width (e.g., 8 or 10 bits per sample). For this example, we assume that each sample of input has 8 bits, and 3 bits before the decimal point. In particular, the range of the input values is $[-4, 3.96875]$\footnote{The range for 8 bit integer is [-128,127]. Since there are 3 bits before the decimal point, its range is $[-128/2^5, 127/2^5]$} with step 0.3125. Thus, as shown in the following figure, the difference between the fixed-point and float-point samples is $[-0.0156, 0.0156]$.
 {!div|bs-demo||
 {!highlight|python||testsnippet2|2||{%
 common.fir_test_fixed
@@ -709,7 +710,7 @@ common.fir_test_fixed
 !}
 As shown in the above figure, after the filter, the majority of the noise has been filtered out. And note there is a delay between the signal and the filtered output due to the filter.
 
-Everything looks fine. Now we start to design the fixed-point filter. The maximum filter coefficient is 0.17940155, thus the first 2 bits after the decimal point is always zero, for example, in binary format \tag{b|b'.0010110111101101}. So if we want the coefficients to have 8 effective bits, we will keep the coefficients from bit -3 to bit -10, i.e., b'.00\tag{b|10110111}101101\footnote{In this trivial example, all filter coefficient is positive. Thus, there is no need to save the sign.}. And since the 11th bit is \tag{b|1}, add 1 to 10th bits as we use \tag{b|round} for truncation. Thus, the final fixed-point coefficients for 0.17940155 is b'.00\tag{b|10111000}.
+Everything looks fine. Now we start to design the fixed-point filter. The maximum filter coefficient is 0.14407105, thus the first 2 bits after the decimal point is always zero, for example, in binary format \tag{b|b'.0010010011100001}. So if we want the coefficients to have 8 effective bits, we will keep the coefficients from bit -3 to bit -10, i.e., b'.00\tag{b|10010011}100001\footnote{In this trivial example, all filter coefficient is positive. Thus, there is no need to save the sign.}. And since the 11th bit is \tag{b|1}, add 1 to 10th bits as we use \tag{b|round} for truncation. Thus, the final fixed-point coefficient for 0.14407105 is b'.00\tag{b|10010100}.
 {!div|bs-demo||
 {!highlight|python||testsnippet2|4||{%
 common.fir_test_fixed
@@ -736,7 +737,7 @@ common.fir_test_fixed
 ./image/fir_demo_signal_filtered_fix_mse2.svg
 !}
 
-One thing we haven't discussed yet is the output. For example, in above example, the input is 8 bits. If the filter coefficient is also 8 bits, the output will be 20 bits (8+8+4\footnote{The filter has 12 coefficients, which requires additional 4 bits.}). However, it may be not necessary to output all these 20 bits to the next block, since, for example, the LSB bits may contain only noise, and/or the MSB bits may be always zero (or sign bits). For this example, the expected output is within $[-1,1]$, it may be reasonable to have 3 bits for integers (include 1 sign bit). To quantify the signal, we need additional saturation step to make sure the output value is within its range (e.g., no overflow). It is especially important when we try to ignore the MSB bits in the result.
+One thing we haven't discussed yet is the output. For example, in above example, the input is 8 bits. If the filter coefficient is also 8 bits, the output will be 20 bits (8+8+4\footnote{The filter has 14 coefficients, which requires additional 4 bits.}). However, it may be not necessary to output all these 20 bits to the next block, since, for example, the LSB bits may contain only noise, and/or the MSB bits may be always zero (or sign bits). For this example, the expected output is within $[-1,1]$, it may be reasonable to have 3 bits for integers (include 1 sign bit). To quantify the signal, we need additional saturation step to make sure the output value is within its range (e.g., no overflow). It is especially important when we try to ignore the MSB bits in the result.
 {!div|bs-demo||
 {!highlight|python||testsnippet2|7||{%
 common.fir_test_fixed
