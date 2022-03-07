@@ -1,0 +1,39 @@
+.lms_example {
+    display:flex;
+    border-color: #e5e5e5 #eee #eee;
+    border-style: solid;
+    border-width: 1px 0;
+    margin-bottom: 20px;
+}
+
+.left_col {
+    width: 150px;
+}
+
+.right_col {
+    flex-grow: 1;
+    vertical-align: middle;
+}
+
+.lms_plot {
+    flex-grow: 1;
+}
+
+.form {
+    display: table-cell;
+    vertical-align: middle;
+    height: 50px;
+}
+
+label {
+    display: block;
+    width: 200px;
+}
+
+input {
+    width: 100px;
+}
+
+button {
+    width: 100px;
+}

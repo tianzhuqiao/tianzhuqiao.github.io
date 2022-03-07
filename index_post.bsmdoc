@@ -1,4 +1,10 @@
-﻿{!post|copy_swap_cpp.bsmdoc||
+﻿{!post|lms.bsmdoc||
+\ptext{more|
+=======
+#include |4|lms_content.bsmdoc
+}
+!}
+{!post|copy_swap_cpp.bsmdoc||
 \ptext{more|
 =======
 #include ^(\\s)*=+|18|copy_swap_cpp_content.bsmdoc

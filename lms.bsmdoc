@@ -1,0 +1,12 @@
+\alias{title|A Tutorial on Least Mean Square (LMS) Algorithm}
+\config{title|\alias{title}}
+\config{doctitle|\alias{title}}
+\config{heading_numbering|True}
+\config{image_numbering|True}
+\config{table_numbering|True}
+\config{show_table_of_contents|False}
+\config{bsmdoc_conf|bsmdoc.cfg}
+\config{css|add|css/lms.css}
+\config{js|https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js}
+
+#include lms_content.bsmdoc

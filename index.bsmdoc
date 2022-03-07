@@ -85,6 +85,8 @@ def bsmdoc_include(data, **kwargs):
             # invalid filename
             return c
         lines = c.split('\n')
+        if not d[0] and d[1]:
+            return '\n'.join(lines[0:4])
         pattern = []
         for i, l in enumerate(lines):
             # search the PATTERN

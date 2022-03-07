@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="bsmdoc 0.0.8">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<link rel="stylesheet" href="css/lms.css" type="text/css">
+<script>
+MathJax = {
+tex: {
+inlineMath: [['\\(', '\\)']],
+tags: "all"
+}
+};
+</script>
+<script id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"
+integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+crossorigin="anonymous"></script>
+<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
+<script type="text/javascript" language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript" language="javascript" src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/lms.js"></script>
+<title>A Tutorial on Least Mean Square (LMS) Algorithm</title>
+</head>
+<body class="nomathjax">
+<div class="layout">
+<div class="main">
+<div class="toptitle">
+A Tutorial on Least Mean Square (LMS) Algorithm
+</div>
+<div class="content">
+<p>I was once assigned a problem: there is a black box that maintains a float value; it has several interfaces to access that value</p>
+<ol>
+<li><b>estimate()</b>: return the estimated current value with noise,</li>
+<li><b>update(v)</b>: add delta \(v\) to the current value.</li>
+</ol>
+<p>And the goal is to set the black box to the target value. The straightforward solution is to use LMS algorithm (<a href="https://www.feiyilin.com/aec.html">here</a> for some mathematical explanation) to approach the target value. The procedure may look like</p>
+<table class="syntaxtable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="syntax"><pre><span></span><span class="n">T</span><span class="p">:</span> <span class="n">target</span>
+<span class="n">mu</span><span class="p">:</span> <span class="n">step</span> <span class="n">size</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">converged</span><span class="p">:</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">estimate</span><span class="p">()</span>
+    <span class="n">correction</span> <span class="o">=</span> <span class="n">mu</span><span class="o">*</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">v</span><span class="p">)</span>
+    <span class="n">update</span><span class="p">(</span><span class="n">correction</span><span class="p">)</span>
+</pre></div>
+</td></tr></table><p>You can play with it to see how it works <a id="lms_no_delay"><sup>&#x2693;</sup></a></p>
+
+<div class="lms_example">
+<div class="left_col">
+<div class="form">
+  <label for="target">target</label>
+  <input type="number" id="target" name="target" value="10" step="0.1">
+  <label for="initial">initial value</label>
+  <input type="number" id="initial" name="initial" value="0" step="0.1">
+  <label for="mu">mu</label>
+  <input type="number" id="mu" name="mu" step=0.01 value="0.1" min="0">
+  <label for="noise">std(awgn)</label>
+  <input type="number" id="noise" name="noise" step="0.1" value="1" min="0">
+  <label for="iteration">iterations</label>
+  <input type="number" id="iterations" name="iterations" value="200" min="1">
+  <button onclick="simple_lms()">re-run</button>
+</div>
+</div>
+<div class="right_col">
+<div id="tester" class="lms_plot"></div>
+</div>
+</div>
+<script>
+function simple_lms() {
+    var target = parseFloat($("#target").val());
+    var mu = parseFloat($("#mu").val());
+    var initial = parseFloat($("#initial").val());
+    var std = parseFloat($("#noise").val());
+    var n = parseFloat($("#iterations").val());
+    plot_lms("tester", mu, target, initial, std, n);
+}
+simple_lms()
+</script>
+<p>If this is the whole story, we will be happy. However, there is an additional constraint about the execution time of the above steps</p>
+<ol>
+<li><b>estimate()</b>: take 1 unit of time (e.g., 1s),</li>
+<li><b>update(v)</b>: also take 1 unit of time.</li>
+</ol>
+<p>Compared to the above two steps, the time to calculate the <b>correction</b> (one addition and one multiplication) can be ignored.</p>
+<p>For the above procedure, each iteration (<b>estimate</b> & <b>update</b>) will take 2 units of time. It is basically too slow for the application (we can increase \(\mu\), but the variance of the black box when converged will be large; or we may fine tune \(\mu\) for the system, e.g.,decrease the \(\mu\) when it approaches the target.). Fortunately, the system also provides another interface</p>
+<ol>
+<li><b>estimateThenUpdate(v)</b>: return the estimated value with noise, then update the black box with delta \(v\). It also take 1 unit of time.</li>
+</ol>
+<p>By following the same procedure as above, the loop with the new interface can be written as</p>
+<table class="syntaxtable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="syntax"><pre><span></span><span class="n">T</span><span class="p">:</span> <span class="n">target</span>
+<span class="n">mu</span><span class="p">:</span> <span class="n">step</span> <span class="n">size</span>
+<span class="n">correction</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">converged</span><span class="p">:</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">estimateThenUpdate</span><span class="p">(</span><span class="n">correction</span><span class="p">)</span>
+    <span class="n">correction</span> <span class="o">=</span> <span class="n">mu</span><span class="o">*</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+</td></tr></table><p>The good news is that we can achieve both <b>estimate</b> and <b>update</b> in 1 unit of time. That is, compared to the original one, iterations in a fixed time period is doubled. However, some people quickly pointed out that to make it equivalent to the original design, we actually need <b>updateThenEstimate</b>, instead of <b>estimateThenUpdate</b>. That's a valid concern; what the new design does (with original two steps) is</p>
+<table class="syntaxtable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="syntax"><pre><span></span><span class="n">T</span><span class="p">:</span> <span class="n">target</span>
+<span class="n">mu</span><span class="p">:</span> <span class="n">step</span> <span class="n">size</span>
+<span class="n">correction</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">converged</span><span class="p">:</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">estimate</span><span class="p">()</span> <span class="c1"># v(n-1)</span>
+    <span class="n">update</span><span class="p">(</span><span class="n">correction</span><span class="p">)</span> <span class="c1"># v(n) = v(n-1) + correction</span>
+    <span class="n">correction</span> <span class="o">=</span> <span class="n">mu</span><span class="o">*</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">v</span><span class="p">)</span> <span class="c1"># correction to get v(n+1) is based on v(n-1)</span>
+</pre></div>
+</td></tr></table><p>In other words, we are not calculating the correction based on the estimate of the current value, but the estimate of the value before applying the last correction (outdated). So there is a delay between <b>estimate</b> and <b>update</b>. You can play with it in the following demo. For example, \(\text{delay}=1\) means there is 1 <b>update</b> after <b>estimate</b> used to calculate the next correction.</p>
+
+<div class="lms_example">
+<div class="left_col">
+<div class="form">
+  <label for="target">target</label>
+  <input type="number" id="target2" name="target" value="10" step="0.1">
+  <label for="initial">initial value</label>
+  <input type="number" id="initial2" name="initial" value="0" step="0.1">
+  <label for="mu">mu</label>
+  <input type="number" id="mu2" name="mu" step="0.01" value="0.1" min="0">
+  <label for="noise">std(awgn)</label>
+  <input type="number" id="noise2" name="noise" step="0.1" value="1" min="0">
+  <label for="iteration">iterations</label>
+  <input type="number" id="iterations2" name="iterations" value="200" min="0">
+  <label for="delay2">delay</label>
+  <input type="number" id="delay2" name="delay2" value="1" min="0">
+  <button onclick="simple_lms2()">re-run</button>
+</div>
+</div>
+<div class="right_col">
+<div id="tester2" class="lms_plot"></div>
+</div>
+</div>
+<script>
+function simple_lms2() {
+    var target = parseFloat($("#target2").val());
+    var mu = parseFloat($("#mu2").val());
+    var initial = parseFloat($("#initial2").val());
+    var std = parseFloat($("#noise2").val());
+    var n = parseFloat($("#iterations2").val());
+    var delay = parseFloat($("#delay2").val());
+    plot_lms("tester2", mu, target, initial, std, n, delay);
+}
+simple_lms2()
+</script>
+<p>Looks like the system still converges (e.g., for some \(\mu\)). Does it mean the delay doesn't impact the system at all? You may have already noticed that the one with delay 10 may have much larger overshoot than the one without delay (original design).</p>
+<p>Let's look at these two designs more closely.
+Without delay, for \(n\)th iteration, first we <b>estimate</b> the value</p>
+<div class="mathjax">
+$$
+\hat{v}_0(n) = v_0(n) + n(n),
+$$
+</div>
+<p>where \(v_0(n)\) is the signal in black box, and \(n(n)\) is the noise (awgn).
+Then calculate the distance to the target</p>
+<div class="mathjax">
+$$
+e_0(n) = T - \hat{v}_0(n).
+$$
+</div>
+<p>Finally, the error \(e_0(n)\) is applied to the value in <b>update</b> step</p>
+<div class="mathjax">
+$$
+v_0(n+1) = v_0(n) + \mu*e_0(n).
+$$
+</div>
+<p>Combining the above steps, we have</p>
+<div class="mathjax">
+$$
+\begin{align}
+v_0(n+1) &= v_0(n) + \mu (T- (v_0(n) + n(n))) \nonumber \\
+       &= (1-\mu)v_0(n) + \mu(T - n(n)).
+\label{eqn:v0}
+\end{align}
+$$
+</div>
+<p>When \(v_0(n)\) converges,</p>
+<div class="mathjax">
+$$
+\text{var}(v_0(n+1))= (1-\mu)^2 \text{var}(v_0(n)) + \mu^2 \text{var}(n(n)),
+$$
+</div>
+<p>and as \(\text{var}(v_0(n+1)) = \text{var}(v_0(n))\), so</p>
+<div class="mathjax">
+$$
+\text{var}(v_0)= \frac{\mu}{2-\mu} \text{var}(n)
+$$
+</div>
+<p>So smaller the \(\mu\), smaller the variance of the signal in black box. But can we set \(\mu\) to be negative value? It doesn't make any sense. The above conclusion is only true if the value in black box converges. It is easy to see that Eq. (\ref{eqn:v0}) is a 1st order difference equation, where \(T-n(n)\) is the input, and \(v_0(n+1)\) is the output. Its \(z\) transform can be written as</p>
+<div class="mathjax">
+$$
+H_0(z) = \frac{\mu}{1-(1-\mu)z^{-1}},
+$$
+</div>
+<p>To make it stable, the pole of \(z\) transform (\(z_p\)) shall be within the unit circle, that is</p>
+<div class="mathjax">
+$$
+-1&lt; z_p = 1-\mu &lt; 1,
+$$
+</div>
+<p>or</p>
+<div class="mathjax">
+$$
+\begin{align}
+0&lt; \mu &lt;2.
+\label{eq:v0_mu}
+\end{align}
+$$
+</div>
+<p>Another way to see this is to rewrite the equation Eq. (\ref{eqn:v0}) as,</p>
+<div class="mathjax">
+$$
+\begin{align}
+v_0(n+1) &= (1-\mu)v_0(n) + \mu(T - n(n)), \longrightarrow \nonumber \\
+v_n(n+1) - T &= (1-\mu)(v_0(n)-T) - \mu n(n).
+\end{align}
+$$
+</div>
+<p>Take the expectation of both side, we have</p>
+<div class="mathjax">
+$$
+\begin{align}
+E(v_n(n+1) - T) &= (1-\mu)E((v_0(n)-T)) \nonumber \\
+& = (1-\mu)^{n+1}E(v_0(0)-T).
+\label{eqn:v0_error}
+\end{align}
+$$
+</div>
+<p>So to make the error magnitude to decrease with iteration, \(|1-\mu|&lt;1\); that is \(0&lt;\mu&lt;2\).
+You can play with the <a href="#lms_no_delay">original design</a> to see the effect of various \(\mu\). When system converges, use large \(\mu\) may not be a good idea as it will increase the variance of the signal in black box; and similarly, very small \(\mu\) before system converges may also not be a good idea as it will take longer to converge.</p>
+<p>For the case with 1 unit delay</p>
+<div class="mathjax">
+$$
+\begin{align}
+v_1(n+1) &= v_1(n) + \mu (T- (v_1(n-1) + n(n))) \nonumber \\
+       &= v_1(n)-\mu v_1(n-1) + \mu(T - n(n)).
+\label{eqn:v1}
+\end{align}
+$$
+</div>
+<p>As shown in the above equation, the <b>estimate</b> (and the correction) is based on \(v_1(n-1)\), instead of \(v_1(n)\) as in the case without delay; then the correction is applied to the current value \(v_1(n)\) to get the new value \(v_1(n+1)\).
+The \(z\) transform of this system is</p>
+<div class="mathjax">
+$$
+H_1(z) = \frac{\mu}{1-z^{-1} + \mu z^{-2}}
+$$
+</div>
+<p>Similarly, to make such linear system stable, the poles of the \(z\) transform shall be within the unit circle, that is</p>
+<div class="mathjax">
+$$
+\left|\frac{1 \pm \sqrt{1-4\mu}}{2}\right| &lt; 1,
+$$
+</div>
+<p>or</p>
+<div class="mathjax">
+$$
+0 &lt; \mu &lt; 1.
+$$
+</div>
+<p>So the range of \(\mu\) is half of the system without delay (Eq. (\ref{eq:v0_mu})).
+The variance of the signal with 1 delay can be written as (check <a href="file:///Users/tianzhuqiao/Downloads/ps1-prt1.pdf">here</a> for details).</p>
+<div class="mathjax">
+$$
+\text{var}(v_1) = \frac{1+\mu}{(1-\mu)[(1+\mu)^2-1]}\mu^2 \text{var}(n)
+$$
+</div>
+<p>As shown in the following plot, for same \(\mu\), the variance of the signal with 1 delay is larger, especially when \(\mu\) is large. However, when \(\mu\) is small (e.g., \(\mu&lt;0.1\)), the difference between these two is very small.</p>
+
+<div class="lms_example">
+<div id="lms_var" class="lms_plot"></div>
+</div>
+<script>
+function simple_lms3() {
+    plot_lms_variance("lms_var");
+}
+simple_lms3()
+</script>
+<p>The next question is how many iteration do we need? Or will the system with 1 delay actually help to make the system converge better (i.e., within the fixed amount of time)? If \(\mu\) is fixed, for the system without delay, we can easily use Eq. (\ref{eqn:v0_error}) to calculate the minimal number of iteration needed, so that \(E(v_0(n) - T)\) is smaller than some value (e.g., from the system spec). For example, if \(\mu=0.2\), \(v_0(0) = 0\), and the spec is to make the bias smaller than \(1\%T\), then it will need \(\log(0.01)/\log(1-0.2) \approx 21\) iterations.</p>
+<p>For the case with delay, it is much more complicated to do the similar analysis. One way to simplify it is to view Eq. (\ref{eqn:v0}) and Eq. (\ref{eqn:v1}) as an linear system (e.g., IIR filter) to filter a noisy DC signal (target). So the group delay will give us good idea about the delay between input (target) and output (signal in black box). The general group delay is complicated and frequency dependent. Fortunately, in this application, the input signal (i.e., target) is constant, that is, its frequency is 0; the group delay at frequency 0 can be written as (see <a href="https://www.feiyilin.com/basics.html">here</a> for detail)</p>
+<div class="mathjax">
+$$
+\begin{align}
+\tau_0(0) &= \frac{1-u}{u},\nonumber \\
+\tau_1(0) &= \frac{1-2u}{u}.
+\end{align}
+$$
+</div>
+<p>As shown in the following plot, the group delay for \(v_0\) and \(v_1\) is very close to each other. For example, when \(\mu=0.1\), the delay between input (target) and output is roughly 10 for both systems, which means that the input will appear at the output after roughly 10 iterations. In our application, as \(v_1\) is two times faster than \(v_0\), we can expect that \(v_1\) will converge better for the fixed amount of time. For example, you can try the demo to compare the results between two systems (e.g., 40 iterations with 1 delay vs 20 iterations without delay).</p>
+
+<div class="lms_example">
+<div id="lms_group_delay" class="lms_plot"></div>
+</div>
+<script>
+function simple_lms4() {
+    plot_lms_group_delay("lms_group_delay");
+}
+simple_lms4()
+</script>
+</div>
+</div>
+<div class="footer">
+<div class="footer-text"> Last updated 2022-03-08 18:50:01 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+</div>
+</div>
+</body>
+</html>
