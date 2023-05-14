@@ -291,25 +291,25 @@ It is easy to see in general, the interleaver/deinterleaver will not be able to 
 Now, if there is a 3 bits burst error, e.g., $y[1]$, $y[2]$, $y[3]$
 $$
 \begin{align}
-y[0], \color{red}{y[1]}, \color{red}{y[2]}, \color{red}{y[3]}, y[4], y[5], y[6], y[7], y[8],y[9], y[10], y[11],
+y[0], {\color{red}y[1]}, {\color{red}y[2]}, {\color{red}y[3]}, y[4], y[5], y[6], y[7], y[8],y[9], y[10], y[11],
 \end{align}
 $$
 that is
 $$
 \begin{align}
-x[0], \color{red}{x[4]}, \color{red}{x[8]}, \color{red}{x[1]}, x[5], x[9], x[2], x[6], x[10], x[3], x[7], x[11],
+x[0], {\color{red}x[4]}, {\color{red}x[8]}, {\color{red}x[1]}, x[5], x[9], x[2], x[6], x[10], x[3], x[7], x[11],
 \end{align}
 $$
 where the error bits are indicated by red color.
 After deinterleaving, the data will look like
 $$
 \begin{align}
-x[0], \color{red}{x[1]}, x[2], x[3], \color{red}{x[4]}, x[5], x[6], x[7], \color{red}{x[8]},x[9],x[10],x[11].
+x[0], {\color{red}x[1]}, x[2], x[3], {\color{red}x[4]}, x[5], x[6], x[7], {\color{red}x[8]},x[9],x[10],x[11].
 \end{align}
 $$
 Thus, the burst errors are spread out across the whole interleaver block.
 
-TODO: real interleaver example
+#TODO: real interleaver example
 
 The interleaving can be implemented in python as
 {!div|bs-demo||highlight|python||codesnippet||{%

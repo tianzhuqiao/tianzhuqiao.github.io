@@ -20,9 +20,9 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"
 integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
 crossorigin="anonymous"></script>
-<script src="js/bsmdoc.js"></script>
-<script src="js/menu.js"></script>
-<script src="js/paper-full.js"></script>
+<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
+<script type="text/javascript" language="javascript" src="js/menu.js"></script>
+<script type="text/javascript" language="javascript" src="js/paper-full.js"></script>
 <title>Transmitter</title>
 </head>
 <body class="nomathjax">
@@ -132,7 +132,7 @@ The one used in 802.11a standard is 127 bits with generator polynomial \(1+x^4+x
 The naive LFSR can be implemented in python as</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">gen_prbs</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    naive code to generate the pseudo-random binary sequence</span>
 
 <span class="sd">    input:</span>
@@ -197,7 +197,7 @@ $$
 <p>The implementation is straightforward. The naive code may look like</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">scramble_add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">s0</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    randomize the data with additive scrambler</span>
 
 <span class="sd">    input:</span>
@@ -280,7 +280,7 @@ For the above example, how many outputs \(x\) will be effected if the current in
 <p>The multiplicative scrambler may be implemented as</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">scramble_mul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">z0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    randomize the data with multiplicative scrambler</span>
 
 <span class="sd">    input:</span>
@@ -377,7 +377,7 @@ Click on the grid to start the demo.
 <div class="mathjax">
 $$
 \begin{align}
-y[0], \color{red}{y[1]}, \color{red}{y[2]}, \color{red}{y[3]}, y[4], y[5], y[6], y[7], y[8],y[9], y[10], y[11],
+y[0], {\color{red}y[1]}, {\color{red}y[2]}, {\color{red}y[3]}, y[4], y[5], y[6], y[7], y[8],y[9], y[10], y[11],
 \end{align}
 $$
 </div>
@@ -385,7 +385,7 @@ $$
 <div class="mathjax">
 $$
 \begin{align}
-x[0], \color{red}{x[4]}, \color{red}{x[8]}, \color{red}{x[1]}, x[5], x[9], x[2], x[6], x[10], x[3], x[7], x[11],
+x[0], {\color{red}x[4]}, {\color{red}x[8]}, {\color{red}x[1]}, x[5], x[9], x[2], x[6], x[10], x[3], x[7], x[11],
 \end{align}
 $$
 </div>
@@ -394,16 +394,15 @@ After deinterleaving, the data will look like</p>
 <div class="mathjax">
 $$
 \begin{align}
-x[0], \color{red}{x[1]}, x[2], x[3], \color{red}{x[4]}, x[5], x[6], x[7], \color{red}{x[8]},x[9],x[10],x[11].
+x[0], {\color{red}x[1]}, x[2], x[3], {\color{red}x[4]}, x[5], x[6], x[7], {\color{red}x[8]},x[9],x[10],x[11].
 \end{align}
 $$
 </div>
 <p>Thus, the burst errors are spread out across the whole interleaver block.</p>
-<p>TODO: real interleaver example</p>
 <p>The interleaving can be implemented in python as</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">interleaver_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    block interleaver</span>
 
 <span class="sd">    input:</span>
@@ -499,7 +498,7 @@ $$
 <p>where \(R\) is the number of rows in interleaver or de-interleaver (e.g., 5 in Fig. <a href="#img-deinterleaver_conv">14</a>), and \(S_R\) is the number of shift register in row \(R\) (e.g., 4 in Fig. <a href="#img-deinterleaver_conv">14</a>).</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">interleaver_conv</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nrows</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    convolutional interleaver</span>
 
 <span class="sd">    input:</span>
@@ -744,7 +743,7 @@ Thus, b'1011 will be sent as position (3(b'11), 2(b'10)) on the constellation (F
 </ol>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">bcd2gray</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get the corresponding Gray from the BCD code</span>
 
 <span class="sd">    input</span>
@@ -756,7 +755,7 @@ Thus, b'1011 will be sent as position (3(b'11), 2(b'10)) on the constellation (F
     <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_xor</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">gray2bcd</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get the corresponding BCD from the Gray code</span>
 
 <span class="sd">    input</span>
@@ -769,7 +768,7 @@ Thus, b'1011 will be sent as position (3(b'11), 2(b'10)) on the constellation (F
         <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_xor</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">G</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">gen_gray_table</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    generate 2-d Gray constellation table</span>
 
 <span class="sd">    input</span>
@@ -804,20 +803,20 @@ x(n+1) = (a*x(n) + c) \mod m,
 $$
 </div>
 <p>where \(a\), \(c\) and \(m\) are constant, and \(x(n)\) is the last random number. There are many popular choices of these parameters; one implementation shown in <b>man srand</b> looks like</p>
-<div class="syntax"><pre><span></span><span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">next</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<div class="syntax"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
 
 <span class="cm">/* RAND_MAX assumed to be 32767 */</span>
-<span class="kt">int</span> <span class="nf">myrand</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">next</span> <span class="o">=</span> <span class="n">next</span> <span class="o">*</span> <span class="mi">1103515245</span> <span class="o">+</span> <span class="mi">12345</span><span class="p">;</span>
-    <span class="k">return</span><span class="p">((</span><span class="kt">unsigned</span><span class="p">)(</span><span class="n">next</span><span class="o">/</span><span class="mi">65536</span><span class="p">)</span> <span class="o">%</span> <span class="mi">32768</span><span class="p">);</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">myrand</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">next</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1103515245</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">12345</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="p">((</span><span class="kt">unsigned</span><span class="p">)(</span><span class="n">next</span><span class="o">/</span><span class="mi">65536</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">32768</span><span class="p">);</span>
 <span class="p">}</span>
 
-<span class="kt">void</span> <span class="nf">mysrand</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">seed</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">next</span> <span class="o">=</span> <span class="n">seed</span><span class="p">;</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">mysrand</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">seed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seed</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 <p>It will give you a pseudo random number between 0 and RAND_MAX. If you want to generate a random number between \(L\) and \(U\), you may follow the suggestion <a href="https://eternallyconfuzzled.com/using-rand-c-c-advice-for-the-c-standard-librarys-rand-function/">here</a> if the following simple way doesn't give you good result.</p>
-<div class="syntax"><pre><span></span><span class="kt">int</span> <span class="n">r</span> <span class="o">=</span> <span class="n">L</span> <span class="o">+</span> <span class="n">myrand</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">U</span><span class="o">-</span><span class="n">L</span><span class="p">)</span><span class="o">/</span><span class="n">RAND_MAX</span><span class="p">;</span>
+<div class="syntax"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">L</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">myrand</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">U</span><span class="o">-</span><span class="n">L</span><span class="p">)</span><span class="o">/</span><span class="n">RAND_MAX</span><span class="p">;</span>
 </pre></div>
 <h2 id="sec-4-2">4.2 Gaussian Random Number</h2>
 <p>Similarly, occasionally we may need to generate it by ourselves (e.g., on a embedded microcontroller).
@@ -918,7 +917,7 @@ Imaging if your phone is built this way, hold your phone tight to block more sig
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2020-07-20 18:23:24 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2023-05-14 03:48:40 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>
