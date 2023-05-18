@@ -315,7 +315,7 @@ $$
 In other words, in frequency domain, the output of the LTI system $f$ is simply the multiplication between the input and the impulse response. It is critical to digital signal processing. For example, to design a filter, we can simply focus on the $H(\omega)$.
 
 == FIR Filter
-Many digital signal processing tasks can be solved by designing a filter. For example, a low pass filter can be used to filter the high frequency noise before down sampling the signal. Filters are generally grouped into two categories: finite impulse response (FIR) and infinite impulse response (IIR) filters. In this section, we will discuss the FIR. As indicitated by its name, the impulse response of an FIR filter is finite. In other words, the output of an FIR filter with an impulse as its input will be zero after a finite number of samples. Fig. \ref{img-filter_fir} shows the basic structure of an FIR filter with order $N$, which can be written as
+Many digital signal processing tasks can be solved by designing a filter. For example, a low pass filter can be used to filter the high frequency noise before down sampling the signal. Filters are generally grouped into two categories: finite impulse response (FIR) and infinite impulse response (IIR) filters. In this section, we will discuss the FIR. As indicated by its name, the impulse response of an FIR filter is finite. In other words, the output of an FIR filter with an impulse as its input will be zero after a finite number of samples. Fig. \ref{img-filter_fir} shows the traditional tapped-delay line FIR structure (order $N$), which can be written as
 $$
 \begin{align}
      y[n] &= \sum_{k=n}^{n-N}{x[k]h[n-k]},
@@ -334,6 +334,19 @@ If $x[n] = \delta[n]$, it is easy to see $y[0] = h[0]$, $y[1] = h[1]$, $\cdots$,
 \caption{FIR filter structure.}
 \label{img-filter_fir}
 !}
+Fig. \ref{img-filter_fir_transpose} shows the transposed FIR filter structure. It can be obtained from the traditional tapped-delay line FIR structure by,
+* convert the signal nodes (the thick dot) to adders;
+* convert adders to signal nodes;
+* reverse the direction of all connections;
+* swap input ($x[n]$) and output ($y[n]$);
+* re-arrange the structure such that the input is on the left side.
+
+{!image||
+./image/filter_fir_transpose.svg
+\caption{Transposed FIR filter structure.}
+\label{img-filter_fir_transpose}
+!}
+As we can see from Figs. \ref{img-filter_fir} & \ref{img-filter_fir_transpose}, these two structures requires the same number of multiplications, additions and buffers (delay unit). For the transposed structure, the buffered data is after the multiplication, which usually has more bit-width in fixed-point design, and requires larger buffer size. On the other hand, in the transposed structure, the result after each adder is buffered, which may be preferred in high speed hardware implementation (e.g., FPGA), as it reduces the time required to perform multiple addition operations (in traditional structure) \cite{lyons}.
 
 \tag{b|Bonded Input Bounded Output.}
 An LTI system (e.g., FIR filter) is stable if for any bonded-input, its output is also bounded. In other words, for any bonded input (e.g., $|x[n]|<M_x$, $\forall n$), $|y[n]|<\infty$ if and only if $\sum_{k=0}^{N}{|h[k]|}<\infty$.

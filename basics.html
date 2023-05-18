@@ -20,10 +20,10 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"
 integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
 crossorigin="anonymous"></script>
-<script src="js/bsmdoc.js"></script>
-<script src="js/menu.js"></script>
-<script src="js/raphael.min.js"></script>
-<script src="js/flowchart.js"></script>
+<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
+<script type="text/javascript" language="javascript" src="js/menu.js"></script>
+<script type="text/javascript" language="javascript" src="js/raphael.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/flowchart.js"></script>
 <title>basics of digital signal processing</title>
 </head>
 <body class="nomathjax">
@@ -331,7 +331,7 @@ $$
 </div>
 <p>In other words, in frequency domain, the output of the LTI system \(f\) is simply the multiplication between the input and the impulse response. It is critical to digital signal processing. For example, to design a filter, we can simply focus on the \(H(\omega)\).</p>
 <h2 id="sec-1-4">1.4 FIR Filter</h2>
-<p>Many digital signal processing tasks can be solved by designing a filter. For example, a low pass filter can be used to filter the high frequency noise before down sampling the signal. Filters are generally grouped into two categories: finite impulse response (FIR) and infinite impulse response (IIR) filters. In this section, we will discuss the FIR. As indicitated by its name, the impulse response of an FIR filter is finite. In other words, the output of an FIR filter with an impulse as its input will be zero after a finite number of samples. Fig. <a href="#img-filter_fir">14</a> shows the basic structure of an FIR filter with order \(N\), which can be written as</p>
+<p>Many digital signal processing tasks can be solved by designing a filter. For example, a low pass filter can be used to filter the high frequency noise before down sampling the signal. Filters are generally grouped into two categories: finite impulse response (FIR) and infinite impulse response (IIR) filters. In this section, we will discuss the FIR. As indicated by its name, the impulse response of an FIR filter is finite. In other words, the output of an FIR filter with an impulse as its input will be zero after a finite number of samples. Fig. <a href="#img-filter_fir">14</a> shows the traditional tapped-delay line FIR structure (order \(N\)), which can be written as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -353,6 +353,19 @@ If \(x[n] = \delta[n]\), it is easy to see \(y[0] = h[0]\), \(y[1] = h[1]\), \(\
 <img src="./image/filter_fir.svg" alt="./image/filter_fir.svg">
 <figcaption class="caption"><span class="tag">Fig.14.</span> FIR filter structure.</figcaption>
 </figure>
+<p>Fig. <a href="#img-filter_fir_transpose">15</a> shows the transposed FIR filter structure. It can be obtained from the traditional tapped-delay line FIR structure by,</p>
+<ol>
+<li>convert the signal nodes (the thick dot) to adders;</li>
+<li>convert adders to signal nodes;</li>
+<li>reverse the direction of all connections;</li>
+<li>swap input (\(x[n]\)) and output (\(y[n]\));</li>
+<li>re-arrange the structure such that the input is on the left side.</li>
+</ol>
+<figure id="img-filter_fir_transpose" class="figure">
+<img src="./image/filter_fir_transpose.svg" alt="./image/filter_fir_transpose.svg">
+<figcaption class="caption"><span class="tag">Fig.15.</span> Transposed FIR filter structure.</figcaption>
+</figure>
+<p>As we can see from Figs. <a href="#img-filter_fir">14</a> & <a href="#img-filter_fir_transpose">15</a>, these two structures requires the same number of multiplications, additions and buffers (delay unit). For the transposed structure, the buffered data is after the multiplication, which usually has more bit-width in fixed-point design, and requires larger buffer size. On the other hand, in the transposed structure, the result after each adder is buffered, which may be preferred in high speed hardware implementation (e.g., FPGA), as it reduces the time required to perform multiple addition operations (in traditional structure) [<a id="cite-2-1" href="#reference-2">2</a>].</p>
 <p><b>Bonded Input Bounded Output.</b>
 An LTI system (e.g., FIR filter) is stable if for any bonded-input, its output is also bounded. In other words, for any bonded input (e.g., \(|x[n]|&lt;M_x\), \(\forall n\)), \(|y[n]|&lt;\infty\) if and only if \(\sum_{k=0}^{N}{|h[k]|}&lt;\infty\).</p>
 <div class="proof">
@@ -586,10 +599,10 @@ $$
 <div class="bs-demo-rst">
 <figure id="img-groupdelay" class="figure">
 <img src="./image/groupdelay.svg" alt="./image/groupdelay.svg">
-<figcaption class="caption"><span class="tag">Fig.15.</span> Group delay of FIR filter with coefficients \([10,9, \cdots, 1]\). The \(x\)-axis is the frequency normalized to sampling frequency (\(f_n = f/f_s\)).</figcaption>
+<figcaption class="caption"><span class="tag">Fig.16.</span> Group delay of FIR filter with coefficients \([10,9, \cdots, 1]\). The \(x\)-axis is the frequency normalized to sampling frequency (\(f_n = f/f_s\)).</figcaption>
 </figure>
 </div>
-<p>As shown in Fig. <a href="#img-groupdelay">15</a>, the group delay at normalized frequency \(f_n=0\) is \(3\) samples, which matches with Eq. (\ref{eqn:groupdelay_example1}). In other words, for the input signal near \(f_n = 0\), the output will be delayed by 3 samples.</p>
+<p>As shown in Fig. <a href="#img-groupdelay">16</a>, the group delay at normalized frequency \(f_n=0\) is \(3\) samples, which matches with Eq. (\ref{eqn:groupdelay_example1}). In other words, for the input signal near \(f_n = 0\), the output will be delayed by 3 samples.</p>
 <p>What happens at normalized frequency \(f_n \approx  0.1\), where the group delay is negative (e.g., \(\approx\) -2)? Following the above group delay definition, it means that there is a time advance between the output and input. So, does it mean we actually create a non-causal system with a casual filter? The answer is no. As we know, for narrow band (band limited) signal, its current signal may be predicted by the previous samples. So at \(f_n \approx 0.1\), the filter tries to predict the inputs from its previous samples, which causes an illusion of time advance (<a href="http://www-inst.eecs.berkeley.edu/~ee123/sp14/NegativeGroupDelay.pdf">further reading</a>).</p>
 <p><b>Implementation considerations.</b> The general equation of an FIR filter is,</p>
 <div class="mathjax">
@@ -669,11 +682,11 @@ In such case, the computation complexity can be further decrease by</p>
 <li>not calculating the output that will be discard by the following block,</li>
 <li>not calculating the multiplication when the input is zero.</li>
 </ol>
-<p>So far, we are focusing on reducing the number of multiplications. It makes sense for many hardware implementations (e.g., ASIC or FPGA), where multiplications is expensive (e.g., area, time). Occasionally, you may also needs to implement the filter in pure software. Here software is not something like Matlab, Scilab, or scipy, where you may always have access to some efficient pre-defined functions. For example, you may need to implement an FIR filter on a ARM MCU. As shown in Fig. <a href="#img-fir_flow">16</a>, at each input sample, you will need to calculate the multiplications between input samples \(x[n]\) and filter coefficients \(h[n]\), then shift the current input to the buffer.</p>
+<p>So far, we are focusing on reducing the number of multiplications. It makes sense for many hardware implementations (e.g., ASIC or FPGA), where multiplications is expensive (e.g., area, time). Occasionally, you may also needs to implement the filter in pure software. Here software is not something like Matlab, Scilab, or scipy, where you may always have access to some efficient pre-defined functions. For example, you may need to implement an FIR filter on a ARM MCU. As shown in Fig. <a href="#img-fir_flow">17</a>, at each input sample, you will need to calculate the multiplications between input samples \(x[n]\) and filter coefficients \(h[n]\), then shift the current input to the buffer.</p>
 <div class="figure">
 <figure id="img-fir_flow" class="figure">
-    <div id="diagram"></div>
-<figcaption class="caption"><span class="tag">Fig.16.</span> Operations for FIR filter at each input sample.</figcaption>
+<img src="" alt="" id="diagram">
+<figcaption class="caption"><span class="tag">Fig.17.</span> Operations for FIR filter at each input sample.</figcaption>
 </figure>
 </div>
 
@@ -690,67 +703,67 @@ In such case, the computation complexity can be further decrease by</p>
 <p>As shown in <a href="https://github.com/gregnordin/LIFSrProj_F15/blob/master/DSP/digital_filter_explore/ScopeFIR-example%20files/fir_algs/FirAlgs.c">FirAlgs.c</a>, there are several ways to handle this.
 The naive solution may look like<a id="footnote_src-3" href="#footnote-3"><sup>3</sup></a></p>
 <div class="bs-demo">
-<div class="syntax"><pre><span></span><span class="n">SAMPLE</span> <span class="nf">fir_basic</span><span class="p">(</span><span class="n">SAMPLE</span> <span class="n">input</span><span class="p">,</span> <span class="kt">int</span> <span class="n">ntaps</span><span class="p">,</span> <span class="k">const</span> <span class="n">SAMPLE</span> <span class="n">h</span><span class="p">[],</span> <span class="n">SAMPLE</span> <span class="n">z</span><span class="p">[])</span>
+<div class="syntax"><pre><span></span><span class="n">SAMPLE</span><span class="w"> </span><span class="nf">fir_basic</span><span class="p">(</span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ntaps</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">h</span><span class="p">[],</span><span class="w"> </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">z</span><span class="p">[])</span>
 <span class="p">{</span>
-    <span class="kt">int</span> <span class="n">ii</span><span class="p">;</span>
-    <span class="n">SAMPLE</span> <span class="n">accum</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ii</span><span class="p">;</span>
+<span class="w">    </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">accum</span><span class="p">;</span>
 
-    <span class="cm">/* store input at the beginning of the delay line */</span>
-    <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">input</span><span class="p">;</span>
+<span class="w">    </span><span class="cm">/* store input at the beginning of the delay line */</span>
+<span class="w">    </span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">;</span>
 
-    <span class="cm">/* calc FIR */</span>
-    <span class="n">accum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">ii</span> <span class="o">&lt;</span> <span class="n">ntaps</span><span class="p">;</span> <span class="n">ii</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">accum</span> <span class="o">+=</span> <span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">*</span> <span class="n">z</span><span class="p">[</span><span class="n">ii</span><span class="p">];</span>
-    <span class="p">}</span>
+<span class="w">    </span><span class="cm">/* calc FIR */</span>
+<span class="w">    </span><span class="n">accum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ii</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ntaps</span><span class="p">;</span><span class="w"> </span><span class="n">ii</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">accum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">z</span><span class="p">[</span><span class="n">ii</span><span class="p">];</span>
+<span class="w">    </span><span class="p">}</span>
 
-    <span class="cm">/* shift delay line */</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">ii</span> <span class="o">=</span> <span class="n">ntaps</span> <span class="o">-</span> <span class="mi">2</span><span class="p">;</span> <span class="n">ii</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">ii</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">z</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">ii</span><span class="p">];</span>
-    <span class="p">}</span>
+<span class="w">    </span><span class="cm">/* shift delay line */</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ntaps</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="n">ii</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ii</span><span class="o">--</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">z</span><span class="p">[</span><span class="n">ii</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">z</span><span class="p">[</span><span class="n">ii</span><span class="p">];</span>
+<span class="w">    </span><span class="p">}</span>
 
-    <span class="k">return</span> <span class="n">accum</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">accum</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>It basically has two <b>for</b> loops. The first one is to calculate the output (multiplications and additions). The second one is to shift the input samples, which can be eliminated by using a circular buffer.</p>
 <div class="bs-demo">
-<div class="syntax"><pre><span></span><span class="n">SAMPLE</span> <span class="nf">fir_circular</span><span class="p">(</span><span class="n">SAMPLE</span> <span class="n">input</span><span class="p">,</span> <span class="kt">int</span> <span class="n">ntaps</span><span class="p">,</span> <span class="k">const</span> <span class="n">SAMPLE</span> <span class="n">h</span><span class="p">[],</span> <span class="n">SAMPLE</span> <span class="n">z</span><span class="p">[],</span>
-                    <span class="kt">int</span> <span class="o">*</span><span class="n">p_state</span><span class="p">)</span>
+<div class="syntax"><pre><span></span><span class="n">SAMPLE</span><span class="w"> </span><span class="nf">fir_circular</span><span class="p">(</span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ntaps</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">h</span><span class="p">[],</span><span class="w"> </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">z</span><span class="p">[],</span>
+<span class="w">                    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p_state</span><span class="p">)</span>
 <span class="p">{</span>
-    <span class="kt">int</span> <span class="n">ii</span><span class="p">,</span> <span class="n">state</span><span class="p">;</span>
-    <span class="n">SAMPLE</span> <span class="n">accum</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ii</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">;</span>
+<span class="w">    </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">accum</span><span class="p">;</span>
 
-    <span class="n">state</span> <span class="o">=</span> <span class="o">*</span><span class="n">p_state</span><span class="p">;</span>               <span class="cm">/* copy the filter&#39;s state to a local */</span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">p_state</span><span class="p">;</span><span class="w">               </span><span class="cm">/* copy the filter&#39;s state to a local */</span>
 
-    <span class="cm">/* store input at the beginning of the delay line */</span>
-    <span class="n">z</span><span class="p">[</span><span class="n">state</span><span class="p">]</span> <span class="o">=</span> <span class="n">input</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">++</span><span class="n">state</span> <span class="o">&gt;=</span> <span class="n">ntaps</span><span class="p">)</span> <span class="p">{</span>         <span class="cm">/* incr state and check for wrap */</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="p">}</span>
+<span class="w">    </span><span class="cm">/* store input at the beginning of the delay line */</span>
+<span class="w">    </span><span class="n">z</span><span class="p">[</span><span class="n">state</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">++</span><span class="n">state</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">ntaps</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">         </span><span class="cm">/* incr state and check for wrap */</span>
+<span class="w">        </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
 
-    <span class="cm">/* calc FIR and shift data */</span>
-    <span class="n">accum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">ii</span> <span class="o">=</span> <span class="n">ntaps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="n">ii</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">ii</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">accum</span> <span class="o">+=</span> <span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">*</span> <span class="n">z</span><span class="p">[</span><span class="n">state</span><span class="p">];</span>
-        <span class="k">if</span> <span class="p">(</span><span class="o">++</span><span class="n">state</span> <span class="o">&gt;=</span> <span class="n">ntaps</span><span class="p">)</span> <span class="p">{</span>     <span class="cm">/* incr state and check for wrap */</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
+<span class="w">    </span><span class="cm">/* calc FIR and shift data */</span>
+<span class="w">    </span><span class="n">accum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ntaps</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">ii</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ii</span><span class="o">--</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">accum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">z</span><span class="p">[</span><span class="n">state</span><span class="p">];</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">++</span><span class="n">state</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">ntaps</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">     </span><span class="cm">/* incr state and check for wrap */</span>
+<span class="w">            </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
 
-    <span class="o">*</span><span class="n">p_state</span> <span class="o">=</span> <span class="n">state</span><span class="p">;</span>               <span class="cm">/* return new state to caller */</span>
+<span class="w">    </span><span class="o">*</span><span class="n">p_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">;</span><span class="w">               </span><span class="cm">/* return new state to caller */</span>
 
-    <span class="k">return</span> <span class="n">accum</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">accum</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Now it only has one <b>for</b> loop, and no need to shift the input samples. However, in this <b>for</b> loop, it needs to check the index overflow of the buffer, which is also expensive.</p>
-<p>In this case, we can use two filter coefficients copies to avoid checking the buffer index inside the loop. For example, assume the filter coefficients are \(h[0] \sim h[4]\), and the inputs are \(x[0]\), \(x[1]\), \(x[2]\), \(\cdots\). Since the number of the filter coefficients is 5, we need to have a buffer of length 5 to hold all the inputs, and a buffer of length 10 to hold two copies of the filter coefficients<a id="footnote_src-4" href="#footnote-4"><sup>4</sup></a>. Fig. <a href="#img-filter_fir_dbl_h0">17</a> shows the buffer status when the first input \(x[0]\) arrives. \(x[0]\) is stored at position 0 of the data buffer, i.e., \(b[0]\).</p>
+<p>In this case, we can use two filter coefficients copies to avoid checking the buffer index inside the loop. For example, assume the filter coefficients are \(h[0] \sim h[4]\), and the inputs are \(x[0]\), \(x[1]\), \(x[2]\), \(\cdots\). Since the number of the filter coefficients is 5, we need to have a buffer of length 5 to hold all the inputs, and a buffer of length 10 to hold two copies of the filter coefficients<a id="footnote_src-4" href="#footnote-4"><sup>4</sup></a>. Fig. <a href="#img-filter_fir_dbl_h0">18</a> shows the buffer status when the first input \(x[0]\) arrives. \(x[0]\) is stored at position 0 of the data buffer, i.e., \(b[0]\).</p>
 <figure id="img-filter_fir_dbl_h0" class="figure">
 <img src="./image/filter_fir_dbl_h0.svg" alt="./image/filter_fir_dbl_h0.svg">
-<figcaption class="caption"><span class="tag">Fig.17.</span> Status of buffers with double filter coefficients filtering, when \(x[0]\) arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.18.</span> Status of buffers with double filter coefficients filtering, when \(x[0]\) arrives.</figcaption>
 </figure>
-<p>To calculate the filter output, align \(b[0]\) with \(h[0]\) (as show in Fig. <a href="#img-filter_fir_dbl_h0">17</a>), that is</p>
+<p>To calculate the filter output, align \(b[0]\) with \(h[0]\) (as show in Fig. <a href="#img-filter_fir_dbl_h0">18</a>), that is</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -762,17 +775,17 @@ $$
 <p>When the next input \(x[1]\) arrives, it will be stored at position \(0-1 = 4 (\textrm{mod 5})\) of the input buffer, rather than shifting \(x[0]\). The buffer will look like</p>
 <figure id="img-filter_fir_dbl_h1" class="figure">
 <img src="./image/filter_fir_dbl_h1.svg" alt="./image/filter_fir_dbl_h1.svg">
-<figcaption class="caption"><span class="tag">Fig.18.</span> Status of buffers with double filter coefficients filtering, when \(x[1]\) arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.19.</span> Status of buffers with double filter coefficients filtering, when \(x[1]\) arrives.</figcaption>
 </figure>
 <p>In naive implementation, we want the correlation to be done as</p>
 <figure id="img-filter_fir_dbl_h2" class="figure">
 <img src="./image/filter_fir_dbl_h2.svg" alt="./image/filter_fir_dbl_h2.svg">
-<figcaption class="caption"><span class="tag">Fig.19.</span> Naive filtering buffer status, when \(x[1]\) arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.20.</span> Naive filtering buffer status, when \(x[1]\) arrives.</figcaption>
 </figure>
 <p>Fortunately, in double filter coefficients implementation, it can be achieved by aligning the data buffer and the filter coefficients buffer,</p>
 <figure id="img-filter_fir_dbl_h3" class="figure">
 <img src="./image/filter_fir_dbl_h3.svg" alt="./image/filter_fir_dbl_h3.svg">
-<figcaption class="caption"><span class="tag">Fig.20.</span> Align the filter coefficients buffer with data buffer properly for multiplication, when \(x[1]\) arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.21.</span> Align the filter coefficients buffer with data buffer properly for multiplication, when \(x[1]\) arrives.</figcaption>
 </figure>
 <p>In other words, align the 1st element of data buffer with the 2nd element of the filter coefficients buffer. Then the multiplication and summation is done on two continuous buffers. In some MCU, it can be implemented efficiently. And due to the double copies of the filter coefficients, there is no need to check the overflow of the filter coefficients buffer.
 It is easy to see that</p>
@@ -784,39 +797,39 @@ y[1] &= h[1] \times x[0] + h[2] \times 0 + h[3] \times 0 + h[4] \times 0 + h[0] 
 \end{align}
 $$
 </div>
-<p>which is same as the multiplication result from Fig. <a href="#img-filter_fir_dbl_h2">19</a>.</p>
+<p>which is same as the multiplication result from Fig. <a href="#img-filter_fir_dbl_h2">20</a>.</p>
 <p>Similarly, for 3rd inputs \(x[2]\), it will be stored at position \(4-1=3\) of data buffer, and the correlation can be done by aligning the input and filter coefficients buffer as</p>
 <figure id="img-filter_fir_dbl_h4" class="figure">
 <img src="./image/filter_fir_dbl_h4.svg" alt="./image/filter_fir_dbl_h4.svg">
-<figcaption class="caption"><span class="tag">Fig.21.</span> Align the filter coefficients buffer and data buffer properly for multiplication, when \(x[2]\) arrives.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.22.</span> Align the filter coefficients buffer and data buffer properly for multiplication, when \(x[2]\) arrives.</figcaption>
 </figure>
 <p>One possible implementation may look like</p>
 <div class="bs-demo">
-<div class="syntax"><pre><span></span><span class="n">SAMPLE</span> <span class="nf">fir_double_h</span><span class="p">(</span><span class="n">SAMPLE</span> <span class="n">input</span><span class="p">,</span> <span class="kt">int</span> <span class="n">ntaps</span><span class="p">,</span> <span class="k">const</span> <span class="n">SAMPLE</span> <span class="n">h</span><span class="p">[],</span> <span class="n">SAMPLE</span> <span class="n">z</span><span class="p">[],</span>
-                    <span class="kt">int</span> <span class="o">*</span><span class="n">p_state</span><span class="p">)</span>
+<div class="syntax"><pre><span></span><span class="n">SAMPLE</span><span class="w"> </span><span class="nf">fir_double_h</span><span class="p">(</span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ntaps</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">h</span><span class="p">[],</span><span class="w"> </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">z</span><span class="p">[],</span>
+<span class="w">                    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p_state</span><span class="p">)</span>
 <span class="p">{</span>
-    <span class="n">SAMPLE</span> <span class="n">accum</span><span class="p">;</span>
-    <span class="kt">int</span> <span class="n">ii</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="o">*</span><span class="n">p_state</span><span class="p">;</span>
-    <span class="n">SAMPLE</span> <span class="k">const</span> <span class="o">*</span><span class="n">p_h</span><span class="p">,</span> <span class="o">*</span><span class="n">p_z</span><span class="p">;</span>
+<span class="w">    </span><span class="n">SAMPLE</span><span class="w"> </span><span class="n">accum</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ii</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">p_state</span><span class="p">;</span>
+<span class="w">    </span><span class="n">SAMPLE</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">p_h</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">p_z</span><span class="p">;</span>
 
-    <span class="cm">/* store input at the beginning of the delay line */</span>
-    <span class="n">z</span><span class="p">[</span><span class="n">state</span><span class="p">]</span> <span class="o">=</span> <span class="n">input</span><span class="p">;</span>
+<span class="w">    </span><span class="cm">/* store input at the beginning of the delay line */</span>
+<span class="w">    </span><span class="n">z</span><span class="p">[</span><span class="n">state</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">;</span>
 
-    <span class="cm">/* calculate the filter */</span>
-    <span class="n">p_h</span> <span class="o">=</span> <span class="n">h</span> <span class="o">+</span> <span class="n">ntaps</span> <span class="o">-</span> <span class="n">state</span><span class="p">;</span>
-    <span class="n">p_z</span> <span class="o">=</span> <span class="n">z</span><span class="p">;</span>
-    <span class="n">accum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">ii</span> <span class="o">&lt;</span> <span class="n">ntaps</span><span class="p">;</span> <span class="n">ii</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">accum</span> <span class="o">+=</span> <span class="o">*</span><span class="n">p_h</span><span class="o">++</span> <span class="o">*</span> <span class="o">*</span><span class="n">p_z</span><span class="o">++</span><span class="p">;</span>
-    <span class="p">}</span>
+<span class="w">    </span><span class="cm">/* calculate the filter */</span>
+<span class="w">    </span><span class="n">p_h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ntaps</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">state</span><span class="p">;</span>
+<span class="w">    </span><span class="n">p_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">z</span><span class="p">;</span>
+<span class="w">    </span><span class="n">accum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ii</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ntaps</span><span class="p">;</span><span class="w"> </span><span class="n">ii</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">accum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="o">*</span><span class="n">p_h</span><span class="o">++</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="o">*</span><span class="n">p_z</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
 
-    <span class="cm">/* decrement state, wrapping if below zero */</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">--</span><span class="n">state</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">state</span> <span class="o">+=</span> <span class="n">ntaps</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="o">*</span><span class="n">p_state</span> <span class="o">=</span> <span class="n">state</span><span class="p">;</span>       <span class="cm">/* return new state to caller */</span>
+<span class="w">    </span><span class="cm">/* decrement state, wrapping if below zero */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">--</span><span class="n">state</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">state</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">ntaps</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">*</span><span class="n">p_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">;</span><span class="w">       </span><span class="cm">/* return new state to caller */</span>
 
-    <span class="k">return</span> <span class="n">accum</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">accum</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -977,17 +990,17 @@ y[n] = \sum_{m=1}^{M}{a[m]y[n-m]} + \sum_{l=0}^{L}{b[l]x[n-l]}.
 \end{align}
 $$
 </div>
-<p>For simplicity, when \(L=M=1\), the IIR filter structure is shown in Fig. <a href="#img-filter_iir">29</a>.</p>
+<p>For simplicity, when \(L=M=1\), the IIR filter structure is shown in Fig. <a href="#img-filter_iir">30</a>.</p>
 <figure id="img-filter_iir" class="figure">
 <img src="./image/filter_iir_s.svg" alt="./image/filter_iir_s.svg">
-<figcaption class="caption"><span class="tag">Fig.29.</span> IIR filter direct form I structure.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.30.</span> IIR filter direct form I structure.</figcaption>
 </figure>
 <p>We can interchange the left and right components to get</p>
 <figure id="img-filter_iir2" class="figure">
 <img src="./image/filter_iir2_s.svg" alt="./image/filter_iir2_s.svg">
-<figcaption class="caption"><span class="tag">Fig.30.</span> IIR filter structure.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.31.</span> IIR filter structure.</figcaption>
 </figure>
-<p>To see the filters in Figs. <a href="#img-filter_iir">29</a> and <a href="#img-filter_iir2">30</a> are identical,</p>
+<p>To see the filters in Figs. <a href="#img-filter_iir">30</a> and <a href="#img-filter_iir2">31</a> are identical,</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1007,10 +1020,10 @@ y[n] &= b[0](x[n]+a[1]w[n-1])+b[1](x[n-1]+a[1]w[n-2])\nonumber\\
 \end{align}
 $$
 </div>
-<p>which is identical to the Fig. <a href="#img-filter_iir">29</a>. It is easy to see that both delay units in Fig. <a href="#img-filter_iir2">30</a> store the same data \(w[n-1]\). So one can be eliminated</p>
+<p>which is identical to the Fig. <a href="#img-filter_iir">30</a>. It is easy to see that both delay units in Fig. <a href="#img-filter_iir2">31</a> store the same data \(w[n-1]\). So one can be eliminated</p>
 <figure id="img-filter_iir3" class="figure">
 <img src="./image/filter_iir3_s.svg" alt="./image/filter_iir3_s.svg">
-<figcaption class="caption"><span class="tag">Fig.31.</span> IIR filter direct form II structure.</figcaption>
+<figcaption class="caption"><span class="tag">Fig.32.</span> IIR filter direct form II structure.</figcaption>
 </figure>
 <p>As mentioned above, the FIR filter is always stable (i.e., bonded input bounded output); however, it is not true for IIR filter. For example, if \(a[1]= 2\) and \(b[0]=b[1]=1\), that is</p>
 <div class="mathjax">
@@ -1068,20 +1081,20 @@ $$
 <p>For float-point design, it may be implemented as</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="c1">// Float point</span>
-<span class="kt">float</span> <span class="nf">simple_iir</span><span class="p">(</span> <span class="kt">float</span> <span class="n">x</span><span class="p">,</span> <span class="kt">float</span><span class="o">&amp;</span> <span class="n">yp</span><span class="p">,</span> <span class="kt">float</span> <span class="n">alpha</span><span class="p">)</span>
+<span class="kt">float</span><span class="w"> </span><span class="nf">simple_iir</span><span class="p">(</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&amp;</span><span class="w"> </span><span class="n">yp</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">alpha</span><span class="p">)</span>
 <span class="p">{</span>
-  <span class="c1">// x: input sample x[n]</span>
-  <span class="c1">// yp: the previous output y[n-1]</span>
-  <span class="c1">// alpha: IIR filter coefficient</span>
+<span class="w">  </span><span class="c1">// x: input sample x[n]</span>
+<span class="w">  </span><span class="c1">// yp: the previous output y[n-1]</span>
+<span class="w">  </span><span class="c1">// alpha: IIR filter coefficient</span>
 
-  <span class="c1">// calculate the filter output</span>
-  <span class="kt">float</span> <span class="n">y</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">*</span><span class="n">yp</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span><span class="n">x</span><span class="p">;</span>
-  <span class="c1">// or to save one multiplication: y = alpha*(yp - x) + x;</span>
+<span class="w">  </span><span class="c1">// calculate the filter output</span>
+<span class="w">  </span><span class="kt">float</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">alpha</span><span class="o">*</span><span class="n">yp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="n">x</span><span class="p">;</span>
+<span class="w">  </span><span class="c1">// or to save one multiplication: y = alpha*(yp - x) + x;</span>
 
-  <span class="c1">// save the output for next input sample</span>
-  <span class="n">yp</span> <span class="o">=</span> <span class="n">y</span><span class="p">;</span>
+<span class="w">  </span><span class="c1">// save the output for next input sample</span>
+<span class="w">  </span><span class="n">yp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
 
-  <span class="k">return</span> <span class="n">y</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1110,22 +1123,22 @@ y_i[n]\times 2^8 &= \alpha_i\times (y_i[n-1] - x_i[n]\times 2^2) +  x_i[n]\times
 $$
 </div>
 <div class="bs-demo">
-<div class="syntax"><pre><span></span><span class="kt">int</span> <span class="n">alpha_i</span> <span class="o">=</span> <span class="kt">int</span><span class="p">(</span><span class="n">alpha</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="p">);</span>
-<span class="kt">int</span> <span class="nf">simple_iir_i</span><span class="p">(</span> <span class="kt">int</span> <span class="n">x_i</span><span class="p">,</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">yp_i</span><span class="p">,</span> <span class="kt">int</span> <span class="n">alpha_fixed</span><span class="p">)</span>
+<div class="syntax"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">alpha_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="n">alpha</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="p">);</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">simple_iir_i</span><span class="p">(</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">x_i</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&amp;</span><span class="w"> </span><span class="n">yp_i</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">alpha_fixed</span><span class="p">)</span>
 <span class="p">{</span>
-    <span class="c1">// x_i: input sample x_i[n]</span>
-    <span class="c1">// yp_i: the previous output y_i[n-1]</span>
-    <span class="c1">// alpha_i: IIR filter coefficient</span>
+<span class="w">    </span><span class="c1">// x_i: input sample x_i[n]</span>
+<span class="w">    </span><span class="c1">// yp_i: the previous output y_i[n-1]</span>
+<span class="w">    </span><span class="c1">// alpha_i: IIR filter coefficient</span>
 
-    <span class="kt">int</span> <span class="n">y_i</span> <span class="o">=</span> <span class="n">alpha_i</span><span class="o">*</span><span class="p">(</span><span class="n">yp_i</span><span class="o">-</span><span class="p">(</span><span class="n">x_i</span><span class="o">&lt;&lt;</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">x_i</span><span class="o">&lt;&lt;</span><span class="mi">10</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">y_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">alpha_i</span><span class="o">*</span><span class="p">(</span><span class="n">yp_i</span><span class="o">-</span><span class="p">(</span><span class="n">x_i</span><span class="o">&lt;&lt;</span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">x_i</span><span class="o">&lt;&lt;</span><span class="mi">10</span><span class="p">);</span>
 
-    <span class="c1">// save the output for next input sample, here truncation is used</span>
-    <span class="n">yp_i</span> <span class="o">=</span> <span class="n">y_i</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">;</span>
-    <span class="c1">// to check the overflow (e.g., 16 bit output, -2^15~2^15-1),  for example</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">yp_i</span><span class="o">&gt;=</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">15</span><span class="p">))</span> <span class="n">yp_i</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">&lt;&lt;</span><span class="mi">15</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">yp_i</span><span class="o">&lt;-</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">15</span><span class="p">))</span> <span class="n">yp_i</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mi">2</span><span class="o">&lt;&lt;</span><span class="mi">15</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// save the output for next input sample, here truncation is used</span>
+<span class="w">    </span><span class="n">yp_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y_i</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// to check the overflow (e.g., 16 bit output, -2^15~2^15-1),  for example</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">yp_i</span><span class="o">&gt;=</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">15</span><span class="p">))</span><span class="w"> </span><span class="n">yp_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="o">&lt;&lt;</span><span class="mi">15</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">yp_i</span><span class="o">&lt;-</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">15</span><span class="p">))</span><span class="w"> </span><span class="n">yp_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="p">(</span><span class="mi">2</span><span class="o">&lt;&lt;</span><span class="mi">15</span><span class="p">);</span>
 
-    <span class="k">return</span> <span class="n">yp_i</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">yp_i</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1173,10 +1186,10 @@ x &\mathrel{\mathop\gtrless\limits^{1}_{-1}}  0.
 \end{align}
 $$
 </div>
-<p>Thus, the ML detection rule is very simple, that is, if \(x\) is large than 0, \(s=1\) is sent, otherwise \(s=-1\) is sent. It can also be read from Fig. <a href="#img-basic_det_ml_prop">32</a>. For example, when \(x&gt;0\), \(p(x|s=1)&gt;p(x|s=-1)\).</p>
+<p>Thus, the ML detection rule is very simple, that is, if \(x\) is large than 0, \(s=1\) is sent, otherwise \(s=-1\) is sent. It can also be read from Fig. <a href="#img-basic_det_ml_prop">33</a>. For example, when \(x&gt;0\), \(p(x|s=1)&gt;p(x|s=-1)\).</p>
 <figure id="img-basic_det_ml_prop" class="figure">
 <img src="./image/basics_det_ml_prop.png" alt="./image/basics_det_ml_prop.png">
-<figcaption class="caption"><span class="tag">Fig.32.</span> Conditional probability of the received signal \(x\) given the transmitted signal \(s\).</figcaption>
+<figcaption class="caption"><span class="tag">Fig.33.</span> Conditional probability of the received signal \(x\) given the transmitted signal \(s\).</figcaption>
 </figure>
 <p>Such procedure may have a drawback since it does not take the probability of \(s=1\) or \(s=-1\) into consideration. For example, if \(p(s=1)=1\) (i.e., the system keeps sending 1), the optimal detection procedure should also always determine \(s=1\) is sent, instead of the one shown in Eq. (\ref{eqn:det_binary_ml}). In this case, the object function is changed to</p>
 <div class="mathjax">
@@ -1211,15 +1224,15 @@ x &\mathrel{\mathop\gtrless\limits^{1}_{-1}} \frac{\sigma^2}{2}\ln(\frac{p(s=-1)
 \end{align}
 $$
 </div>
-<p>So, if \(p(s=-1)&gt;p(s=1)\), compared to ML, the decision boundary of MAP will shift to the right, as shown in Fig. <a href="#img-basic_det_map_prop">33</a>.</p>
+<p>So, if \(p(s=-1)&gt;p(s=1)\), compared to ML, the decision boundary of MAP will shift to the right, as shown in Fig. <a href="#img-basic_det_map_prop">34</a>.</p>
 <figure id="img-basic_det_map_prop" class="figure">
 <img src="./image/basics_det_map_prop.png" alt="./image/basics_det_map_prop.png">
-<figcaption class="caption"><span class="tag">Fig.33.</span> Conditional probability of the transmitted signal \(s\) given the received signal \(x\).</figcaption>
+<figcaption class="caption"><span class="tag">Fig.34.</span> Conditional probability of the transmitted signal \(s\) given the received signal \(x\).</figcaption>
 </figure>
 <p>Similarly if \(p(s=-1)&lt;p(s=1)\), the MAP decision boundary will look like</p>
 <figure id="img-basic_det_map_prop2" class="figure">
 <img src="./image/basics_det_map_prop2.png" alt="./image/basics_det_map_prop2.png">
-<figcaption class="caption"><span class="tag">Fig.34.</span> Conditional probability of the transmitted signal \(s\) given the received signal \(x\).</figcaption>
+<figcaption class="caption"><span class="tag">Fig.35.</span> Conditional probability of the transmitted signal \(s\) given the received signal \(x\).</figcaption>
 </figure>
 <p>MAP looks more reasonable than ML, however, in practice, ML is widely used to detect/estimate the signal. One reason is that the signal from the transmitter is almost always randomized (or with scramble block), in other words roughly \(p(s=1)=p(s=-1)=0.5\).</p>
 <p>So far we discuss the detection of a constant signal from noise. How about detecting a waveform, instead of a constant, from noise? For example</p>
@@ -1285,6 +1298,9 @@ $$
 <li><div id="reference-1">
 Alan V. Oppenheim, Ronald W. Schafer, "Discrete-Time Signal Processing," Pearson; 3rd edition (August 28, 2009) <a href="#cite-1-1">&#8617;</a>
 </div></li>
+<li><div id="reference-2">
+Richard G. Lyons, "Understanding Digital Signal Processing", Pearson Education; 3rd edition (November 11, 2010) <a href="#cite-2-1">&#8617;</a>
+</div></li>
 </ol>
 </div>
 
@@ -1310,12 +1326,12 @@ The range for 8 bit integer is <a href="-128,127">-128,127</a>. Since there are 
 In this trivial example, all filter coefficient is positive. Thus, there is no need to save the sign. <a href="#footnote_src-6">&#8617;</a>
 </div></li>
 <li><div id="footnote-7">
-The filter has 12 coefficients, which requires additional 4 bits. <a href="#footnote_src-7">&#8617;</a>
+The filter has 14 coefficients, which requires additional 4 bits. <a href="#footnote_src-7">&#8617;</a>
 </div></li>
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2021-01-22 00:59:46 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2023-05-18 16:08:33 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>
