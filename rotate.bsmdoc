@@ -1,0 +1,9 @@
+\newfun{title|A Tutorial on Rotation}
+\config{title|\title}
+\config{doctitle|\title}
+\config{heading_numbering|True}
+\config{image_numbering|True}
+\config{table_numbering|True}
+\config{show_table_of_contents|True}
+#include rotate_content.bsmdoc
+

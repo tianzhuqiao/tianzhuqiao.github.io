@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="bsmdoc 0.0.8">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<link rel="stylesheet" href="css/menu.css" type="text/css">
+<script>
+MathJax = {
+loader: {
+load: ['[tex]/tagformat']
+},
+tex: {
+packages: {'[+]': ['tagformat']},
+inlineMath: [['\\(', '\\)']],
+tags: "all",
+tagformat: {
+id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
+}
+}
+};
+</script>
+<script src=" https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js "></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
+<script type="text/javascript" language="javascript" src="js/menu.js"></script>
+<title>A Tutorial on Rotation</title>
+</head>
+<body class="nomathjax">
+<div class="layout">
+<div class="menu">
+<ul>
+<li><a href="#sec-1">1 Rotation</a><ul>
+<li><a href="#sec-1-1">1.1 Rotate vector around axis</a></li>
+<li><a href="#sec-1-2">1.2 Rotate vector around a vector</a></li>
+<li><a href="#sec-1-3">1.3 Vector coordinates in rotated coordinate systems</a></li>
+</ul></li>
+<li><a href="#sec-2">2 Frame</a><ul>
+<li><a href="#sec-2-1">2.1 ECEF</a></li>
+<li><a href="#sec-2-2">2.2 Satellite</a></li>
+<li><a href="#sec-2-3">2.3 NED</a></li>
+<li><a href="#sec-2-4">2.4 Body</a></li>
+</ul></li>
+<li><a href="#sec-3">3 Frame Rotation</a><ul>
+<li><a href="#sec-3-1">3.1 Satellite to ECEF</a></li>
+<li><a href="#sec-3-2">3.2 ECEF to NED</a></li>
+<li><a href="#sec-3-3">3.3 NED to Body</a></li>
+</ul></li>
+<li><a href="#sec-4">4 Rotation Representation</a><ul>
+<li><a href="#sec-4-1">4.1 Euler angle</a></li>
+<li><a href="#sec-4-2">4.2 Direct Cosine Matrix (DCM)</a></li>
+<li><a href="#sec-4-3">4.3 Quaternion</a></li>
+</ul></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+A Tutorial on Rotation
+</div>
+<div class="content">
+<h1 id="sec-1">1 Rotation</h1>
+<h2 id="sec-1-1">1.1 Rotate vector around axis</h2>
+<p>To rotate around the \(z\)-axis, point the thumb of right hand to the positive \(z\) direction, the curled finger points to the positive rotation direction, i.e., from \(x\)-axis to \(y\)-axis, as show in following figure</p>
+<figure class="figure">
+<img src="./image/rotate_z.svg" alt="./image/rotate_z.svg">
+<figcaption class="caption"><span class="tag">Fig.1.</span> Rotate around \(z\) axis</figcaption>
+</figure>
+<p>If we look from positive \(z\) direction, it will look like the following diagram.</p>
+<figure class="figure">
+<img src="./image/rotate_z_xy.svg" alt="./image/rotate_z_xy.svg">
+<figcaption class="caption"><span class="tag">Fig.2.</span> Rotate around \(z\) axis</figcaption>
+</figure>
+<p>If we have a vector \(\vec{r} = [0, 0, 1]^T\), a unit vector on \(z\)-axis, after rotating around \(z\)-axis by \(\psi\), it is easy to see that its coordinate will be unchanged (i.e., \([0, 0, 1]\)).</p>
+<p>Suppose \(\vec{r} = [1, 0, 0]^T\), a unit vector on \(x\)-axis, and rotate around the \(z\)-axis by \(\psi\), we will get \(\vec{r}^\prime\). What will be the coordinate of \(\vec{r}^\prime\)?</p>
+<figure class="figure">
+<img src="./image/rotate_z_xy_rotate.svg" alt="./image/rotate_z_xy_rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.3.</span> Rotate \(\vec{r}\) around \(z\) axis by \(\psi\) degree</figcaption>
+</figure>
+<p>The coordinate of \(\vec{r}^\prime\) can be easily read from the above diagram as \([\cos\psi, \sin\psi, 0]\).
+Similarly, if \(\vec{r} = [0, 1, 0]^T\) is a unit vector on \(y\)-axis, after rotating around \(z\)-axis by \(\psi\), its coordinate will be \([-\sin\psi, \cos\psi, 0]\).</p>
+<p>For an arbitrary vector \(\vec{r}=r_x\vec{i} + r_y\vec{j} + r_z\vec{k}\), after rotating around \(z\)-axis (rotate along with the coordinate system), we know</p>
+<div class="mathjax">
+$$
+\vec{r}^\prime=r_x\vec{i}^\prime + r_y\vec{j}^\prime + r_z\vec{k}^\prime.
+$$
+</div>
+<p>What will its coordinate in the original coordinate system (\(xyz\))?</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^\prime&=r_x\vec{i}^\prime + r_y\vec{j}^\prime + r_z\vec{k}^\prime \\\nonumber
+&=r_x\begin{bmatrix}\cos\psi \\ \sin\psi \\ 0 \end{bmatrix} +
+r_y\begin{bmatrix}-\sin\psi \\ \cos\psi \\ 0 \end{bmatrix} +
+r_z\begin{bmatrix}0 \\ 0 \\ 1 \end{bmatrix} \\\nonumber
+&= \begin{bmatrix}
+\cos\psi & -\sin\psi & 0 \\
+\sin\psi & \cos\psi & 0 \\
+0 & 0 & 1
+\end{bmatrix}\begin{bmatrix}r_x \\ r_y \\ r_z \end{bmatrix},
+\end{align}
+$$
+</div>
+<p>where \(\mathbf{R}_z\) is usually call the rotation matrix (around \(z\)-axis)</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_z = \begin{bmatrix}
+\cos\psi & -\sin\psi & 0 \\
+\sin\psi & \cos\psi & 0 \\
+0 & 0 & 1
+\end{bmatrix}.
+\label{eqn:rotate_z}
+\end{align}
+$$
+</div>
+<p>It is easy to see that 1st column of \(\mathbf{R}\) is just the coordinate of rotated unit vector of \(x\)-axis, that is after rotation, \([1, 0, 0]^T\) will become \([\cos\psi, \sin\psi, 0]^T\). Same for the 2nd and 3rd columns.</p>
+<p>The rotation around \(x\) is very similar, as shown in the following image.</p>
+<figure class="figure">
+<img src="./image/rotate_x_yz_rotate.svg" alt="./image/rotate_x_yz_rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.4.</span> Rotate \(\vec{r}\) around \(x\) axis by \(\phi\) degree</figcaption>
+</figure>
+<p>Its rotation matrix is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_x = \begin{bmatrix}
+1 & 0 & 0 \\
+0 & \cos\phi & -\sin\phi\\
+0 & \sin\phi & \cos\phi\\
+\end{bmatrix}.
+\label{eqn:rotate_x}
+\end{align}
+$$
+</div>
+<p>The rotation around \(y\) is also similar, as shown in the following image.</p>
+<figure class="figure">
+<img src="./image/rotate_y_xz_rotate.svg" alt="./image/rotate_y_xz_rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.5.</span> Rotate \(\vec{r}\) around \(y\) axis by \(\theta\) degree</figcaption>
+</figure>
+<p>Its rotation matrix is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_y = \begin{bmatrix}
+ \cos\theta & 0 & \sin\theta\\
+ 0 & 1 & 0 \\
+ -\sin\theta & 0 & \cos\theta\\
+\end{bmatrix}.
+\label{eqn:rotate_y}
+\end{align}
+$$
+</div>
+<p>You may notice that the format of Eq. (\ref{eqn:rotate_y}) is slightly different with Eqs. (\ref{eqn:rotate_z}) & (\ref{eqn:rotate_x}), e.g., its 1st row is \([\cos\theta, 0, \sin\theta]\), instead of \([\cos\theta, 0, \mathbf{-}\sin\theta]\). That's not a mistake, as it is easy to check that if we have a vector \(\vec{r} = [0, 0, 1]^T\) is a unit vector on \(z\)-axis, after rotating around \(y\)-axis by \(\theta\), its coordinate will be \([\sin\theta, 0, \cos\theta]\), which is the 3rd column of \(\mathbf{R}_y\). Same for its 1st column.</p>
+<p>For the above discussion, we are rotating the vector (\(\vec{r}\)) to get the coordinates of \(\vec{r}^\prime\) in original coordinate system after rotation.
+Such rotation is called active rotation (or active transformation).</p>
+<p>On the other hand, we can also fix \(\vec{r}\), rotate the coordinate system, then calculate the coordinates of \(\vec{r}\) in the rotated coordinate system (i.e., \(x^\prime y^\prime z^\prime\)). As show in Fig. (<a href="#img-rotate_z_xy_rotate_passive">6</a>), after rotating the coordinate system by \(-\psi\) degree, the coordinates of \(\vec{r}\) in the new coordinate system \(x^\prime y^\prime z^\prime\) is same as the one of \(\vec{r}^\prime\) in original coordinate system \(xyz\).</p>
+<figure id="img-rotate_z_xy_rotate_passive" class="figure">
+<img src="./image/rotate_z_xy_rotate_passive.svg" alt="./image/rotate_z_xy_rotate_passive.svg">
+<figcaption class="caption"><span class="tag">Fig.6.</span> Rotate coordinate system \(xyz\) around \(z\) axis by \(-\psi\) degree</figcaption>
+</figure>
+<p>It is easy to see that if we rotate \(\vec{r}\) around \(z\) by \(\psi_1\) (\(\vec{r}^\prime\)), then rotate \(\vec{r}^\prime\) again around \(z\) by, \(\psi_2\) (\(\vec{r}^{\prime\prime}\)), it is equivalent to rotate \(\vec{r}\) around \(z\) by \(\psi_1 + \psi_2\).</p>
+<figure id="img-rotate_z_xy_rotate2" class="figure">
+<img src="./image/rotate_z_xy_rotate2.svg" alt="./image/rotate_z_xy_rotate2.svg">
+<figcaption class="caption"><span class="tag">Fig.7.</span> Rotate coordinate system \(xyz\) around \(z\) axis by \(\psi_1\) degree, then \(\psi_2\) degree</figcaption>
+</figure>
+<p>It can also been easily proved by matrix multiplication</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_z &= \mathbf{R}_z(\psi_2) \mathbf{R}_z(\psi_1) \\ \nonumber
+&= \begin{bmatrix}
+\cos\psi_2 & -\sin\psi_2 & 0 \\
+\sin\psi_2 & \cos\psi_2 & 0 \\
+0 & 0 & 1
+\end{bmatrix} \times \begin{bmatrix}
+\cos\psi_1 & -\sin\psi_1 & 0 \\
+\sin\psi_1 & \cos\psi_1 & 0 \\
+0 & 0 & 1
+\end{bmatrix} \\ \nonumber
+&= \begin{bmatrix}
+\cos(\psi_2 + \psi_1) & -\sin(\psi_1+\psi_2) & 0 \\
+\sin(\psi_2+\psi_1) & \cos(\psi_2+\psi_1) & 0 \\
+0 & 0 & 1
+\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Note when we do matrix multiplication, \(\mathbf{R}_z(\psi_2)\) is on the left side, and \(\mathbf{R}_z(\psi_1)\) is on the right side. This is because we rotate by \(\psi_1\) first, then \(\psi_2\). For this specific case, the order doesn't really matter as both rotation is around the same \(z\)-axis. However, in general, the rotation order matters as we will see shortly.</p>
+<p>If \(\vec{r}=[1, 0, 0]^T\), first rotate it around \(x\)-axis by 90 degree, we will get \(\vec{r}^\prime = \vec{r} =[1, 0, 0]^T\); then rotate \(\vec{r}^\prime\) around \(z\)-axis by 90 degree, we will get \(\vec{r}^{\prime\prime} = [0, 1, 0]\).
+However, if first rotate \(\vec{r}\) around \(z\)-axis by 90 degree, we will get \(\vec{r}_2^\prime = \vec{r} =[0, 1, 0]^T\); then rotate \(\vec{r}_2^\prime\) around \(x\)-axis by 90 degree, we will get \(\vec{r}_2^{\prime\prime} = [0, 0, 1]\) (Fig. (<a href="#img-rotate_z90_x90_rotate">8</a>)). Apparently \(\vec{r}^{\prime\prime}\) is not equal to \(\vec{r}_2^{\prime\prime}\). Do you see why this is the case? One observation is that in general, \(\mathbf{R}_2\mathbf{R}_1 \neq \mathbf{R}_1\mathbf{R}_2\).</p>
+<figure id="img-rotate_z90_x90_rotate" class="figure">
+<img src="./image/rotate_z90_x90_rotate.svg" alt="./image/rotate_z90_x90_rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.8.</span> Rotate \(\vec{r}\) 90 degree around \(z\)-axis then 90 degree around \(x\)-axis</figcaption>
+</figure>
+<p>The rotations in Fig. (<a href="#img-rotate_z90_x90_rotate">8</a>) are all around the coordinate system \(xyz\). Such rotation is called <b>extrinsic rotation</b>. The other way is at each rotation, assume the coordinate system also rotate the same angle, and the next rotation will be around the corresponding axis of the rotated coordinate system. Such rotation is called <b>intrinsic rotation</b>.</p>
+<p>For intrinsic rotation to achieve the same final coordinates (in original \(xyz\) coordinate), we need to reverse the rotation order. In extrinsic rotation</p>
+<ol>
+<li>rotate around \(z\)-axis by 90 degree, then</li>
+<li>rotate around \(x\)-axis by 90 degree,</li>
+</ol>
+<p>and its rotation matrix is</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \mathbf{R}_x(90)\mathbf{R}_z(90).
+\label{eq:rotation_z90_x90_rotate}
+$$
+</div>
+<p>Notice that the order of the rotation matrix, that is the 1st rotation is on the rightest side, then the matrix from the 2nd rotation. If there are more rotations, they will be ordered from right to left.</p>
+<p>While in intrinsic rotation, to get the same coordinates (\(\vec{r}^{\prime\prime}\)),</p>
+<ol>
+<li>rotate around \(x\)-axis by 90 degree, also rotate the coordinate system to get \(x^\prime y^\prime z^\prime\), then</li>
+<li>rotate around \(z^\prime\)-axis by 90 degree.</li>
+</ol>
+<figure id="img-rotate_z90_x90_rotate_intrinsic" class="figure">
+<img src="./image/rotate_z90_x90_rotate_intrinsic.svg" alt="./image/rotate_z90_x90_rotate_intrinsic.svg">
+<figcaption class="caption"><span class="tag">Fig.9.</span> Rotate \(\vec{r}\) 90 degree around \(x\)-axis then 90 degree around \(z^\prime\)-axis</figcaption>
+</figure>
+<p>Fig. (<a href="#img-rotate_z90_x90_rotate_intrinsic">9</a>) shows that after the intrinsic rotations, the coordinate of \(\vec{r}^{\prime\prime}\) is same as the one in Fig. (<a href="#img-rotate_z90_x90_rotate">8</a>).</p>
+<p>The rotation matrix from intrinsic rotation is</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \mathbf{R}_x(90)\mathbf{R}_{z^\prime}(90).
+\label{eq:rotation_z90_x90_rotate_intrinsic}
+$$
+</div>
+<p>Eq. (\ref{eq:rotation_z90_x90_rotate_intrinsic}) is same as Eq. (\ref{eq:rotation_z90_x90_rotate}). It is expected as both rotation reached the same \(\vec{r}^{\prime\prime}\). However, different from extrinsic rotation, in intrinsic rotation, the rotation matrices are ordered from left to right, that is the 1st intrinsic rotation is on the leftest side, then the 2nd rotation matrix. If you are curios why this order is arranged this way, <a href="https://dominicplein.medium.com/extrinsic-intrinsic-rotation-do-i-multiply-from-right-or-left-357c38c1abfd">here</a> is a good tutorial.</p>
+<h2 id="sec-1-2">1.2 Rotate vector around a vector</h2>
+<p>For the discussion so far, we are talking about rotating a vector \(\vec{r}\) around some axis. How about rotating around arbitrary unit vector? Fortunately, there is a equation called <a href="https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula">Rodgrigues's rotation formula</a></p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^\prime &= \vec{r} + \sin(\theta)\vec{k}\times{r} + (1-\cos\theta)\vec{k}\times\vec{k}\times\vec{r} \\ \nonumber
+& = \mathbf{R}\vec{r},
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \mathbf{I} + \sin\theta\mathbf{K} + (1-\cos\theta)\mathbf{K}^2,
+\label{eqn:rotate_vector}
+$$
+</div>
+<p>and</p>
+<div class="mathjax">
+$$
+\mathbf{K} = \begin{bmatrix}
+0 & -k_z & k_y \\
+k_z & 0 & -k_x \\
+-k_y & k_x & 0 \\
+\end{bmatrix}.
+$$
+</div>
+<p>For example if \(\vec{k}=[0, 0, 1]^T\) (i.e., rotate around \(z\)-axis), then</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{K} &= \begin{bmatrix}
+0 & -1 & 0 \\
+1 & 0 & 0 \\
+0 & 0 & 0 \\
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>and</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{K}^2 = \begin{bmatrix}
+ -1 & 0  & 0 \\
+  0 & -1 & 0 \\
+  0 & 0  & 0 \\
+\end{bmatrix}
+\end{align}
+$$
+</div>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R} &= \mathbf{I} + \sin\theta\mathbf{K} + (1-\cos\theta)\mathbf{K}^2\\ \nonumber
+&= \begin{bmatrix}
+\cos\theta & -\sin\theta & 0 \\
+\sin\theta & \cos\theta & 0 \\
+0 & 0 & 1\\
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>it is same as Eq. (\ref{eqn:rotate_z}).</p>
+<p>Eq. (\ref{eqn:rotate_vector}) is not the only way to represent the rotation with angle \(\theta\) around some unit vector \(\vec{k}\). Another way is the <a href="https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation">exponential map</a></p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R} &= \exp^{\theta \mathbf{K}},
+\end{align}
+$$
+</div>
+<p>which can be shown to be equivalent to Eq. (\ref{eqn:rotate_vector}) with Taylor expansion.</p>
+<h2 id="sec-1-3">1.3 Vector coordinates in rotated coordinate systems</h2>
+<p>For the discussion so far, we are talking about rotating a vector \(\vec{r}\) to \(\vec{r}^\prime\), and get its coordinate in the original coordinate system. Another important problem is if we have</p>
+<ol>
+<li>coordinate system \(xyz\),</li>
+<li>coordinate system \(x^\prime y^\prime z^\prime\), which is rotated from \(xyz\),</li>
+<li>a vector, i.e., \(\vec{r}\), and its coordinates in one coordinate system (e.g., \(xyz\)),</li>
+</ol>
+<p>how to get its coordinates in the other coordinate system (e.g., \(x^\prime y^\prime z^\prime\))?</p>
+<p>For example, in Fig. (<a href="#img-rotate_x45_rotate_frame">10</a>), coordinate system \(x^\prime y^\prime z^\prime\) is from rotating the coordinate system \(xyz\) around \(x\)-axis by 45 degree. It is easy to see \(\vec{x}^\prime=\vec{x}\).</p>
+<figure id="img-rotate_x45_rotate_frame" class="figure">
+<img src="./image/rotate_x45_rotate_frame.svg" alt="./image/rotate_x45_rotate_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.10.</span> Rotate \(xyz\) coordinate system 45 degree around \(x\)-axis</figcaption>
+</figure>
+<p>Apparently, in \(xyz\) coordinate system, the coordinates of \(\vec{r}\) is \([0, 1, 0]^T\), and in \(x^\prime y^\prime z^\prime\) coordinate system, its coordinates are \([0, \frac{\sqrt{2}}{2}, -\frac{\sqrt{2}}{2}]^T\). For this toy example, it is trivial to get the coordinates in both coordinate systems. But in general, how do we get the coordinates in the other coordinate system?</p>
+<p>Start with \(xyz\) coordinate system (the coordinates \(\vec{r}\) are known), rotate \(xyz\) around \(x\)-axis by <b>45</b> degree, we get the new coordinate system \(x^\prime y^\prime z^\prime\) (passive rotation). To get the coordinates of \(\vec{r}\) in this new coordinate system, it is equivalent to keep the \(xyz\) fixed, then rotate \(\vec{r}\) around \(x\)-axis by <b>-45</b> degree (active rotation), that is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^\prime &= \mathbf{R}_x(-45)\vec{r} \\
+&= \begin{bmatrix} 1 & 0 & 0 \\
+0 & \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
+0 & -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2}\\
+\end{bmatrix} \begin{bmatrix} 0 \\ 1 \\ 0\end{bmatrix} \\
+& = \begin{bmatrix} 0 \\ \frac{\sqrt{2}}{2} \\ -\frac{\sqrt{2}}{2}\end{bmatrix}.
+\label{eqn:rotate_x45}
+\end{align}
+$$
+</div>
+<p>That matches with our observation.
+Another way to solve this problem is in \(x^\prime y^\prime z^\prime\) coordinate system, if we rotate \(\vec{r}\) around \(x\)-axis by 45 degree, then we know its coordinate will be \([0, 1, 0]^T\), that is</p>
+<div class="mathjax">
+$$
+\begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix} = \mathbf{R}_x(45)\vec{r}^\prime,
+$$
+</div>
+<p>which is same as Eq. (\ref{eqn:rotate_x45}).</p>
+<p>Let's see what happens for multiple rotations. In Fig. (<a href="#img-rotate_x45_z45_rotate_frame">11</a>), \(x^\prime y^\prime z^\prime\) is rotated 45 degree around \(z\)-axis to reach \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\). Apparently, in \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\), the coordinates of \(\vec{r}\) is \([\frac{\sqrt{2}}{2}, \frac{1}{2}, -\frac{1}{2}]^T\).</p>
+<figure id="img-rotate_x45_z45_rotate_frame" class="figure">
+<img src="./image/rotate_x45_z45_rotate_frame.svg" alt="./image/rotate_x45_z45_rotate_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.11.</span> Rotate \(xyz\) coordinate system 45 degree around \(x\)-axis, then 45 degree around \(z\)-axis</figcaption>
+</figure>
+<p>Same as before, let us start with \(x^\prime y^\prime z^\prime\) coordinate system (the coordinates \(\vec{r}\) are known as we shown above), rotate \(x^\prime y^\prime z^\prime\) around \(z\)-axis by <b>45</b> degree, we get the new coordinate system \(x^{\prime\prime} y^{\prime\prime} z^{\prime\prime}\). To get the coordinates of \(\vec{r}\) in this new coordinate system, it is equivalent to keep the \(x^\prime y^\prime z^\prime\) fixed, then rotate \(\vec{r}\) around \(z\)-axis by <b>-45</b> degree, that is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^{\prime\prime} &= \mathbf{R}_{z}(-45)\vec{r}^\prime \\ \nonumber
+&= \begin{bmatrix} \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
+-\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
+0 & 0 & 1\\
+\end{bmatrix} \begin{bmatrix} 0 \\ \frac{\sqrt{2}}{2} \\ -\frac{\sqrt{2}}{2}\end{bmatrix} \\ \nonumber
+& = \begin{bmatrix} \frac{1}{2} \\ \frac{1}{2} \\ -\frac{\sqrt{2}}{2}\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Or</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^{\prime\prime} &= \mathbf{R}_{z}(-90)\mathbf{R}_x(-90)\vec{r}.
+\end{align}
+$$
+</div>
+<p>However, such result doesn't match our expectation. What's wrong here? The problem is that we want to get the coordinates of \(\vec{r}^\prime\) in \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\) coordinate system, to do that, we rotate \(x^\prime y^\prime z^\prime\) around \(z\)-axis, in \(x^\prime y^\prime z^\prime\), we are rotating the coordinate system around unit vector \(\vec{k}=[0, \frac{\sqrt{2}}{2}, \frac{\sqrt{2}}{2}]^T\) by 45 degree. Equivalently, if \(x^\prime y^\prime z^\prime\) is fixed, \(\vec{r}^\prime\) is rotated around \(\vec{k}\) by -45 degree. According to Eq. (\ref{eqn:rotate_vector}),</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{K} &= \begin{bmatrix}
+0 & -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
+\frac{\sqrt{2}}{2} & 0 & 0 \\
+-\frac{\sqrt{2}}{2} & 0 & 0 \\
+\end{bmatrix}, \\
+\mathbf{R} &= \mathbf{I} + \frac{-\sqrt{2}}{2}\mathbf{K} + (1-\frac{\sqrt{2}}{2})\mathbf{K}^2\\ \nonumber
+&= \mathbf{I} + \begin{bmatrix}
+0 & \frac{1}{2} & -\frac{1}{2} \\
+-\frac{1}{2} & 0 & 0 \\
+\frac{1}{2} & 0 & 0 \\
+\end{bmatrix} +
+(1-\frac{\sqrt{2}}{2}) \begin{bmatrix} -1 & 0 & 0 \\
+0 & -\frac{1}{2} & \frac{1}{2} \\
+0 & \frac{1}{2} & -\frac{1}{2}\\
+\end{bmatrix} \\ \nonumber
+&= \begin{bmatrix}
+\frac{\sqrt{2}}{2} & \frac{1}{2} & -\frac{1}{2} \\
+-\frac{1}{2} & \frac{1}{2}+\frac{\sqrt{2}}{4} & \frac{1}{2}-\frac{\sqrt{2}}{4} \\
+\frac{1}{2} & \frac{1}{2}-\frac{\sqrt{2}}{4} & \frac{1}{2}+\frac{\sqrt{2}}{4} \\
+\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Then</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^{\prime\prime} &= \mathbf{R}\vec{r}^\prime \\ \nonumber
+&= \begin{bmatrix}
+\frac{\sqrt{2}}{2} & \frac{1}{2} & -\frac{1}{2} \\
+-\frac{1}{2} & \frac{1}{2}+\frac{\sqrt{2}}{4} & \frac{1}{2}-\frac{\sqrt{2}}{4} \\
+\frac{1}{2} & \frac{1}{2}-\frac{\sqrt{2}}{4} & \frac{1}{2}+\frac{\sqrt{2}}{4} \\
+\end{bmatrix}\begin{bmatrix} 0 \\ \frac{\sqrt{2}}{2} \\ -\frac{\sqrt{2}}{2}\end{bmatrix} \\ \nonumber
+&= \begin{bmatrix} \frac{\sqrt{2}}{2} \\ \frac{1}{2} \\ -\frac{1}{2}\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>which is same as the expected coordinates.</p>
+<p>The other way to start with \(xyz\) (Fig. (<a href="#img-rotate_x45_z45_rotate_frame">11</a>)), rotate around \(z\)-axis 45 degree, then rotate around the new \(x\)-axis (i.e, \(x^{\prime\prime}\)-axis) 45 degree, after these rotation, \(xyz\) will overlap with \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\), and the coordinates of \(\vec{r}\) in \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\) is \([0, 1, 0]^T\),</p>
+<div class="mathjax">
+$$
+\begin{bmatrix}0 \\ 1 \\ 0 \end{bmatrix} = \mathbf{R}_z(45)\mathbf{R}_x(45) \vec{r}^{\prime\prime}.
+$$
+</div>
+<p>Equivalently,</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^{\prime\prime} &= \mathbf{R}_{x}(-45)\mathbf{R}_z(-45)\begin{bmatrix}0 \\ 1 \\ 0 \end{bmatrix} \\ \nonumber
+&= \begin{bmatrix} 1 & 0 & 0 \\
+0 & \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
+0 & -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2}\\
+\end{bmatrix} \begin{bmatrix} \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
+-\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
+0 & 0 & 1\\
+\end{bmatrix}\begin{bmatrix} 0 \\ 1 \\ 0\end{bmatrix} \\ \nonumber
+&= \begin{bmatrix} \frac{\sqrt{2}}{2} \\ \frac{1}{2} \\ -\frac{1}{2}\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Let's see a real <a href="https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf">example</a>,</p>
+<ol>
+<li>origin point is the earth center, \(xyz\) is the earth-centered, earth-fixed coordinate system,</li>
+<li>an object (e.g., a satellite) is in the direction of \(\vec{r}\), which is represented by two angles (i.e., azimuth \(az\), and elevation \(el\)),</li>
+<li>the object has its own coordinate system \(x^\prime y^\prime z^\prime\),</li>
+</ol>
+<p>if we know coordinates of some vector (e.g., \(\vec{r}\)) in one coordinate system (e.g., \(x^\prime y^\prime z^\prime\)), how to find its corresponding coordinates in the other (\(xyz\))?</p>
+<figure id="img-rotate_az_el_rotate_frame" class="figure">
+<img src="./image/rotate_az_el_rotate_frame.svg" alt="./image/rotate_az_el_rotate_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.12.</span> Rotate \(xyz\) coordinate system 45 degree around \(x\)-axis, then 45 degree around \(z\)-axis</figcaption>
+</figure>
+<p>For example for unit vector \(\vec{r}\), we know its coordinates in \(x^\prime y^\prime z^\prime\) is \([1, 0, 0]^T\). We can</p>
+<ol>
+<li>Rotate \(\vec{r}\) around \(y^\prime\) by \(el\) degree, after that, \(z\) will overlap with \(z^\prime\),</li>
+<li>Then rotate \(\vec{r}\) again around \(z\) (or the rotated \(z^prime\)) by \(-az\) degree, after that, the \(xyz\) coordinate system will perfectly overlap with \(x^\prime y^\prime z^\prime\),</li>
+<li>So after these rotation, the coordinates of \(\vec{r}\) in \(xyz\) coordinate system is \([1,0,0]^T\) (or \(\vec{r}\) in \(x^\prime y^\prime z^\prime\), denoted it as \(\vec{r}^\prime\)).</li>
+</ol>
+<p>The process can be written as</p>
+<div class="mathjax">
+$$
+\vec{r}^\prime = \mathbf{R}_y(el)\mathbf{R}_z(-az) \vec{r},
+$$
+</div>
+<p>which is the mapping from a coordinates in \(xyz\) coordinates to \(x^\prime y^\prime z^\prime\) coordinate system.
+Do you see why we layout the rotations from left to right (i.e.,1st rotation on the leftest side)?</p>
+<p>And equivalently, to convert a coordinates in \(x^\prime y^\prime z^\prime\) to \(xyz\) coordinate system,</p>
+<div class="mathjax">
+$$
+\vec{r} = \mathbf{R}_z(az)\mathbf{R}_y(-el) \vec{r}^\prime,
+$$
+</div>
+<p>which is the same equation as <a href="https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf">Eq. (2-2) here</a></p>
+<h1 id="sec-2">2 Frame</h1>
+<p>Frame is just another word for coordinate system. In this section, we will introduce some common frames that are widely used in navigation.</p>
+<h2 id="sec-2-1">2.1 ECEF</h2>
+<p><a href="https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system">Earth-centered, Earth-fixed</a> (ECEF) coordinate system is a convenient way to location any point relative to earth</p>
+<ol>
+<li>\(z\)-axis is from earth center to the north pole</li>
+<li>\(x\)-axis is on the equator plane, from earth center to the prime meridian (0^cir</li>
+</ol>
+<figure id="img-rotate_ecef_frame" class="figure">
+<img src="./image/rotate_ecef_frame.svg" alt="./image/rotate_ecef_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.13.</span> Earth-centered, Earth-fixed (ECEF) frame</figcaption>
+</figure>
+<h2 id="sec-2-2">2.2 Satellite</h2>
+<h2 id="sec-2-3">2.3 NED</h2>
+<h2 id="sec-2-4">2.4 Body</h2>
+<h1 id="sec-3">3 Frame Rotation</h1>
+<h2 id="sec-3-1">3.1 Satellite to ECEF</h2>
+<h2 id="sec-3-2">3.2 ECEF to NED</h2>
+<h2 id="sec-3-3">3.3 NED to Body</h2>
+<h1 id="sec-4">4 Rotation Representation</h1>
+<h2 id="sec-4-1">4.1 Euler angle</h2>
+<h2 id="sec-4-2">4.2 Direct Cosine Matrix (DCM)</h2>
+<h2 id="sec-4-3">4.3 Quaternion</h2>
+</div>
+</div>
+<div class="footer">
+<div class="footer-text"> Last updated 2023-11-10 05:13:26 UTC by
+<a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>.</div>
+</div>
+</div>
+</body>
+</html>
