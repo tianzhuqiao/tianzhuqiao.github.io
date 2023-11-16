@@ -384,22 +384,55 @@ And equivalently, to convert a coordinates in $x^\prime y^\prime z^\prime$ to $x
 $$
 \vec{r} = \mathbf{R}_z(az)\mathbf{R}_y(-el) \vec{r}^\prime,
 $$
-which is the same equation as [https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf| Eq. (2-2) here]
+which is the same equation as [https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf| Eq. (2-2) here].
 
 = Frame
 Frame is just another word for coordinate system. In this section, we will introduce some common frames that are widely used in navigation.
 == ECEF
 [https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system| Earth-centered, Earth-fixed] (ECEF) coordinate system is a convenient way to location any point relative to earth
-* $z$-axis is from earth center to the north pole
-* $x$-axis is on the equator plane, from earth center to the prime meridian ($0^\cir
+* $z$-axis is from earth center to the north pole,
+* $x$-axis is on the equator plane, from earth center to the prime meridian (longitude is $0^\circ$),
+* $y$-axis is also on the equator plane, from earth center to $90^\circ$ longitude.
+
 
 {!image||
 \caption{Earth-centered, Earth-fixed (ECEF) frame}
 ./image/rotate_ecef_frame.svg
 \label{img-rotate_ecef_frame}
 !}
-== Satellite
+
 == NED
+North, east, down (NED) coordinate system is shown in Fig. (\ref{img-rotate_ned_frame}),
+* $z$-axis is down to the earth center
+* $x$-axis is tangent to meridians (to north)
+* $y$-axis is tangent to parallels (circles from same same latitude) (to east)
+{!image||
+\caption{North, east, down (NED) frame}
+./image/rotate_ned_frame.svg
+\label{img-rotate_ned_frame}
+!}
+
+Rotation from NED frame to ECEF frame,
+$$
+\vec{r}_{ECEF} - \vec{O}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90) \vec{r}_{NED},
+$$
+where $\vec{r}_{NED}$ is the coordinates in NED frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{O}_{ECEF}$ is the origin of the NED frame in ECEF frame. The rotation matrix can be written as
+$$
+\begin{align}
+\mathbf{R}_{NED}^{EDEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90).
+\end{align}
+$$
+Or the rotation matrix from ECEF frame to NED frame is
+$$
+\begin{align}
+\mathbf{R}_{ECEF}^{NED} &= \mathbf{R}_y(el+90)\mathbf{R}_z(-az) \\ \nonumber
+& = \begin{bmatrix} -\sin(el)*\cos(az) & -\sin(az)*\sin(el) & \cos(el)\\
+ -\sin(az) & \cos(az) & 0 \\
+ -\cos(az)*\cos(el) & -\sin(az)*\cos(el) & -\sin(el)\\
+ \end{bmatrix}.
+\end{align}
+$$
+== Satellite
 == Body
 
 = Frame Rotation

@@ -8,21 +8,19 @@
 <link rel="stylesheet" href="css/menu.css" type="text/css">
 <script>
 MathJax = {
-loader: {
-load: ['[tex]/tagformat']
-},
 tex: {
-packages: {'[+]': ['tagformat']},
 inlineMath: [['\\(', '\\)']],
-tags: "all",
-tagformat: {
-id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
-}
+tags: "all"
 }
 };
 </script>
-<script src=" https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js "></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+</script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"
+integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+crossorigin="anonymous"></script>
 <script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
 <script type="text/javascript" language="javascript" src="js/menu.js"></script>
 <title>A Tutorial on Rotation</title>
@@ -38,8 +36,8 @@ id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
 </ul></li>
 <li><a href="#sec-2">2 Frame</a><ul>
 <li><a href="#sec-2-1">2.1 ECEF</a></li>
-<li><a href="#sec-2-2">2.2 Satellite</a></li>
-<li><a href="#sec-2-3">2.3 NED</a></li>
+<li><a href="#sec-2-2">2.2 NED</a></li>
+<li><a href="#sec-2-3">2.3 Satellite</a></li>
 <li><a href="#sec-2-4">2.4 Body</a></li>
 </ul></li>
 <li><a href="#sec-3">3 Frame Rotation</a><ul>
@@ -455,21 +453,58 @@ $$
 \vec{r} = \mathbf{R}_z(az)\mathbf{R}_y(-el) \vec{r}^\prime,
 $$
 </div>
-<p>which is the same equation as <a href="https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf">Eq. (2-2) here</a></p>
+<p>which is the same equation as <a href="https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf">Eq. (2-2) here</a>.</p>
 <h1 id="sec-2">2 Frame</h1>
 <p>Frame is just another word for coordinate system. In this section, we will introduce some common frames that are widely used in navigation.</p>
 <h2 id="sec-2-1">2.1 ECEF</h2>
 <p><a href="https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system">Earth-centered, Earth-fixed</a> (ECEF) coordinate system is a convenient way to location any point relative to earth</p>
 <ol>
-<li>\(z\)-axis is from earth center to the north pole</li>
-<li>\(x\)-axis is on the equator plane, from earth center to the prime meridian (0^cir</li>
+<li>\(z\)-axis is from earth center to the north pole,</li>
+<li>\(x\)-axis is on the equator plane, from earth center to the prime meridian (longitude is \(0^\circ\)),</li>
+<li>\(y\)-axis is also on the equator plane, from earth center to \(90^\circ\) longitude.</li>
 </ol>
 <figure id="img-rotate_ecef_frame" class="figure">
 <img src="./image/rotate_ecef_frame.svg" alt="./image/rotate_ecef_frame.svg">
 <figcaption class="caption"><span class="tag">Fig.13.</span> Earth-centered, Earth-fixed (ECEF) frame</figcaption>
 </figure>
-<h2 id="sec-2-2">2.2 Satellite</h2>
-<h2 id="sec-2-3">2.3 NED</h2>
+<h2 id="sec-2-2">2.2 NED</h2>
+<p>North, east, down (NED) coordinate system is shown in Fig. (<a href="#img-rotate_ned_frame">14</a>),</p>
+<ol>
+<li>\(z\)-axis is down to the earth center</li>
+<li>\(x\)-axis is tangent to meridians (to north)</li>
+<li>\(y\)-axis is tangent to parallels (circles from same same latitude) (to east)</li>
+</ol>
+<figure id="img-rotate_ned_frame" class="figure">
+<img src="./image/rotate_ned_frame.svg" alt="./image/rotate_ned_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.14.</span> North, east, down (NED) frame</figcaption>
+</figure>
+<p>Rotation from NED frame to ECEF frame,</p>
+<div class="mathjax">
+$$
+\vec{r}_{ECEF} - \vec{O}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90) \vec{r}_{NED},
+$$
+</div>
+<p>where \(\vec{r}_{NED}\) is the coordinates in NED frame, \(\vec{r}_{ECEF}\) is the corresponding coordinates in ECEF frame, and \(\vec{O}_{ECEF}\) is the origin of the NED frame in ECEF frame. The rotation matrix can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_{NED}^{EDEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90).
+\end{align}
+$$
+</div>
+<p>Or the rotation matrix from ECEF frame to NED frame is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_{ECEF}^{NED} &= \mathbf{R}_y(el+90)\mathbf{R}_z(-az) \\ \nonumber
+& = \begin{bmatrix} -\sin(el)*\cos(az) & -\sin(az)*\sin(el) & \cos(el)\\
+ -\sin(az) & \cos(az) & 0 \\
+ -\cos(az)*\cos(el) & -\sin(az)*\cos(el) & -\sin(el)\\
+ \end{bmatrix}.
+\end{align}
+$$
+</div>
+<h2 id="sec-2-3">2.3 Satellite</h2>
 <h2 id="sec-2-4">2.4 Body</h2>
 <h1 id="sec-3">3 Frame Rotation</h1>
 <h2 id="sec-3-1">3.1 Satellite to ECEF</h2>
@@ -482,7 +517,7 @@ $$
 </div>
 </div>
 <div class="footer">
-<div class="footer-text"> Last updated 2023-11-10 05:13:26 UTC by
+<div class="footer-text"> Last updated 2023-11-13 06:00:31 UTC by
 <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>.</div>
 </div>
 </div>
