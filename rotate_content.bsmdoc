@@ -1,4 +1,5 @@
 = Rotation
+Rotation is critical to many applications, e.g., navigation. For 2D rotation, it is trivial. However, for 3D case, it is much more complicated and confusing.
 == Rotate vector around axis
 To rotate around the $z$-axis, point the thumb of right hand to the positive $z$ direction, the curled finger points to the positive rotation direction, i.e., from $x$-axis to $y$-axis, as show in following figure
 {!image||
@@ -11,7 +12,7 @@ If we look from positive $z$ direction, it will look like the following diagram.
 ./image/rotate_z_xy.svg
 !}
 
-If we have a vector $\vec{r} = [0, 0, 1]^T$, a unit vector on $z$-axis, after rotating around $z$-axis by $\psi$, it is easy to see that its coordinate will be unchanged (i.e., $[0, 0, 1]$).
+If we have a vector $\vec{r} = [0, 0, 1]^T$, a unit vector on $z$-axis, after rotating around $z$-axis by $\psi$ (i.e., yaw), it is easy to see that its coordinate will be unchanged (i.e., $[0, 0, 1]$).
 
 Suppose $\vec{r} = [1, 0, 0]^T$, a unit vector on $x$-axis, and rotate around the $z$-axis by $\psi$, we will get $\vec{r}^\prime$. What will be the coordinate of $\vec{r}^\prime$?
 {!image||
@@ -53,7 +54,7 @@ $$
 $$
 It is easy to see that 1st column of $\mathbf{R}$ is just the coordinate of rotated unit vector of $x$-axis, that is after rotation, $[1, 0, 0]^T$ will become $[\cos\psi, \sin\psi, 0]^T$. Same for the 2nd and 3rd columns.
 
-The rotation around $x$ is very similar, as shown in the following image.
+The rotation around $x$ is very similar ($phi$, i.e., roll), as shown in the following image.
 {!image||
 \caption{Rotate $\vec{r}$ around $x$ axis by $\phi$ degree}
 ./image/rotate_x_yz_rotate.svg
@@ -70,7 +71,7 @@ $$
 \end{align}
 $$
 
-The rotation around $y$ is also similar, as shown in the following image.
+The rotation around $y$ is also similar ($\theta$, i.e., pitch), as shown in the following image.
 {!image||
 \caption{Rotate $\vec{r}$ around $y$ axis by $\theta$ degree}
 ./image/rotate_y_xz_rotate.svg
@@ -403,9 +404,9 @@ Frame is just another word for coordinate system. In this section, we will intro
 
 == NED
 North, east, down (NED) coordinate system is shown in Fig. (\ref{img-rotate_ned_frame}),
-* $z$-axis is down to the earth center
-* $x$-axis is tangent to meridians (to north)
-* $y$-axis is tangent to parallels (circles from same same latitude) (to east)
+* $x$-axis is tangent to meridians (to north),
+* $y$-axis is tangent to parallels (circles from same same latitude) (to east),
+* $z$-axis is down to the earth center (to down).
 {!image||
 \caption{North, east, down (NED) frame}
 ./image/rotate_ned_frame.svg
@@ -419,7 +420,7 @@ $$
 where $\vec{r}_{NED}$ is the coordinates in NED frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{O}_{ECEF}$ is the origin of the NED frame in ECEF frame. The rotation matrix can be written as
 $$
 \begin{align}
-\mathbf{R}_{NED}^{EDEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90).
+\mathbf{R}_{NED}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90).
 \end{align}
 $$
 Or the rotation matrix from ECEF frame to NED frame is
@@ -432,15 +433,143 @@ $$
  \end{bmatrix}.
 \end{align}
 $$
+
+== ENU
+East, north, up (ENU) coordinate system (Fig. (\ref{img-rotate_enu_frame})) is very close to NED coordinate system.
+* $x$-axis is tangent to parallels (circles from same same latitude) (to east),
+* $y$-axis is tangent to meridians (to north),
+* $z$-axis is up from the earth center (to up).
+{!image||
+\caption{East, north, up (ENU) frame}
+./image/rotate_enu_frame.svg
+\label{img-rotate_enu_frame}
+!}
+
+Rotation from ENU frame to ECEF frame,
+$$
+\vec{r}_{ECEF} - \vec{O}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(90-el) \mathbf{R}_{z^{\prime\prime}}(90)\vec{r}_{ENU},
+$$
+where $\vec{r}_{ENU}$ is the coordinates in ENU frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{O}_{ECEF}$ is the origin of the NED frame in ECEF frame. The rotation matrix can be written as
+$$
+\begin{align}
+\mathbf{R}_{ENU}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(90-el)\mathbf{R}_{z^{\prime\prime}}(90).
+\end{align}
+$$
+Or the rotation matrix from ECEF frame to ENU frame is
+$$
+\begin{align}
+\mathbf{R}_{ECEF}^{ENU} &= \mathbf{R}_z(-90) \mathbf{R}_y(el-90)\mathbf{R}_z(-az) \\ \nonumber
+& = \begin{bmatrix} \sin(az) & \cos(az) & 0 \\
+ -sin(el)*\cos(az) & -\sin(az)*\sin(el) & \cos(el) \\
+ \cos(az)*\cos(el) & \sin(az)*\cos(el) & \sin(el) \\
+ \end{bmatrix}.
+\end{align}
+$$
+
 == Satellite
+Satellite frame is shown in Fig. (\ref{img-rotate_satellite_frame}),
+* $x$-axis is up from the earth center (to satellite),
+* $y$-axis is in the polarization plane and along the electric field vector direction,
+* $z$-axis is in the polarization plane and orthogonal to the $y$-axis (along the magnetic filed vector direction).
+{!image||
+\caption{Satellite frame}
+./image/rotate_satellite_frame.svg
+\label{img-rotate_satellite_frame}
+!}
+
+Rotation from satellite frame to ECEF frame,
+$$
+\vec{r}_{ECEF} - \vec{O}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el) \mathbf{R}_{x^{\prime\prime}}(pol)\vec{r}_{satellite},
+$$
+where $\vec{r}_{satellite}$ is the coordinates in satellite frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{O}_{ECEF}$ is the origin of the NED frame in ECEF frame. The rotation matrix can be written as
+$$
+\begin{align}
+\mathbf{R}_{satellite}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el)\mathbf{R}_{x^{\prime\prime}}(pol).
+\end{align}
+$$
+Or the rotation matrix from ECEF frame to satellite frame is
+$$
+\begin{align}
+\mathbf{R}_{ECEF}^{satellite} &= \mathbf{R}_x(-pol) \mathbf{R}_y(el)\mathbf{R}_z(-az).
+\end{align}
+$$
+
 == Body
+Body frame is the user coordinate system, usually user can arbitrarily choose the coordinate system, e.g., when it is leveled on ground, and facing north, the body frame is same as NED frame, that is
+* $x$-axis points to the nose of the body (or heading direction),
+* $y$-axis points to the right of the $x$-axis (when facing forward),
+* $z$-axis points down through the bottom of the body.
 
-= Frame Rotation
-== Satellite to ECEF
-== ECEF to NED
-== NED to Body
+In other words, in this case, when the body is facing north and leveled (yaw, pitch, roll are all $0$), its $x$-axis points north, $y$-axis points east, and $z$-axis points down to the earth center.
 
+The main task for many applications is to estimate the body orientation (i.e., yaw, pitch and roll). And inertial measurement unit (IMU) is usually attached to the body to help estimating the body orientation. In many cases, the body frame may be same as the IMU frame.
+=== Pitch and Roll with Accelerometer
+When the IMU is leveled, its reading in NED frame is
+$$
+\vec{g}_{NED} = [0, 0, g],
+$$
+where $g$ is the gravitational acceleration (e.g., $\sim 9.81m/s^2$ on earth surface). It is easy to see that rotate around NED $z$-axis doesn't change the measured signal. The measurement is in IMU frame (or body frame)
+$$
+\vec{g}_{body} = \begin{bmatrix} a_x & a_y & a_z\end{bmatrix}.
+$$
+And define the rotation from IMU frame (body frame) to NED frame as
+$$
+\vec{g}_{NED} = \mathbf{R}_y(\theta) \mathbf{R}_x(\phi) \vec{g}_{body}.
+$$
+Or equivalently,
+$$
+\begin{align}
+\vec{g}_{body} &= (\mathbf{R}_y(\theta) \mathbf{R}_x(\phi))^T \vec{g}_{NED} \\ \nonumber
+&=\begin{bmatrix}
+\cos(\theta) & 0  & -\sin(\theta)\\
+\sin(\phi)*\sin(\theta)& \cos(\phi) & \sin(\phi)*\cos(\theta)\\
+\sin(\theta)*\cos(\phi) & -\sin(\phi) & \cos(\phi)*\cos(\theta)
+\end{bmatrix} \begin{bmatrix}
+0 \\ 0 \\ g
+\end{bmatrix},
+\end{align}
+$$
+then $\theta$, $\phi$ can be estimated as
+$$
+\begin{align}
+\theta &= \arcsin(\frac{-a_x}{g}), \\
+\phi &= \arctan(\frac{a_y}{a_z}).
+\end{align}
+$$
+=== Gyroscope
+Gyroscope measures the angular velocity (e.g., $deg/s$), e.g.,
+$$
+\hat{\vec{\omega}} = \vec{\omega} + \vec{b} + \vec{n},
+$$
+where $\vec{\omega}$ is the true angular velocity, $\vec{b}$ is the bias, and $\vec{n}$ is the additive noise.
+
+In practice, the gyroscope may send the measured angular velocity at some fixed rate (e.g., 200Hz), that is every $\delta_t$ seconds. How do we use such information to update the orientation of the body/IMU?
+For example, at time index $t-1$, we have the rotation matrix $\mathbf{R}_{t-1}$, that maps arbitrary vector in body frame ($\vec{r}_{t-1, body}$) to NED frame ($\vec{r}_{t-1, NED}$),
+$$
+\vec{r}_{t-1, NED} = \mathbf{R}_{t-1} \vec{r}_{t-1, body},
+$$
+or
+$$
+\vec{r}_{t-1, body} = \mathbf{R}_{t-1}^T \vec{r}_{t-1, NED},
+$$
+
+And at time index $t$ (i.e., $\delta_t$ seconds after time index $t-1$), gyroscope sends out the angular velocity measurement $\hat{\vec{w}}_t$. As $\delta_t$ is so small, it is not unreasonable to think that $\hat{\vec{w}}_t$ is constant over the last $\delta_t$ seconds. And if we ignore the gryo bias $\vec{b}$ for simplicity now, during the last $\delta_t$ seconds, the body/IMU frame rotates with angle $\hat{\vec{w}}_t \delta_t$. Thus the rotation from body/IMU frame of time $t-1$ to $t$ is
+$$
+\vec{r}_{t, body} = \mathbf{R}(-\hat{\vec{w}}_t \delta_t) \vec{r}_{t-1, body}.
+$$
+You may notice the negative sign before the rotation angle in the above equation. That's because the measured rotation is on the frame (coordination system) (i.e., passive rotation), if we want to apply the same rotation on the vector, it needs to be rotated in negative angle (active rotation).
+$$
+\vec{r}_{t, body} = \mathbf{R}(-\hat{\vec{w}}_t \delta_t)\mathbf{R}_{t-1}^T \vec{r}_{t, NED},
+$$
+or
+$$
+\vec{r}_{t, NED} = \mathbf{R}_{t-1}\mathbf{R}(\hat{\vec{w}}_t \delta_t) \vec{r}_{t, body}.
+$$
+The only remaining question is how to get the rotation matrix (e.g., $\mathbf{R}(-\hat{\vec{w}}_t \delta_t)$) from the gyro measurement. As shown in \cite{Stancin}, for the measurement $\hat{\vec{\omega}} = [\hat{\omega}_x, \hat{\omega}_y, \hat{\omega}_z]$, the corresponding rotation can be viewed at rotate around unit vector $\frac{\hat{\vec{\omega}}}{\lVert \hat{\vec{\omega}}\rVert}$ by $\lVert \hat{\vec{\omega}}\rVert \delta_t$ degree. The rotation matrix can be got with Eq. (\ref{eqn:rotate_vector}).
+
+\reference{Stancin|Stančin, S.; Tomažič, S. "Angle Estimation of Simultaneous Orthogonal Rotations from 3D Gyroscope Measurements". Sensors 2011, 11, 8536-8549. https://doi.org/10.3390/s110908536 }
 = Rotation Representation
-== Euler angle
+== Euler Angle
+=== Gimbal Lock
 == Direct Cosine Matrix (DCM)
 == Quaternion
