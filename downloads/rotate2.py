@@ -47,10 +47,10 @@ R = sympy.simplify(R)
 print(sympy.ccode(R))
 
 # ECEF to NED
-def ECEF2ENU():
+def ECEF2NED():
     el = sympy.Symbol("el")
     az = sympy.Symbol("az")
-    R = np.dot(rotation_z(-sympy.pi/2), np.dot(rotation_y(el-sympy.pi/2), rotation_z(-az)))
+    R = np.dot(rotation_y(el+sympy.pi/2), rotation_z(-az))
     R = sympy.simplify(R)
     return R
 

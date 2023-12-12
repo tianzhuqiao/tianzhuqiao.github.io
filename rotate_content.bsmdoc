@@ -6,24 +6,25 @@ To rotate around the $z$-axis, point the thumb of right hand to the positive $z$
 \caption{Rotate around $z$ axis}
 ./image/rotate_z.svg
 !}
-When we look from positive $z$ direction, it will look like the following diagram (2D projection of the 3D coordinate system on $x$-$y$ plane).
+Fig. (\ref{img-rotate_z_xy}) shows the 2D projection of the 3D coordinate system on $x$-$y$ plane, when look from positive $z$ direction.
 {!image||
 \caption{Rotate around $z$ axis}
 ./image/rotate_z_xy.svg
+\label{img-rotate_z_xy}
 !}
 
-For a unit vector on $z$-axis $\vec{r} = [0, 0, 1]^T$, it is easy to see that its coordinate will be unchanged (i.e., $[0, 0, 1]^T$), after rotating around $z$-axis by arbitrary $\psi$ degree (i.e., yaw).
+For a unit vector on $z$-axis (i.e., $\vec{r} = [0, 0, 1]^T$), it is easy to see that its coordinate will be unchanged, after rotating around $z$-axis by arbitrary $\psi$ degree (i.e., yaw).
 
-For a unit vector on $x$-axis, i.e., $\vec{r} = [1, 0, 0]^T$, rotate around the $z$-axis by $\psi$ degree, we will get $\vec{r}^\prime$. What will be the coordinate of $\vec{r}^\prime$?
-It can be easily read from the following diagram as $[\cos\psi, \sin\psi, 0]^T$.
+For a unit vector on $x$-axis, i.e., $\vec{r} = [1, 0, 0]^T$, after rotating around the $z$-axis by $\psi$ degree, its new coordinates can be easily read from Fig. (\ref{img-rotate_x_yz_rotate}) as $\vec{r}^\prime = [\cos\psi, \sin\psi, 0]^T$.
 {!image||
 \caption{Rotate $\vec{r}$ around $z$ axis by $\psi$ degree}
 ./image/rotate_z_xy_rotate.svg
+\label{img-rotate_z_xy_rotate}
 !}
-Similarly, for a unit vector on $y$-axis (i.e,. $\vec{r} = [0, 1, 0]^T$), after rotating around $z$-axis by $\psi$, its coordinate will be $[-\sin\psi, \cos\psi, 0]^T$.
+Similarly, for a unit vector on $y$-axis (i.e,. $\vec{r} = [0, 1, 0]^T$), after rotating around $z$-axis by $\psi$, its coordinate will be $\vec{r}^\prime = [-\sin\psi, \cos\psi, 0]^T$.
 
 
-For an arbitrary vector $\vec{r}$, what will its coordinate be in the original coordinate system ($xyz$) after rotation?
+For an arbitrary vector $\vec{r}$, what will its coordinate be in the original coordinate system (i.e., $xyz$) after rotation?
 
 Suppose the coordinates of a vector in $xyz$ is $\vec{r}=r_x\vec{i} + r_y\vec{j} + r_z\vec{k}$, when rotate it around $z$-axis by $\psi$ degree, if the coordinate system is also rotated along with it (e.g., around $z$-axis by $\psi$ degree) to $x^\prime y^\prime z^\prime$, then its coordinates in $x^\prime y^\prime z^\prime$ is same as before (it is straightforward as their relative location doesn't change), that is
 $$
@@ -57,7 +58,7 @@ $$
 \end{bmatrix}.
 \label{eqn:rotate_z_yz_axis}
 $$
-Put Eqs. (\ref{eqn:rotate_z_x_axis}) and (\ref{eqn:rotate_z_yz_axis}) into Eq. (\ref{eqn:rotate_z_arbitrary}), we have
+Substitute Eqs. (\ref{eqn:rotate_z_x_axis}) and (\ref{eqn:rotate_z_yz_axis}) in Eq. (\ref{eqn:rotate_z_arbitrary}), we have
 $$
 \begin{align}
 \vec{r}^\prime&=r_x\vec{i}^\prime + r_y\vec{j}^\prime + r_z\vec{k}^\prime \nonumber \\
@@ -68,10 +69,10 @@ r_z\begin{bmatrix}0 \\ 0 \\ 1 \end{bmatrix} \\\nonumber
 \cos\psi & -\sin\psi & 0 \\
 \sin\psi & \cos\psi & 0 \\
 0 & 0 & 1
-\end{bmatrix}\begin{bmatrix}r_x \\ r_y \\ r_z \end{bmatrix},
+\end{bmatrix}\begin{bmatrix}r_x \\ r_y \\ r_z \end{bmatrix}.
 \end{align}
 $$
-where $\mathbf{R}_z$ is usually call the rotation matrix (around $z$-axis)
+And the rotation matrix (around $z$-axis) is
 $$
 \begin{align}
 \mathbf{R}_z = \begin{bmatrix}
@@ -82,9 +83,9 @@ $$
 \label{eqn:rotate_z}
 \end{align}
 $$
-It is easy to see that 1st column of $\mathbf{R}$ is just the coordinate of rotated unit vector of $x$-axis, that is, after rotation, $[1, 0, 0]^T$ will become $[\cos\psi, \sin\psi, 0]^T$. Same for the 2nd and 3rd columns.
+It is easy to see that 1st column of $\mathbf{R}_z$ is just the coordinate of rotated unit vector of $x$-axis, that is, after rotation, the coordinates of unit vector on $x$-axis (i.e.,$[1, 0, 0]^T$ before rotation) will become $[\cos\psi, \sin\psi, 0]^T$. Same for the 2nd and 3rd columns.
 
-The rotation around $x$ is very similar ($\phi$, i.e., roll), as shown in Fig. (\ref{img-rotate_x_yz_rotate}).
+The rotation around $x$-axis is very similar ($\phi$, i.e., roll), as shown in Fig. (\ref{img-rotate_x_yz_rotate}).
 {!image||
 \caption{Rotate $\vec{r}$ around $x$ axis by $\phi$ degree}
 ./image/rotate_x_yz_rotate.svg
@@ -122,7 +123,7 @@ $$
 You may notice that the format of Eq. (\ref{eqn:rotate_y}) is slightly different with Eqs. (\ref{eqn:rotate_z}) & (\ref{eqn:rotate_x}), e.g., its 1st row is $[\cos\theta, 0, \sin\theta]^T$, instead of $[\cos\theta, 0, \textcolor{red}{-}\sin\theta]^T$. That's not a mistake, as it is easy to check that for a unit vector on $z$-axis (i.e., $\vec{r} = [0, 0, 1]^T$), rotate it around $y$-axis by $\theta$ degree, its coordinate will be $[\sin\theta, 0, \cos\theta]^T$, which is the 3rd column of $\mathbf{R}_y$. Same for its 1st column.
 
 For the discussion so far, we are rotating the vector $\vec{r}$ to get the coordinates of $\vec{r}^\prime$ in original coordinate system after rotation.
-Such rotation is called \tag{b|active rotation} (or active transformation).
+Such rotation is called \tag{b|active rotation} (or \tag{b|active transformation}).
 
 On the other hand, we can also fix $\vec{r}$, rotate the coordinate system, then calculate the coordinates of $\vec{r}$ in the rotated coordinate system (i.e., $x^\prime y^\prime z^\prime$). Such rotation is called \tag{b|passive rotation}. As show in Fig. (\ref{img-rotate_z_xy_rotate_passive}), after rotating the coordinate system by $-\psi$ degree, the coordinates of $\vec{r}$ in the new coordinate system $x^\prime y^\prime z^\prime$ is same as the one of $\vec{r}^\prime$ in original coordinate system $xyz$.
 {!image||
@@ -131,6 +132,7 @@ On the other hand, we can also fix $\vec{r}$, rotate the coordinate system, then
 \label{img-rotate_z_xy_rotate_passive}
 !}
 
+=== Multiple rotations
 It is easy to see that if we rotate $\vec{r}$ around $z$ by $\psi_1$ ($\vec{r}^\prime$), then rotate $\vec{r}^\prime$ again around $z$ by $\psi_2$ ($\vec{r}^{\prime\prime}$), it is equivalent to rotate $\vec{r}$ around $z$ by $\psi_1 + \psi_2$.
 {!image||
 \caption{Rotate coordinate system $xyz$ around $z$ axis by $\psi_1$ degree, then $\psi_2$ degree}
@@ -175,10 +177,10 @@ For intrinsic rotation to achieve the same final coordinates (in original $xyz$ 
 * rotate around $x$-axis by 90 degree,
 and its rotation matrix is
 $$
-\mathbf{R} = \mathbf{R}_x(90)\mathbf{R}_z(90).
+\mathbf{R} = \mathbf{R}_x(90^\circ)\mathbf{R}_z(90^\circ).
 \label{eq:rotation_z90_x90_rotate}
 $$
-Notice that the order of the rotation matrix, that is the 1st rotation is on the rightest side, then the matrix from the 2nd rotation. If there are more rotations, they will be ordered from right to left.
+Notice that the order of the rotation matrix, that is the 1st rotation is on the rightest side, then the matrix from the 2nd rotation. If there are more rotations, they will also be ordered from right to left.
 
 While in intrinsic rotation, to get the same coordinates ($\vec{r}^{\prime\prime}$),
 * rotate around $x$-axis by 90 degree, also rotate the coordinate system to get $x^\prime y^\prime z^\prime$, as show in Fig. (\ref{img-rotate_z90_x90_rotate_intrinsic}), then
@@ -193,7 +195,7 @@ Fig. (\ref{img-rotate_z90_x90_rotate_intrinsic}) shows that after the intrinsic 
 
 The rotation matrix from intrinsic rotation is
 $$
-\mathbf{R} = \mathbf{R}_x(90)\mathbf{R}_{z^\prime}(90).
+\mathbf{R} = \mathbf{R}_x(90^\circ)\mathbf{R}_{z^\prime}(90^\circ).
 \label{eq:rotation_z90_x90_rotate_intrinsic}
 $$
 
@@ -295,7 +297,7 @@ Apparently, in $xyz$ coordinate system, the coordinates of $\vec{r}$ is $[0, 1, 
 Start with $xyz$ coordinate system (the coordinates $\vec{r}$ are known), rotate $xyz$ around $x$-axis by \tag{b|45} degree, we get the new coordinate system $x^\prime y^\prime z^\prime$ (passive rotation). To get the coordinates of $\vec{r}$ in this new coordinate system, it is equivalent to keep the $xyz$ fixed, then rotate $\vec{r}$ around $x$-axis by \tag{b|-45} degree (active rotation), that is
 $$
 \begin{align}
-\vec{r}^\prime &= \mathbf{R}_x(-45)\vec{r} \\
+\vec{r}^\prime &= \mathbf{R}_x(-45^\circ)\vec{r} \\
 &= \begin{bmatrix} 1 & 0 & 0 \\
 0 & \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
 0 & -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2}\\
@@ -307,7 +309,7 @@ $$
 That matches with our observation.
 Another way to solve this problem is in $x^\prime y^\prime z^\prime$ coordinate system, if we rotate $\vec{r}$ around $x$-axis by 45 degree, then we know its coordinate will be $[0, 1, 0]^T$, that is
 $$
-\begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix} = \mathbf{R}_x(45)\vec{r}^\prime,
+\begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix} = \mathbf{R}_x(45^\circ)\vec{r}^\prime,
 $$
 which is same as Eq. (\ref{eqn:rotate_x45}).
 
@@ -322,7 +324,7 @@ Let's see what happens for multiple rotations. In Fig. (\ref{img-rotate_x45_z45_
 Same as before, let us start with $x^\prime y^\prime z^\prime$ coordinate system (the coordinates in $x^\prime y^\prime z^\prime$ (i.e., $\vec{r}^\prime$) are known as we shown above), rotate $x^\prime y^\prime z^\prime$ around $z$-axis by \tag{b|45} degree, we get the new coordinate system $x^{\prime\prime} y^{\prime\prime} z^{\prime\prime}$. To get the coordinates of $\vec{r}$ in this new coordinate system, it is equivalent to keep the $x^\prime y^\prime z^\prime$ fixed, then rotate $\vec{r}^\prime$ around $z$-axis by \tag{b|-45} degree, that is
 $$
 \begin{align}
-\vec{r}^{\prime\prime} &= \mathbf{R}_{z}(-45)\vec{r}^\prime \nonumber \\
+\vec{r}^{\prime\prime} &= \mathbf{R}_{z}(-45^\circ)\vec{r}^\prime \nonumber \\
 &= \begin{bmatrix} \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
 -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
 0 & 0 & 1\\
@@ -333,7 +335,7 @@ $$
 Or
 $$
 \begin{align}
-\vec{r}^{\prime\prime} &= \mathbf{R}_{z}(-90)\mathbf{R}_x(-90)\vec{r}.
+\vec{r}^{\prime\prime} &= \mathbf{R}_{z}(-90^\circ)\mathbf{R}_x(-90^\circ)\vec{r}.
 \end{align}
 $$
 
@@ -378,12 +380,12 @@ which is same as the expected coordinates.
 
 The other way to start with $xyz$ (Fig. (\ref{img-rotate_x45_z45_rotate_frame})), rotate around $z$-axis 45 degree, then rotate around the new $x$-axis (i.e, $x^{\prime\prime}$-axis) 45 degree (intrinsic rotation), after these rotation, $xyz$ will overlap with $x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}$, and the coordinates of $\vec{r}$ in $x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}$ is $[0, 1, 0]^T$,
 $$
-\begin{bmatrix}0 \\ 1 \\ 0 \end{bmatrix} = \mathbf{R}_z(45)\mathbf{R}_x(45) \vec{r}^{\prime\prime}.
+\begin{bmatrix}0 \\ 1 \\ 0 \end{bmatrix} = \mathbf{R}_z(45^\circ)\mathbf{R}_x(45^\circ) \vec{r}^{\prime\prime}.
 $$
 Equivalently,
 $$
 \begin{align}
-\vec{r}^{\prime\prime} &= \mathbf{R}_{x}(-45)\mathbf{R}_z(-45)\begin{bmatrix}0 \\ 1 \\ 0 \end{bmatrix} \nonumber \\
+\vec{r}^{\prime\prime} &= \mathbf{R}_{x}(-45^\circ)\mathbf{R}_z(-45^\circ)\begin{bmatrix}0 \\ 1 \\ 0 \end{bmatrix} \nonumber \\
 &= \begin{bmatrix} 1 & 0 & 0 \\
 0 & \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
 0 & -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2}\\
@@ -396,7 +398,7 @@ $$
 $$
 
 Let's see a real [https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf|example], as shown in Fig. (\ref{img-rotate_az_el_rotate_frame}),
-* the origin point is the earth center, $xyz$ is the earth-centered, earth-fixed coordinate system,
+* the origin point is the earth center, $xyz$ is the earth-centered, earth-fixed coordinate system (we will talk more about this coordinate system soon),
 * an object (e.g., a satellite) is in the direction of $\vec{r}$, which is represented by two angles (i.e., azimuth $az$, and elevation $el$),
 * the object has its own coordinate system $x^\prime y^\prime z^\prime$ (rotate $xyz$ around $\vec{x}$-axis by $az$ degree, then rotate around the new $y$-axis by $-el$ degree),
 if we know coordinates of some vector (e.g., $\vec{r}$) in one coordinate system (e.g., $x^\prime y^\prime z^\prime$), how to find its corresponding coordinates in the other (e.g., $xyz$)?
@@ -459,18 +461,18 @@ North, east, down (NED) coordinate system is shown in Fig. (\ref{img-rotate_ned_
 
 Rotation from NED frame to ECEF frame,
 $$
-\vec{r}_{ECEF} - \vec{O}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90) \vec{r}_{NED},
+\vec{r}_{ECEF} - \vec{o}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90^\circ) \vec{r}_{NED},
 $$
-where $\vec{r}_{NED}$ is the coordinates in NED frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{O}_{ECEF}$ is the origin of the NED frame in ECEF frame. The rotation matrix can be written as
+where $\vec{r}_{NED}$ is the coordinates in NED frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{o}_{ECEF}$ is the origin of the NED frame in ECEF frame. The rotation matrix can be written as
 $$
 \begin{align}
-\mathbf{R}_{NED}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90).
+\mathbf{R}_{NED}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90^\circ).
 \end{align}
 $$
 Or the rotation matrix from ECEF frame to NED frame is
 $$
 \begin{align}
-\mathbf{R}_{ECEF}^{NED} &= \mathbf{R}_y(el+90)\mathbf{R}_z(-az) \nonumber \\
+\mathbf{R}_{ECEF}^{NED} &= \mathbf{R}_y(el+90^\circ)\mathbf{R}_z(-az) \nonumber \\
 & = \begin{bmatrix} -\sin(el)\cos(az) & -\sin(az)\sin(el) & \cos(el)\\
  -\sin(az) & \cos(az) & 0 \\
  -\cos(az)\cos(el) & -\sin(az)\cos(el) & -\sin(el)\\
@@ -491,18 +493,18 @@ East, north, up (ENU) coordinate system, as shown in Fig. (\ref{img-rotate_enu_f
 
 Rotation from ENU frame to ECEF frame,
 $$
-\vec{r}_{ECEF} - \vec{O}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(90-el) \mathbf{R}_{z^{\prime\prime}}(90)\vec{r}_{ENU},
+\vec{r}_{ECEF} - \vec{o}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(90^\circ-el) \mathbf{R}_{z^{\prime\prime}}(90^\circ)\vec{r}_{ENU},
 $$
-where $\vec{r}_{ENU}$ is the coordinates in ENU frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{O}_{ECEF}$ is the origin of the NED frame in ECEF frame. The rotation matrix can be written as
+where $\vec{r}_{ENU}$ is the coordinates in ENU frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{o}_{ECEF}$ is the origin of the NED frame in ECEF frame. The rotation matrix can be written as
 $$
 \begin{align}
-\mathbf{R}_{ENU}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(90-el)\mathbf{R}_{z^{\prime\prime}}(90).
+\mathbf{R}_{ENU}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(90^\circ-el)\mathbf{R}_{z^{\prime\prime}}(90^\circ).
 \end{align}
 $$
 Or the rotation matrix from ECEF frame to ENU frame is
 $$
 \begin{align}
-\mathbf{R}_{ECEF}^{ENU} &= \mathbf{R}_z(-90) \mathbf{R}_y(el-90)\mathbf{R}_z(-az) \nonumber \\
+\mathbf{R}_{ECEF}^{ENU} &= \mathbf{R}_z(-90^\circ) \mathbf{R}_y(el-90^\circ)\mathbf{R}_z(-az) \nonumber \\
 & = \begin{bmatrix} \sin(az) & \cos(az) & 0 \\
  -\sin(el)\cos(az) & -\sin(az)\sin(el) & \cos(el) \\
  \cos(az)\cos(el) & \sin(az)\cos(el) & \sin(el) \\
@@ -523,9 +525,9 @@ Satellite frame is shown in Fig. (\ref{img-rotate_satellite_frame}),
 
 Rotation from satellite frame to ECEF frame,
 $$
-\vec{r}_{ECEF} - \vec{O}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el) \mathbf{R}_{x^{\prime\prime}}(pol)\vec{r}_{satellite},
+\vec{r}_{ECEF} - \vec{o}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el) \mathbf{R}_{x^{\prime\prime}}(pol)\vec{r}_{satellite},
 $$
-where $\vec{r}_{satellite}$ is the coordinates in satellite frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{O}_{ECEF}$ is the origin of the satellite frame in ECEF frame. The rotation matrix can be written as
+where $\vec{r}_{satellite}$ is the coordinates in satellite frame, $\vec{r}_{ECEF}$ is the corresponding coordinates in ECEF frame, and $\vec{o}_{ECEF}$ is the origin of the satellite frame in ECEF frame. The rotation matrix can be written as
 $$
 \begin{align}
 \mathbf{R}_{satellite}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el)\mathbf{R}_{x^{\prime\prime}}(pol).
@@ -546,8 +548,8 @@ Body frame is the user coordinate system, usually user can arbitrarily choose th
 
 In other words, in this case, when the body is facing north and leveled (yaw, pitch, roll are all $0$), its $x$-axis points north, $y$-axis points east, and $z$-axis points down to the earth center.
 
-The main task for many applications is to estimate the body orientation (i.e., yaw, pitch and roll). And inertial measurement unit (IMU) is usually attached to the body to help estimating the body orientation. In many cases, the body frame may be same as the IMU frame.
-=== Pitch and Roll with Accelerometer
+The main task for many applications is to estimate the body orientation (i.e., yaw, pitch and roll) (e.g., with reference to NED frame). And inertial measurement unit (IMU) is usually attached to the body to help estimating the body orientation. In many cases, the body frame may be same as the IMU frame.
+=== Estimate pitch and roll with accelerometer
 When the IMU is leveled, its reading in NED frame is
 $$
 \vec{g}_{NED} = [0, 0, g],
@@ -556,7 +558,7 @@ where $g$ is the gravitational acceleration (e.g., $\sim 9.81m/s^2$ on earth sur
 $$
 \vec{g}_{body} = \begin{bmatrix} a_x & a_y & a_z\end{bmatrix}.
 $$
-And define the rotation from IMU frame (body frame) to NED frame as
+And define the rotation from IMU frame (body frame) to NED frame as (assume no more acceleration besides gravitational acceleration $g$)
 $$
 \vec{g}_{NED} = \mathbf{R}_y(\theta) \mathbf{R}_x(\phi) \vec{g}_{body}.
 $$
@@ -580,6 +582,7 @@ $$
 \phi &= \arctan(\frac{a_y}{a_z}).
 \end{align}
 $$
+
 === Gyroscope \label{sec:gyroscope}
 Gyroscope measures the angular velocity (e.g., $deg/s$), e.g.,
 $$
@@ -636,6 +639,35 @@ $$
 $$
 In this case, the rotation matrix is transposed.
 
+Rotation matrix has some nice [https://en.wikipedia.org/wiki/Rotation_matrix|properties].
+From Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that
+$$
+\mathbf{R}^{-1} = \mathbf{R}^T,
+$$
+as $\mathbf{R}(\theta)\mathbf{R}(-\theta) = \vec{I}$, and $\mathbf{R}(\theta) = \mathbf{R}(-\theta)^T$.
+=== Rotation matrix to rotation vector and angle
+Eq. (\ref{eqn:rodgrigues_matrix}) shows how to get the rotation matrix from the unit vector and the rotation angle. To get the rotation vector (rotation axis, i.e., $\vec{k}$) and the corresponding rotation angel ($\theta$) from the rotation matrix, you may observe that, if we rotate around the rotation vector, then its coordinates will not change,
+$$
+\mathbf{R}\vec{k} = \vec{k},
+$$
+which means that $\vec{k}$ is the eigenvector of $\mathbf{R}$, corresponding to eigenvalue 1.
+
+And the trace of Eq. (\ref{eqn:rodgrigues_matrix}) is
+$$
+\DeclareMathOperator{\tr}{Tr}
+\tr(\mathbf{R}) = 1+2\cos\theta.
+\label{eqn:rotation_matrix_angle}
+$$
+{!div|bs-example ||
+$$
+\mathbf{R} = \begin{bmatrix}
+1& 0& 0 \\
+0& \cos(30^\circ)& -\sin(30^\circ) \\
+0& \sin(30^\circ)& \cos(30^\circ) \\
+\end{bmatrix} \nonumber
+$$
+Its eigenvector corresponding to eigenvalue 1 is $[1, 0, 0]^T$, so the rotation vector is $1, 0, 0$^T. It matches the expectation as it is the rotation matrix around $x$-axis. From Eq. (\ref{eqn:rotation_matrix_angle}), the rotation angle is $\pm 30^\circ$. Put $\pm 30^\circ$ and the rotation vector into Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that $\theta=30^\circ$.
+!}
 == Euler Angle \cite{EulerAngle}
 === Euler Angle to Rotation Matrix
 \reference{EulerAngle|Gregory G. Slabaugh, "Computing Euler angles from a rotation matrix" [https://eecs.qmul.ac.uk/~gslabaugh/publications/euler.pdf|pdf]}
@@ -729,8 +761,8 @@ $$
 \begin{alignat}{6}
 \vec{q}\vec{r}\vec{q}^* = &(&\cos(\frac{\theta}{2}) && + k_x\sin(\frac{\theta}{2}) &\mathbf{i}& + k_y\sin(\frac{\theta}{2}) &\mathbf{j}& + k_z\sin(\frac{\theta}{2}) &\mathbf{k})& \times \nonumber \\
   &(& 0 && + r_x&\mathbf{i}& + r_y&\mathbf{j}& + r_z&\mathbf{k})& \times \nonumber \\
-  &(&\cos(\frac{\theta}{2}) && - k_x\sin(\frac{\theta}{2}) &\mathbf{i}& - k_y\sin(\frac{\theta}{2}) &\mathbf{j}& - k_z\sin(\frac{\theta}{2}) &\mathbf{k})&  \nonumber \\
-\end{alignat}.
+  &(&\cos(\frac{\theta}{2}) && - k_x\sin(\frac{\theta}{2}) &\mathbf{i}& - k_y\sin(\frac{\theta}{2}) &\mathbf{j}& - k_z\sin(\frac{\theta}{2}) &\mathbf{k})&  .\nonumber \\
+\end{alignat}
 $$
 Here we align the components of each quaternion, so we can apply the quaternion multiplication easily.
 After simplification, it can be written as
@@ -842,7 +874,7 @@ In Sec. \ref{sec:gyroscope}, we mentioned that rotation according to the gyrosco
 $$
 \begin{align}
 \vec{q} &= \exp^{-\frac{\hat{\vec{\omega}} \delta_t}{2}} \nonumber \\
-&= \cos(\lVert\frac{\hat{\vec{\omega}}\delta_t}{2}\rVert) + \sin(\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert) \frac{\frac{\hat{\vec{\omega}} \delta_t}{2}}{\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert} \nonumber \\
-&= \cos(\lVert\frac{\hat{\vec{\omega}}\delta_t}{2}\rVert) + \sin(\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert) \frac{\hat{\vec{\omega}}}{\lVert\hat{\vec{\omega}}\rVert}.
+&= \cos(\lVert\frac{\hat{\vec{\omega}}\delta_t}{2}\rVert) + \sin(\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert) \frac{-\frac{\hat{\vec{\omega}} \delta_t}{2}}{\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert} \nonumber \\
+&= \cos(\lVert\frac{\hat{\vec{\omega}}\delta_t}{2}\rVert) - \sin(\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert) \frac{\hat{\vec{\omega}}}{\lVert\hat{\vec{\omega}}\rVert}.
 \end{align}
 $$
