@@ -40,25 +40,26 @@ id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
 </ul></li>
 <li><a href="#sec-2">2 Frame</a><ul>
 <li><a href="#sec-2-1">2.1 ECEF</a></li>
-<li><a href="#sec-2-2">2.2 NED</a></li>
-<li><a href="#sec-2-3">2.3 ENU</a></li>
-<li><a href="#sec-2-4">2.4 Satellite</a></li>
-<li><a href="#sec-2-5">2.5 Body</a><ul>
-<li><a href="#sec-2-5-1">2.5.1 Estimate pitch and roll with accelerometer</a></li>
-<li><a href="#sec:gyroscope">2.5.2 Gyroscope</a></li>
+<li><a href="#sec-2-2">2.2 GSC</a></li>
+<li><a href="#sec-2-3">2.3 NED</a></li>
+<li><a href="#sec-2-4">2.4 ENU</a></li>
+<li><a href="#sec-2-5">2.5 Satellite</a></li>
+<li><a href="#sec-2-6">2.6 Body</a><ul>
+<li><a href="#sec-2-6-1">2.6.1 Estimate pitch and roll with accelerometer</a></li>
+<li><a href="#sec:gyroscope">2.6.2 Gyroscope</a></li>
 </ul></li>
 </ul></li>
-<li><a href="#sec-3">3 Rotation Representation</a><ul>
-<li><a href="#sec-3-1">3.1 Rotation Matrix</a><ul>
+<li><a href="#sec-3">3 Rotation representation</a><ul>
+<li><a href="#sec-3-1">3.1 Rotation matrix</a><ul>
 <li><a href="#sec-3-1-1">3.1.1 Rotation matrix to rotation vector and angle</a></li>
 </ul></li>
-<li><a href="#sec-3-2">3.2 Euler Angle [<a id="cite-2-1" href="#reference-2">2</a>]</a><ul>
+<li><a href="#sec-3-2">3.2 Euler Angle [<a id="cite-3-1" href="#reference-3">3</a>]</a><ul>
 <li><a href="#sec-3-2-1">3.2.1 Euler Angle to Rotation Matrix</a></li>
 <li><a href="#sec-3-2-2">3.2.2 Rotation Matrix to Euler Angle</a></li>
 <li><a href="#sec-3-2-3">3.2.3 Gimbal Lock</a></li>
 </ul></li>
 <li><a href="#sec-3-3">3.3 Quaternion</a><ul>
-<li><a href="#sec-3-3-1">3.3.1 Quaternion to rotation matrix [<a id="cite-3-1" href="#reference-3">3</a>]</a></li>
+<li><a href="#sec-3-3-1">3.3.1 Quaternion to rotation matrix [<a id="cite-4-1" href="#reference-4">4</a>]</a></li>
 <li><a href="#sec-3-3-2">3.3.2 Rotation matrix to quaternion</a></li>
 <li><a href="#sec-3-3-3">3.3.3 Exponential</a></li>
 </ul></li>
@@ -545,8 +546,97 @@ $$
 <img src="./image/rotate_ecef_frame.svg" alt="./image/rotate_ecef_frame.svg">
 <figcaption class="caption"><span class="tag">Fig.14.</span> Earth-centered, Earth-fixed (ECEF) frame</figcaption>
 </figure>
-<h2 id="sec-2-2">2.2 NED</h2>
-<p>North, east, down (NED) coordinate system is shown in Fig. (<a href="#img-rotate_ned_frame">15</a>),</p>
+<h2 id="sec-2-2">2.2 GSC</h2>
+<p><a href="https://en.wikipedia.org/wiki/Geodetic_coordinates">Geographic coordinate system</a> is to define locations on earth surface, which is used by satellite navigation (e.g., GPS), for example for some location \(A\)</p>
+<ol>
+<li>Longitude (\(\lambda\)) is the rotation angle between prime meridian plane and the meridian plane \(A\) is on,</li>
+<li>Latitude (\(\phi\)) is the angle between the equatorial plane and the line that passes \(A\) and is normal to the ellipsoid (note, the line may not point to the center of earth as the earth is not a sphere),</li>
+<li>Height (\(h\)) is the distance between the point of interest and the ellipsoid surface.</li>
+</ol>
+<figure id="img-rotate_gsc_frame" class="figure">
+<img src="./image/rotate_gsc_frame.svg" alt="./image/rotate_gsc_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.15.</span> Geographic coordinate system</figcaption>
+</figure>
+<p>As shown in [<a id="cite-1-1" href="#reference-1">1</a>], to convert GSC to ECEF frame</p>
+<div class="mathjax">
+$$
+\begin{align}
+x = (N(\phi) + h)\cos\phi\cos\lambda \nonumber \\
+y = (N(\phi) + h)\cos\phi\sin\lambda \nonumber \\
+z = (\frac{b^2}{a^2}N(\phi) + h)\sin\phi,
+\label{eqn:gsc_to_ecef}
+\end{align}
+$$
+</div>
+<p>where \(a\) and \(b\) are the equatorial radius (\(xy\) plane at \(z=0\)) and the polar radius (center to north/south polar), and</p>
+<div class="mathjax">
+$$
+N(\phi) = \frac{a^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}}.
+$$
+</div>
+<p>To see how the above conversion works, let's see a simplified case with \(\lambda=0\), as shown in Fig. (<a href="#img-rotate_gsc_meridian">16</a>).</p>
+<figure id="img-rotate_gsc_meridian" class="figure">
+<img src="./image/rotate_gsc_meridian.svg" alt="./image/rotate_gsc_meridian.svg">
+<figcaption class="caption"><span class="tag">Fig.16.</span> Geographic coordinate system with \(\lambda=0\)</figcaption>
+</figure>
+<p>As \(p_o\) is on the ellipse, so we have</p>
+<div class="mathjax">
+$$
+\frac{x^2_{p_o}}{a^2} + \frac{z^2_{p_o}}{b^2} = 1.
+\label{eqn:gcs_meridian_ellipse}
+$$
+</div>
+<p>Take the derivative over \(x\), we have</p>
+<div class="mathjax">
+$$
+\frac{2x_{p_o}}{a^2} + \frac{2z_{p_o}}{b^2} \frac{dz_{p_o}}{dx_{p_o}} = 0.
+$$
+</div>
+<p>So</p>
+<div class="mathjax">
+$$
+\frac{dz_{p_o}}{dx_{p_o}} = -\frac{x_{p_o}b^2}{z_{p_o}a^2}.
+$$
+</div>
+<p>That's the slope of the tangent line at \(p_0\) to the ellipse. And line \(p \rightarrow p_o\) is orthogonal to the tangent line, so its slope is \(\frac{z_{p_o}a^2}{x_{p_o}b^2}\), that is</p>
+<div class="mathjax">
+$$
+\tan{\phi} = \frac{z_{p_o}a^2}{x_{p_o}b^2}.
+\label{eqn:gcs_meridian_slope}
+$$
+</div>
+<p>With Eqs. (\ref{eqn:gcs_meridian_ellipse}) and (\ref{eqn:gcs_meridian_slope}), \(x_{p_o}\) and \(y_{p_o}\) can be calculated as</p>
+<div class="mathjax">
+$$
+\begin{align}
+x_{p_o} &= \frac{a^2\cos\phi}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}},\nonumber \\
+z_{p_o} &= \frac{b^2\sin\phi}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}}.
+\end{align}
+$$
+</div>
+<p>The coordinates of \(p\) is straightforward</p>
+<div class="mathjax">
+$$
+\begin{align}
+x_{p} &= x_{p_o} + h\cos\phi = (\frac{a^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}} + h)\cos\phi,\nonumber \\
+z_{p} &= z_{p_o} + h\sin\phi = (\frac{b^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}} + h)\sin\phi.
+\label{eqn:gsc_to_ecef2}
+\end{align}
+$$
+</div>
+<p>It is easy to see that Eq. (\ref{eqn:gsc_to_ecef2}) is same as Eq. (\ref{eqn:gsc_to_ecef}) when \(\lambda=0\).</p>
+<p>The case when \(\lambda\) is not equal to \(0\) is straightforward, see <a href="https://math.stackexchange.com/questions/175191/normal-to-ellipse-and-angle-at-major-axis">here</a> for more details.</p>
+<p>The ellipsoid parameter for <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84</a> is,</p>
+<div class="mathjax">
+$$
+\begin{align}
+a &= 6378137.0 m, \nonumber \\
+b &= 6356752.314245 m.
+\end{align}
+$$
+</div>
+<h2 id="sec-2-3">2.3 NED</h2>
+<p>North, east, down (NED) coordinate system is shown in Fig. (<a href="#img-rotate_ned_frame">17</a>),</p>
 <ol>
 <li>\(x\)-axis is tangent to meridians (to north),</li>
 <li>\(y\)-axis is tangent to parallels (circles from same latitude) (to east),</li>
@@ -554,7 +644,7 @@ $$
 </ol>
 <figure id="img-rotate_ned_frame" class="figure">
 <img src="./image/rotate_ned_frame.svg" alt="./image/rotate_ned_frame.svg">
-<figcaption class="caption"><span class="tag">Fig.15.</span> North, east, down (NED) frame</figcaption>
+<figcaption class="caption"><span class="tag">Fig.17.</span> North, east, down (NED) frame</figcaption>
 </figure>
 <p>Rotation from NED frame to ECEF frame,</p>
 <div class="mathjax">
@@ -582,8 +672,8 @@ $$
 \end{align}
 $$
 </div>
-<h2 id="sec-2-3">2.3 ENU</h2>
-<p>East, north, up (ENU) coordinate system, as shown in Fig. (<a href="#img-rotate_enu_frame">16</a>), is very close to NED coordinate system.</p>
+<h2 id="sec-2-4">2.4 ENU</h2>
+<p>East, north, up (ENU) coordinate system, as shown in Fig. (<a href="#img-rotate_enu_frame">18</a>), is very close to NED coordinate system.</p>
 <ol>
 <li>\(x\)-axis is tangent to parallels (circles from same same latitude) (to east),</li>
 <li>\(y\)-axis is tangent to meridians (to north),</li>
@@ -591,7 +681,7 @@ $$
 </ol>
 <figure id="img-rotate_enu_frame" class="figure">
 <img src="./image/rotate_enu_frame.svg" alt="./image/rotate_enu_frame.svg">
-<figcaption class="caption"><span class="tag">Fig.16.</span> East, north, up (ENU) frame</figcaption>
+<figcaption class="caption"><span class="tag">Fig.18.</span> East, north, up (ENU) frame</figcaption>
 </figure>
 <p>Rotation from ENU frame to ECEF frame,</p>
 <div class="mathjax">
@@ -619,8 +709,8 @@ $$
 \end{align}
 $$
 </div>
-<h2 id="sec-2-4">2.4 Satellite</h2>
-<p>Satellite frame is shown in Fig. (<a href="#img-rotate_satellite_frame">17</a>),</p>
+<h2 id="sec-2-5">2.5 Satellite</h2>
+<p>Satellite frame is shown in Fig. (<a href="#img-rotate_satellite_frame">19</a>),</p>
 <ol>
 <li>\(x\)-axis is up from the earth center (to satellite),</li>
 <li>\(y\)-axis is in the polarization plane and along the electric field vector direction,</li>
@@ -628,7 +718,7 @@ $$
 </ol>
 <figure id="img-rotate_satellite_frame" class="figure">
 <img src="./image/rotate_satellite_frame.svg" alt="./image/rotate_satellite_frame.svg">
-<figcaption class="caption"><span class="tag">Fig.17.</span> Satellite frame</figcaption>
+<figcaption class="caption"><span class="tag">Fig.19.</span> Satellite frame</figcaption>
 </figure>
 <p>Rotation from satellite frame to ECEF frame,</p>
 <div class="mathjax">
@@ -652,7 +742,7 @@ $$
 \end{align}
 $$
 </div>
-<h2 id="sec-2-5">2.5 Body</h2>
+<h2 id="sec-2-6">2.6 Body</h2>
 <p>Body frame is the user coordinate system, usually user can arbitrarily choose the coordinate system, e.g., when it is leveled on ground, and facing north, the body frame is same as NED frame, that is</p>
 <ol>
 <li>\(x\)-axis points to the nose of the body (or heading direction),</li>
@@ -661,7 +751,7 @@ $$
 </ol>
 <p>In other words, in this case, when the body is facing north and leveled (yaw, pitch, roll are all \(0\)), its \(x\)-axis points north, \(y\)-axis points east, and \(z\)-axis points down to the earth center.</p>
 <p>The main task for many applications is to estimate the body orientation (i.e., yaw, pitch and roll) (e.g., with reference to NED frame). And inertial measurement unit (IMU) is usually attached to the body to help estimating the body orientation. In many cases, the body frame may be same as the IMU frame.</p>
-<h3 id="sec-2-5-1">2.5.1 Estimate pitch and roll with accelerometer</h3>
+<h3 id="sec-2-6-1">2.6.1 Estimate pitch and roll with accelerometer</h3>
 <p>When the IMU is leveled, its reading in NED frame is</p>
 <div class="mathjax">
 $$
@@ -704,7 +794,7 @@ $$
 \end{align}
 $$
 </div>
-<h3 id="sec:gyroscope">2.5.2 Gyroscope</h3>
+<h3 id="sec:gyroscope">2.6.2 Gyroscope</h3>
 <p>Gyroscope measures the angular velocity (e.g., \(deg/s\)), e.g.,</p>
 <div class="mathjax">
 $$
@@ -744,9 +834,9 @@ $$
 \vec{r}_{t, NED} = \mathbf{R}_{t-1}\mathbf{R}(\hat{\vec{w}}_t \delta_t) \vec{r}_{t, body}.
 $$
 </div>
-<p>The only remaining question is how to get the rotation matrix (e.g., \(\mathbf{R}(-\hat{\vec{w}}_t \delta_t)\)) from the gyro measurement. As shown in [<a id="cite-1-1" href="#reference-1">1</a>], for the measurement \(\hat{\vec{\omega}} = [\hat{\omega}_x, \hat{\omega}_y, \hat{\omega}_z]\), the corresponding rotation can be viewed as rotating around unit vector \(\frac{\hat{\vec{\omega}}}{\lVert \hat{\vec{\omega}}\rVert}\) by \(\lVert \hat{\vec{\omega}}\rVert \delta_t\) degree. The rotation matrix can be got with Eq. (\ref{eqn:rotate_vector}).</p>
-<h1 id="sec-3">3 Rotation Representation</h1>
-<h2 id="sec-3-1">3.1 Rotation Matrix</h2>
+<p>The only remaining question is how to get the rotation matrix (e.g., \(\mathbf{R}(-\hat{\vec{w}}_t \delta_t)\)) from the gyro measurement. As shown in [<a id="cite-2-1" href="#reference-2">2</a>], for the measurement \(\hat{\vec{\omega}} = [\hat{\omega}_x, \hat{\omega}_y, \hat{\omega}_z]\), the corresponding rotation can be viewed as rotating around unit vector \(\frac{\hat{\vec{\omega}}}{\lVert \hat{\vec{\omega}}\rVert}\) by \(\lVert \hat{\vec{\omega}}\rVert \delta_t\) degree. The rotation matrix can be got with Eq. (\ref{eqn:rotate_vector}).</p>
+<h1 id="sec-3">3 Rotation representation</h1>
+<h2 id="sec-3-1">3.1 Rotation matrix</h2>
 <p>Rotation matrix is a straightforward way to represent a rotation</p>
 <div class="mathjax">
 $$
@@ -765,13 +855,6 @@ $$
 \vec{r}^\prime = \mathbf{R} \vec{r}.
 $$
 </div>
-<p>In some literature, the vector is expressed as a row, and the rotation is applied by post-multiplying the rotation matrix,</p>
-<div class="mathjax">
-$$
-\vec{r}^{\prime T} = \vec{r}^T \mathbf{R}^T.
-$$
-</div>
-<p>In this case, the rotation matrix is transposed.</p>
 <p>Rotation matrix has some nice <a href="https://en.wikipedia.org/wiki/Rotation_matrix">properties</a>.
 From Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that</p>
 <div class="mathjax">
@@ -780,6 +863,19 @@ $$
 $$
 </div>
 <p>as \(\mathbf{R}(\theta)\mathbf{R}(-\theta) = \vec{I}\), and \(\mathbf{R}(\theta) = \mathbf{R}(-\theta)^T\).</p>
+<p>In some literature, the vector is expressed as a row, and the rotation is applied by post-multiplying the rotation matrix,</p>
+<div class="mathjax">
+$$
+\vec{r}^{\prime T} = \vec{r}^T \mathbf{R}^T.
+$$
+</div>
+<p>In this case, the rotation matrix is transposed.</p>
+<p><a href="https://stevendumble.com/attitude-representations-understanding-direct-cosine-matrices-euler-angles-and-quaternions">Direct cosine matrix</a> is also very close to the rotation matrix defined above. The only difference is that it rotates the coordinate system, instead of the vector, that is</p>
+<div class="mathjax">
+$$
+\mathbf{R}_{DCM} = \mathbf{R}^T.
+$$
+</div>
 <h3 id="sec-3-1-1">3.1.1 Rotation matrix to rotation vector and angle</h3>
 <p>Eq. (\ref{eqn:rodgrigues_matrix}) shows how to get the rotation matrix from the unit vector and the rotation angle. To get the rotation vector (rotation axis, i.e., \(\vec{k}\)) and the corresponding rotation angel (\(\theta\)) from the rotation matrix, you may observe that, if we rotate around the rotation vector, then its coordinates will not change,</p>
 <div class="mathjax">
@@ -808,7 +904,7 @@ $$
 </div>
 Its eigenvector corresponding to eigenvalue 1 is \([1, 0, 0]^T\), so the rotation vector is \(1, 0, 0\)^T. It matches the expectation as it is the rotation matrix around \(x\)-axis. From Eq. (\ref{eqn:rotation_matrix_angle}), the rotation angle is \(\pm 30^\circ\). Put \(\pm 30^\circ\) and the rotation vector into Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that \(\theta=30^\circ\).
 </div>
-<h2 id="sec-3-2">3.2 Euler Angle [<a id="cite-2-1" href="#reference-2">2</a>]</h2>
+<h2 id="sec-3-2">3.2 Euler Angle [<a id="cite-3-1" href="#reference-3">3</a>]</h2>
 <h3 id="sec-3-2-1">3.2.1 Euler Angle to Rotation Matrix</h3>
 <p>Suppose we have Euler angle \(\phi\), \(\theta\) and \(\psi\) that are rotation around \(x\), \(y\), and \(z\)-axis respectively. And if the rotation is in \(xyz\) order (i.e., \(x\)-axis first), then the rotation matrix can be written as</p>
 <div class="mathjax">
@@ -951,7 +1047,7 @@ $$
 $$
 </div>
 <p>It is easy to see that Eq. (\ref{eqn:rodgrigues_matrix_quat}) is same as the rotation matrix in Eq. (\ref{eqn:rodgrigues_matrix}).</p>
-<h3 id="sec-3-3-1">3.3.1 Quaternion to rotation matrix [<a id="cite-3-1" href="#reference-3">3</a>]</h3>
+<h3 id="sec-3-3-1">3.3.1 Quaternion to rotation matrix [<a id="cite-4-1" href="#reference-4">4</a>]</h3>
 <p>For a general rotation quaternion \(\vec{q}=q_0 + q_1\mathbf{i} + q_2\mathbf{j} + q_3\mathbf{k}\),</p>
 <div class="mathjax">
 $$
@@ -1046,7 +1142,7 @@ $$
 $$
 </div>
 <p>The proof can be found <a href="https://math.stackexchange.com/questions/1030737/exponential-function-of-quaternion-derivation">here</a>.</p>
-<p>In Sec. <a href="#sec:gyroscope">2.5.2</a>, we mentioned that rotation according to the gyroscope measurement can be represented as rotating around unit vector \(\frac{\hat{\vec{\omega}}}{\lVert \hat{\vec{\omega}}\rVert}\) by \(\lVert \hat{\vec{\omega}}\rVert \delta_t\) degree. With quaternion, such rotation (i.e.,\(\mathbf{R}(-\hat{\vec{w}}_t \delta_t)\) in Eq. (\ref{eqn:rotate_gyro_ned2body})) can be written as</p>
+<p>In Sec. <a href="#sec:gyroscope">2.6.2</a>, we mentioned that rotation according to the gyroscope measurement can be represented as rotating around unit vector \(\frac{\hat{\vec{\omega}}}{\lVert \hat{\vec{\omega}}\rVert}\) by \(\lVert \hat{\vec{\omega}}\rVert \delta_t\) degree. With quaternion, such rotation (i.e.,\(\mathbf{R}(-\hat{\vec{w}}_t \delta_t)\) in Eq. (\ref{eqn:rotate_gyro_ned2body})) can be written as</p>
 <div class="mathjax">
 $$
 \begin{align}
@@ -1061,19 +1157,22 @@ $$
 <div class="reference">
 <ol>
 <li><div id="reference-1">
-Stan&#x010d;in, S.; Toma&#x017e;i&#x010d;, S. "Angle Estimation of Simultaneous Orthogonal Rotations from 3D Gyroscope Measurements". Sensors 2011, 11, 8536-8549. https://doi.org/10.3390/s110908536  <a href="#cite-1-1">&#8617;</a>
+Geographic coordinate conversion <a href="https://en.wikipedia.org/wiki/Geographic_coordinate_conversion">https://en.wikipedia.org/wiki/Geographic_coordinate_conversion</a> <a href="#cite-1-1">&#8617;</a>
 </div></li>
 <li><div id="reference-2">
-Gregory G. Slabaugh, "Computing Euler angles from a rotation matrix" <a href="https://eecs.qmul.ac.uk/~gslabaugh/publications/euler.pdf">pdf</a> <a href="#cite-2-1">&#8617;</a>
+Stan&#x010d;in, S.; Toma&#x017e;i&#x010d;, S. "Angle Estimation of Simultaneous Orthogonal Rotations from 3D Gyroscope Measurements". Sensors 2011, 11, 8536-8549. <a href="https://doi.org/10.3390/s110908536">https://doi.org/10.3390/s110908536</a> <a href="#cite-2-1">&#8617;</a>
 </div></li>
 <li><div id="reference-3">
-Mike Day, "Converting a Rotation Matrix to a Quaternion", <a href="https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf">pdf</a> <a href="#cite-3-1">&#8617;</a>
+Gregory G. Slabaugh, "Computing Euler angles from a rotation matrix" <a href="https://eecs.qmul.ac.uk/~gslabaugh/publications/euler.pdf">pdf</a> <a href="#cite-3-1">&#8617;</a>
+</div></li>
+<li><div id="reference-4">
+Mike Day, "Converting a Rotation Matrix to a Quaternion", <a href="https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf">pdf</a> <a href="#cite-4-1">&#8617;</a>
 </div></li>
 </ol>
 </div>
 
 <div class="footer">
-<div class="footer-text"> Last updated 2023-12-12 05:30:54 UTC by
+<div class="footer-text"> Last updated 2023-12-14 22:05:41 UTC by
 <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>.</div>
 </div>
 </div>

@@ -448,6 +448,81 @@ Frame is just another word for coordinate system. In this section, we will intro
 \label{img-rotate_ecef_frame}
 !}
 
+== GSC
+[https://en.wikipedia.org/wiki/Geodetic_coordinates|Geographic coordinate system] is to define locations on earth surface, which is used by satellite navigation (e.g., GPS), for example for some location $A$
+* Longitude ($\lambda$) is the rotation angle between prime meridian plane and the meridian plane $A$ is on,
+* Latitude ($\phi$) is the angle between the equatorial plane and the line that passes $A$ and is normal to the ellipsoid (note, the line may not point to the center of earth as the earth is not a sphere),
+* Height ($h$) is the distance between the point of interest and the ellipsoid surface.
+{!image||
+\caption{Geographic coordinate system}
+./image/rotate_gsc_frame.svg
+\label{img-rotate_gsc_frame}
+!}
+\reference{geographic_coordinate_conversion|Geographic coordinate conversion [https://en.wikipedia.org/wiki/Geographic_coordinate_conversion]}
+As shown in \cite{geographic_coordinate_conversion}, to convert GSC to ECEF frame
+$$
+\begin{align}
+x = (N(\phi) + h)\cos\phi\cos\lambda \nonumber \\
+y = (N(\phi) + h)\cos\phi\sin\lambda \nonumber \\
+z = (\frac{b^2}{a^2}N(\phi) + h)\sin\phi,
+\label{eqn:gsc_to_ecef}
+\end{align}
+$$
+where $a$ and $b$ are the equatorial radius ($xy$ plane at $z=0$) and the polar radius (center to north/south polar), and
+$$
+N(\phi) = \frac{a^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}}.
+$$
+
+To see how the above conversion works, let's see a simplified case with $\lambda=0$, as shown in Fig. (\ref{img-rotate_gsc_meridian}).
+{!image||
+\caption{Geographic coordinate system with $\lambda=0$}
+./image/rotate_gsc_meridian.svg
+\label{img-rotate_gsc_meridian}
+!}
+As $p_o$ is on the ellipse, so we have
+$$
+\frac{x^2_{p_o}}{a^2} + \frac{z^2_{p_o}}{b^2} = 1.
+\label{eqn:gcs_meridian_ellipse}
+$$
+Take the derivative over $x$, we have
+$$
+\frac{2x_{p_o}}{a^2} + \frac{2z_{p_o}}{b^2} \frac{dz_{p_o}}{dx_{p_o}} = 0.
+$$
+So
+$$
+ \frac{dz_{p_o}}{dx_{p_o}} = -\frac{x_{p_o}b^2}{z_{p_o}a^2}.
+$$
+That's the slope of the tangent line at $p_0$ to the ellipse. And line $p \rightarrow p_o$ is orthogonal to the tangent line, so its slope is $\frac{z_{p_o}a^2}{x_{p_o}b^2}$, that is
+$$
+\tan{\phi} = \frac{z_{p_o}a^2}{x_{p_o}b^2}.
+\label{eqn:gcs_meridian_slope}
+$$
+With Eqs. (\ref{eqn:gcs_meridian_ellipse}) and (\ref{eqn:gcs_meridian_slope}), $x_{p_o}$ and $y_{p_o}$ can be calculated as
+$$
+\begin{align}
+x_{p_o} &= \frac{a^2\cos\phi}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}},\nonumber \\
+z_{p_o} &= \frac{b^2\sin\phi}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}}.
+\end{align}
+$$
+The coordinates of $p$ is straightforward
+$$
+\begin{align}
+x_{p} &= x_{p_o} + h\cos\phi = (\frac{a^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}} + h)\cos\phi,\nonumber \\
+z_{p} &= z_{p_o} + h\sin\phi = (\frac{b^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}} + h)\sin\phi.
+\label{eqn:gsc_to_ecef2}
+\end{align}
+$$
+It is easy to see that Eq. (\ref{eqn:gsc_to_ecef2}) is same as Eq. (\ref{eqn:gsc_to_ecef}) when $\lambda=0$.
+
+The case when $\lambda$ is not equal to $0$ is straightforward, see [https://math.stackexchange.com/questions/175191/normal-to-ellipse-and-angle-at-major-axis|here] for more details.
+
+The ellipsoid parameter for [https://en.wikipedia.org/wiki/World_Geodetic_System|WGS84] is,
+$$
+\begin{align}
+a &= 6378137.0 m, \nonumber \\
+b &= 6356752.314245 m.
+\end{align}
+$$
 == NED
 North, east, down (NED) coordinate system is shown in Fig. (\ref{img-rotate_ned_frame}),
 * $x$-axis is tangent to meridians (to north),
@@ -615,9 +690,10 @@ $$
 $$
 The only remaining question is how to get the rotation matrix (e.g., $\mathbf{R}(-\hat{\vec{w}}_t \delta_t)$) from the gyro measurement. As shown in \cite{Stancin}, for the measurement $\hat{\vec{\omega}} = [\hat{\omega}_x, \hat{\omega}_y, \hat{\omega}_z]$, the corresponding rotation can be viewed as rotating around unit vector $\frac{\hat{\vec{\omega}}}{\lVert \hat{\vec{\omega}}\rVert}$ by $\lVert \hat{\vec{\omega}}\rVert \delta_t$ degree. The rotation matrix can be got with Eq. (\ref{eqn:rotate_vector}).
 
-\reference{Stancin|Stančin, S.; Tomažič, S. "Angle Estimation of Simultaneous Orthogonal Rotations from 3D Gyroscope Measurements". Sensors 2011, 11, 8536-8549. https://doi.org/10.3390/s110908536 }
-= Rotation Representation
-== Rotation Matrix
+\reference{Stancin|Stančin, S.; Tomažič, S. "Angle Estimation of Simultaneous Orthogonal Rotations from 3D Gyroscope Measurements". Sensors 2011, 11, 8536-8549. [https://doi.org/10.3390/s110908536]}
+
+= Rotation representation
+== Rotation matrix
 Rotation matrix is a straightforward way to represent a rotation
 $$
 \mathbf{R} = \begin{bmatrix}
@@ -633,18 +709,24 @@ $$
 \vec{r}^\prime = \mathbf{R} \vec{r}.
 $$
 
-In some literature, the vector is expressed as a row, and the rotation is applied by post-multiplying the rotation matrix,
-$$
-\vec{r}^{\prime T} = \vec{r}^T \mathbf{R}^T.
-$$
-In this case, the rotation matrix is transposed.
-
 Rotation matrix has some nice [https://en.wikipedia.org/wiki/Rotation_matrix|properties].
 From Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that
 $$
 \mathbf{R}^{-1} = \mathbf{R}^T,
 $$
 as $\mathbf{R}(\theta)\mathbf{R}(-\theta) = \vec{I}$, and $\mathbf{R}(\theta) = \mathbf{R}(-\theta)^T$.
+
+In some literature, the vector is expressed as a row, and the rotation is applied by post-multiplying the rotation matrix,
+$$
+\vec{r}^{\prime T} = \vec{r}^T \mathbf{R}^T.
+$$
+In this case, the rotation matrix is transposed.
+
+[https://stevendumble.com/attitude-representations-understanding-direct-cosine-matrices-euler-angles-and-quaternions|Direct cosine matrix] is also very close to the rotation matrix defined above. The only difference is that it rotates the coordinate system, instead of the vector, that is
+$$
+\mathbf{R}_{DCM} = \mathbf{R}^T.
+$$
+
 === Rotation matrix to rotation vector and angle
 Eq. (\ref{eqn:rodgrigues_matrix}) shows how to get the rotation matrix from the unit vector and the rotation angle. To get the rotation vector (rotation axis, i.e., $\vec{k}$) and the corresponding rotation angel ($\theta$) from the rotation matrix, you may observe that, if we rotate around the rotation vector, then its coordinates will not change,
 $$
@@ -668,6 +750,7 @@ $$
 $$
 Its eigenvector corresponding to eigenvalue 1 is $[1, 0, 0]^T$, so the rotation vector is $1, 0, 0$^T. It matches the expectation as it is the rotation matrix around $x$-axis. From Eq. (\ref{eqn:rotation_matrix_angle}), the rotation angle is $\pm 30^\circ$. Put $\pm 30^\circ$ and the rotation vector into Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that $\theta=30^\circ$.
 !}
+
 == Euler Angle \cite{EulerAngle}
 === Euler Angle to Rotation Matrix
 \reference{EulerAngle|Gregory G. Slabaugh, "Computing Euler angles from a rotation matrix" [https://eecs.qmul.ac.uk/~gslabaugh/publications/euler.pdf|pdf]}

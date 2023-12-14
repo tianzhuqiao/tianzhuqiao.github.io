@@ -4,6 +4,24 @@
 \newcommand\x{\times}
 %\usetikzlibrary{3d}
 \usepackage{tikz-3dplot}
+\usetikzlibrary{decorations.pathreplacing,calc}
+\usepackage{circuitikz}
+
+\newcommand{\annL}[6] [] {
+    \coordinate (AE1) at ($(#2)!#4!90:(#3)$);
+    \coordinate (BE1) at ($(#3)!#4!-90:(#2)$);
+    \coordinate (AE2) at ($(#2)!#5!90:(#3)$);
+    \coordinate (BE2) at ($(#3)!#5!-90:(#2)$);
+    \draw[>=latex,red,<->]  (AE2) -- (BE2) node[midway,sloped,below,align=center] {#6};
+    \draw[very thin,shorten >=1pt,shorten <=1pt] (#2) -- (AE1);
+    \draw[very thin,shorten >=1pt,shorten <=1pt] (#3) -- (BE1);
+}
+\newcommand{\annC}[6] [] {
+   \coordinate (AE1) at ($(#2)!#4!90:(#3)$);
+    \coordinate (BE1) at ($(#3)!#4!-90:(#2)$);
+   \draw [decorate,decoration={brace,amplitude=#5},xshift=0pt,yshift=0pt]
+          (AE1) -- (BE1) node [black,midway,sloped,above,yshift=#5]  {#6} ;
+}
 
 \begin{document}
 %%% image/rotate_z
@@ -476,7 +494,6 @@
     \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
     anchor=north east] at (0,1.5, 0) {$\vec{y}$};
 
-
     \begin{scope}[canvas is xy plane at z=0]
         \draw [ultra thin, step = 0.25, lightgray] (-0.5, -0.5) grid (1.5,1.5);
     \end{scope}
@@ -506,8 +523,6 @@
         anchor=north west] at (1,0,0) {$\vec{r}$};
     \end{scope}
 
-
-
     \draw [magenta, thick, dashed] ({cos(45)*cos(60)}, {cos(45)*sin(60)}, {sin(45)}) -- ({cos(45)*cos(60)}, {cos(45)*sin(60)}, 0);
     \draw [magenta, thick, dashed] (0, 0, 0) -- ({cos(45)*cos(60)}, {cos(45)*sin(60)}, 0);
 
@@ -526,8 +541,6 @@
 %%% image/rotate_ecef_frame
 \tdplotsetmaincoords{70}{110}
 \begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
-
-
     \begin{scope}[canvas is xy plane at z=0]
         \filldraw [fill=lime!20, draw=orange, fill opacity=0.8, dashed] (0,0) -- (90:1) arc (90:270:1) -- cycle;
         \filldraw [fill=lime!20, draw=orange, fill opacity=0.8] (0,0) -- (-90:1) arc (-90:90:1) -- cycle;
@@ -555,6 +568,45 @@
     \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
     anchor=north east] at (0,1.5, 0) {$\vec{y}$};
 
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.5) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is yz plane at x=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+    \end{scope}
+
+\end{tikzpicture}
+
+%%% image/rotate_gsc_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8, dashed] (0,0) -- (90:1.5) arc (90:270:1.5) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8] (0,0) -- (-90:1.5) arc (-90:90:1.5) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0)+(0:1.5 and 1) arc (0:360:1.5 and 1);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0, dashed] (0,0)+(180:1 and 1.5) arc (180:360:1 and 1.5);
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0)+(0:1 and 1.5) arc (0:180:1 and 1.5);
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
 
     \begin{scope}[canvas is xy plane at z=0]
         \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.5) grid (1.5,1.5);
@@ -562,6 +614,79 @@
 
     \begin{scope}[canvas is yz plane at x=0]
         %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is xy plane at z=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [magenta, thick] (0,0) -- (45:1.5);
+        \node [anchor = north]      at (20:0.4) {$\lambda$};
+    \end{scope}
+    \begin{scope}[rotate around z=45, canvas is zx plane at y=0]
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0.05) -- (30:0.4 and 0.65) arc (30:90:0.4 and 0.65) -- cycle;
+        \draw [magenta, thick] (0,0)+(0:1 and 1.5) arc (0:90:1 and 1.5);
+        \draw [magenta, thick] (0,0.05) -- (30:1 and 1.5);
+        \draw [blue, thick] (30:1 and 1.5) -- (30:1.2 and 1.8);
+        \node [anchor = north]      at (50:0.6) {$\phi$};
+        \coordinate (A) at (30:1 and 1.5);
+        \coordinate (B) at (30:1.2 and 1.8);
+        \annC{A}{B}{-0.2mm}{0.5mm}{$h$};
+    \end{scope}
+
+\end{tikzpicture}
+
+%%% image/rotate_gsc_meridian
+% a = 1.5, b=1, phi=60, for the point on ellipse
+% x^2/a^2 + z^2/b^2 = 1
+% tan(phi) = za^2/xb^2
+% so
+\def\theta{90-37.58908946897494} % the angle between line (0,0)->p_o and z-axis
+\def\inter{0.545544725589981} % the intersection of line p->p_o and x-axis
+\def\xs{0.981980506061966} % x coordinate of point on ellipse
+\def\zs{0.7559289460184546} % z coordinate of point on ellipse
+\def\xe{1.181980506061966} %xs + 0.2
+\def\ze{1.10233910753223} %zs + 0.2*tan(60)
+\tdplotsetmaincoords{90}{0}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is zx plane at y=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.75) grid (1.75,1.75);
+    \end{scope}
+
+    \begin{scope}[canvas is zx plane at y=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0)+(180:1 and 1.5) arc (180:360:1 and 1.5);
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0)+(0:1 and 1.5) arc (0:180:1 and 1.5);
+    \end{scope}
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \node [anchor = center, circle,draw=black, fill=white, inner sep=0pt,minimum size=3pt] at (0, 1.5, 0) {};
+    \draw [orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+    \begin{scope}[rotate around z=0, canvas is zx plane at y=0]
+        \begin{scope}[shift={(0,\inter)}]
+            \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (30:0.4) arc (30:90:0.4) -- cycle;
+            \node [anchor = north] at (50:0.6) {$\phi$};
+        \end{scope}
+        \draw [magenta, thick] (0,\inter) -- (\zs,\xs);
+        \draw [blue, thick] (\zs,\xs) -- (\ze, \xe);
+        \node [anchor = center, circle,draw=black, fill=white, inner sep=0pt,minimum size=3pt] at (\zs, \xs) {};
+        \node [anchor = west] at (\zs, \xs) {$p_o$};
+        \node [anchor = center, circle,draw=black, fill=white, inner sep=0pt,minimum size=3pt] at (\ze, \xe) {};
+        \node [anchor = west] at (\ze, \xe) {$p$};
+        \draw [dashed, magenta] (\zs, \xs) -- (\zs, 0);
+        \node [anchor = east] at (\zs, 0) {$z_{p_o}$};
+        \draw [dashed, magenta] (\zs, \xs) -- (0, \xs);
+        \node [anchor = north] at (0, \xs) {$x_{p_o}$};
+        \draw [dashed, magenta] (\ze, \xe) -- (\ze, 0);
+        \node [anchor = east] at (\ze, 0) {$z_{p}$};
+        \draw [dashed, magenta] (\ze, \xe) -- (0, \xe);
+        \node [anchor = north] at (0, \xe) {$x_{p}$};
+        \draw [dashed, gray] ({\zs+0.5773502691896257*0.5}, {\xs-1*0.5}) -- ({\zs-0.5773502691896257*0.5}, {\xs+1*0.5});
+        \coordinate (A) at (\zs, \xs);
+        \coordinate (B) at (\ze, \xe);
+        \annC{A}{B}{-0.2mm}{0.5mm}{$h$};
     \end{scope}
 
 \end{tikzpicture}
