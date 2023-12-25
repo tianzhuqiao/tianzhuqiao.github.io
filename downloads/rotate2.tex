@@ -1,0 +1,900 @@
+\documentclass{article}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\newcommand\x{\times}
+%\usetikzlibrary{3d}
+\usepackage{tikz-3dplot}
+\usetikzlibrary{decorations.pathreplacing,calc}
+\usepackage{circuitikz}
+
+\newcommand{\annL}[6] [] {
+    \coordinate (AE1) at ($(#2)!#4!90:(#3)$);
+    \coordinate (BE1) at ($(#3)!#4!-90:(#2)$);
+    \coordinate (AE2) at ($(#2)!#5!90:(#3)$);
+    \coordinate (BE2) at ($(#3)!#5!-90:(#2)$);
+    \draw[>=latex,red,<->]  (AE2) -- (BE2) node[midway,sloped,below,align=center] {#6};
+    \draw[very thin,shorten >=1pt,shorten <=1pt] (#2) -- (AE1);
+    \draw[very thin,shorten >=1pt,shorten <=1pt] (#3) -- (BE1);
+}
+\newcommand{\annC}[6] [] {
+   \coordinate (AE1) at ($(#2)!#4!90:(#3)$);
+    \coordinate (BE1) at ($(#3)!#4!-90:(#2)$);
+   \draw [decorate,decoration={brace,amplitude=#5},xshift=0pt,yshift=0pt]
+          (AE1) -- (BE1) node [black,midway,sloped,above,yshift=#5]  {#6} ;
+}
+
+\begin{document}
+%%% image/rotate_z
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[rotate around z=45,rotate around x=30,canvas is xy plane at z=0]
+        W%\draw [green!50!black, dashed, ultra thick] (-1,0) arc (180:360:1);
+    \end{scope}
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1,-1) grid (1,1);
+        %\draw [dashed, red] (225:1) -- (0,0) -- (135:1);
+        %\draw [green, ultra thick] (0, 0) circle (1);
+        \foreach\i in{0,90}
+        {
+            %\filldraw [fill= orange!20, draw = orange] (0,0) -- (\i:0.5) arc (\i:\i+45:0.5) -- cycle;
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1);
+        }
+        \node [anchor = north west] at (0, 1) {$\vec{y}$};
+        \node [anchor = north]      at (1, 0) {$\vec{x}$};
+    \end{scope}
+
+    \begin{scope}[rotate around z=45,rotate around x=0]
+        %\draw [canvas is xy plane at z=0, green!50!black, ultra thick] (1, 0) arc (0:180:1);
+        %\foreach\i in {0,90}
+        %\filldraw [canvas is xy plane at z=0, fill=red!20, draw=red] (0,0) -- (\i-30:0.4) arc (\i-30:\i:0.4) -- cycle;
+        %\draw [->, red, ultra thick] (0,0,0) -- (1,0,0);
+        %\draw [->, red, ultra thick] (0,0,0) -- (0,1,0);
+        %\draw [->, red, ultra thick] (0,0,0) -- (0,0,1);
+    \end{scope}
+
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1) node[black, anchor=south east] at (0, 0, 1) {$\vec{z}$};
+    \draw [canvas is xy plane at z=0.75, ->, blue] (0,-0.15) arc (-90:180:0.15);
+    \node at (0.3, 0.3, 1) {$\dot{\Psi}\vec{z}$};
+
+\end{tikzpicture}
+
+%%% image/rotate_z_xy
+\tdplotsetmaincoords{0}{0}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-0.5) grid (1,1);
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1);
+        }
+        \node [anchor = north west] at (0, 1) {$\vec{y}$};
+        \node [anchor = north]      at (1, 0) {$\vec{x}$};
+    \end{scope}
+
+    \draw [orange, ultra thick] (0,0,0) -- (0,0,1) node[black, anchor=north east] at (0, 0, 1) {$\vec{z}$};
+    \draw [canvas is xy plane at z=0.75, ->, blue] (0,-0.15) arc (-90:180:0.15);
+    \node at (0.3, 0.3, 1) {$\dot{\Psi}\vec{z}$};
+
+\end{tikzpicture}
+
+%%% image/rotate_z_xy_rotate
+\tdplotsetmaincoords{0}{0}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-0.5) grid (1.5,1.5);
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1.5);
+        }
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \draw [->, magenta, ultra thick] (0,0) -- (45:1);
+        \draw [->, fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4);
+        \draw [dashed, magenta] (45:1) -- (0:{cos(45)});
+        \draw [dashed, magenta] (45:1) -- (90:{cos(45)});
+        \node [anchor = north west] at (0, 1.5) {$\vec{y}$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{x}$};
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+        \node [anchor = north]      at (45:1) {$\vec{r}^\prime$};
+        \node [anchor = north]      at (30:0.5) {$\psi$};
+
+        \draw [orange, ultra thick] (0,0,0) -- (0,0) node[black, anchor=north east] at (0, 0) {$\vec{z}$};
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+        \node at (-0.2, 0.2) {$\dot{\Psi}\vec{z}$};
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_z_xy_rotate2
+\tdplotsetmaincoords{0}{0}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-0.5) grid (1.5,1.5);
+
+        \filldraw [fill=magenta!20, draw=magenta] (0,0) -- (30:0.4) arc (30:75:0.4) -- cycle;
+        \filldraw [fill=orange!20, draw=orange] (0,0) -- (0:0.3) arc (0:45:0.3) -- cycle;
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1.5);
+        }
+        \draw [->, magenta, ultra thick] (0,0) -- (30:1);
+        \draw [->, magenta, ultra thick] (0,0) -- (75:1);
+        %\draw [->, fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:60:0.4);
+        \draw [dashed, magenta] (30:1) -- (0:{cos(30)});
+        \draw [dashed, magenta] (30:1) -- (90:{sin(30)});
+        \draw [dashed, magenta] (75:1) -- (0:{cos(75)});
+        \draw [dashed, magenta] (75:1) -- (90:{sin(75)});
+        \node [anchor = north west] at (0, 1.5) {$\vec{y}$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{x}$};
+        \node [anchor = north]      at (30:1) {$\vec{r}$};
+        \node [anchor = north west]      at (75:1) {$\vec{r}^\prime$};
+        \node [anchor = north]      at (60:0.5) {$\psi$};
+        \node [anchor = north]      at (30:0.4) {$\psi$};
+
+        \draw [orange, ultra thick] (0,0,0) -- (0,0) node[black, anchor=north east] at (0, 0) {$\vec{z}$};
+        %\draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+        \node at (-0.2, 0.2) {$\dot{\Psi}\vec{z}$};
+    \end{scope}
+    \begin{scope}[rotate around z=45,  canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray, dashed] (-0.5,-0.5) grid (1.5,1.5);
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick, dashed] (0,0) -- (\i:1.5);
+        }
+        %\filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        %\draw [->, magenta, ultra thick, dashed] (0,0) -- (0:1);
+        %\draw [->, magenta, ultra thick, dashed] (0,0) -- (45:1);
+        %\draw [<-, fill=red!20, draw=red, dashed] (0:0.4) arc (0:45:0.4);
+        %\draw [dashed, magenta] (45:1) -- (0:{cos(45)});
+        %\draw [dashed, magenta] (45:1) -- (90:{cos(45)});
+        \node [anchor = north west] at (0, 1.5) {$\vec{y}^\prime$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{x}^\prime$};
+        %\node [anchor = north]      at (30:0.5) {-$\psi$};
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_x_yz_rotate
+\tdplotsetmaincoords{90}{90}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is yz plane at x=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-0.5) grid (1.5,1.5);
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1.5);
+        }
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \draw [->, magenta, ultra thick] (0,0) -- (45:1);
+        \draw [->, fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4);
+        \draw [dashed, magenta] (45:1) -- (0:{cos(45)});
+        \draw [dashed, magenta] (45:1) -- (90:{cos(45)});
+        \node [anchor = north west] at (0, 1.5) {$\vec{z}$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{y}$};
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+        \node [anchor = north]      at (45:1) {$\vec{r}^\prime$};
+        \node [anchor = north]      at (30:0.5) {$\phi$};
+
+        \draw [orange, ultra thick] (0,0) -- (0,0) node[black, anchor=north
+        east] at (0, 0) {$\vec{x}$};
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+        \node at (-0.2, 0.2) {$\dot{\Phi}\vec{x}$};
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_y_xz_rotate
+\tdplotsetmaincoords{90}{180}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[rotate around y=-90,canvas is zx plane at y=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-0.5) grid (1.5,1.5);
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1.5);
+        }
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \draw [->, magenta, ultra thick] (0,0) -- (45:1);
+        \draw [->, fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4);
+        \draw [dashed, magenta] (45:1) -- (0:{cos(45)});
+        \draw [dashed, magenta] (45:1) -- (90:{cos(45)});
+        \node [anchor = north west] at (0, 1.5) {$\vec{x}$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{z}$};
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+        \node [anchor = north]      at (45:1) {$\vec{r}^\prime$};
+        \node [anchor = north]      at (30:0.5) {$\theta$};
+
+        \draw [orange, ultra thick] (0,0) -- (0,0) node[black, anchor=north
+        east] at (0, 0) {$\vec{y}$};
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+        \node at (-0.2, 0.2) {$\dot{\Theta}\vec{y}$};
+    \end{scope}
+
+\end{tikzpicture}
+
+%%% image/rotate_z_xy_rotate_passive
+\tdplotsetmaincoords{0}{0}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-0.5) grid (1.5,1.5);
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1.5);
+        }
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \draw [->, magenta, ultra thick] (0,0) -- (45:1);
+        \draw [->, fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4);
+        \draw [dashed, magenta] (45:1) -- (0:{cos(45)});
+        \draw [dashed, magenta] (45:1) -- (90:{cos(45)});
+        \node [anchor = north west] at (0, 1.5) {$\vec{y}$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{x}$};
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+        \node [anchor = north]      at (45:1) {$\vec{r}^\prime$};
+        \node [anchor = north]      at (30:0.5) {$\psi$};
+
+        \draw [orange, ultra thick] (0,0,0) -- (0,0) node[black, anchor=north east] at (0, 0) {$\vec{z}$};
+        %\draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+        \node at (-0.2, 0.2) {$\dot{\Psi}\vec{z}$};
+    \end{scope}
+    \begin{scope}[rotate around z=-45,  canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray, dashed] (-0.5,-0.5) grid (1.5,1.5);
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick, dashed] (0,0) -- (\i:1.5);
+        }
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        %\draw [->, magenta, ultra thick, dashed] (0,0) -- (0:1);
+        %\draw [->, magenta, ultra thick, dashed] (0,0) -- (45:1);
+        \draw [<-, fill=red!20, draw=red, dashed] (0:0.4) arc (0:45:0.4);
+        \draw [dashed, magenta] (45:1) -- (0:{cos(45)});
+        \draw [dashed, magenta] (45:1) -- (90:{cos(45)});
+        \node [anchor = north west] at (0, 1.5) {$\vec{y}^\prime$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{x}^\prime$};
+        \node [anchor = north]      at (30:0.5) {-$\psi$};
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_z_xy_2rotate
+\tdplotsetmaincoords{0}{0}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-0.5) grid (1.5,1.5);
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1.5);
+        }
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \filldraw [fill=red!20, draw=red] (0,0) -- (45:0.4) arc (45:75:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \draw [->, magenta, ultra thick] (0,0) -- (45:1);
+        \draw [->, magenta, ultra thick] (0,0) -- (75:1);
+        \draw [->, fill=red!20, draw=red] (0:0.4) arc (0:45:0.4);
+        \draw [->, fill=red!20, draw=red] (45:0.4) arc (45:75:0.4);
+        \draw [dashed, magenta] (45:1) -- (0:{cos(45)});
+        \draw [dashed, magenta] (45:1) -- (90:{sin(45)});
+        \draw [dashed, magenta] (75:1) -- (0:{cos(75)});
+        \draw [dashed, magenta] (75:1) -- (90:{sin(75)});
+        \node [anchor = north west] at (0, 1.5) {$\vec{y}$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{x}$};
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+        \node [anchor = north]      at (45:1) {$\vec{r}^\prime$};
+        \node [anchor = north]      at (75:1.2) {$\vec{r}^{\prime\prime}$};
+        \node [anchor = north]      at (30:0.5) {$\psi_1$};
+        \node [anchor = north]      at (65:0.5) {$\psi_2$};
+
+        \draw [orange, ultra thick] (0,0,0) -- (0,0) node[black, anchor=north east] at (0, 0) {$\vec{z}$};
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+        \node at (-0.2, 0.2) {$\dot{\Psi}\vec{z}$};
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_z90_x90_rotate
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-0.5) grid (1.5,1.5);
+        \node at (-0.2, 0.2, 1.2) {$\dot{\Psi}\vec{z}$};
+        \foreach\i in{0,90}
+        {
+            \draw [->, orange, ultra thick] (0,0) -- (\i:1.5);
+        }
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:90:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \draw [->, magenta, ultra thick] (0,0) -- (90:1);
+        \draw [->, fill=red!20, draw=red] (0:0.4) arc (0:90:0.4);
+        \node [anchor = north west] at (0, 1.5) {$\vec{y}$};
+        \node [anchor = north]      at (1.5, 0) {$\vec{x}$};
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+        \node [anchor = south]      at (0:1) {$\vec{r}_2^\prime$};
+        \node [anchor = south]      at (90:1) {$\vec{r}_2^{\prime\prime}$};
+        \node [anchor = north]      at (90:1) {$\vec{r}^{\prime}$};
+        \node [anchor = north]      at (50:0.5) {$\psi$};
+    \end{scope}
+
+    \begin{scope}[canvas is yz plane at x=0]
+        \draw [ultra thin, step = 0.25, lightgray, dashed] (-0.5, 0) grid (1.5,1.5);
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:90:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (90:1);
+        \draw [->, fill=red!20, draw=red] (0:0.4) arc (0:90:0.4);
+        \node [anchor = north]      at (95:1) {$\vec{r}^{\prime\prime}$};
+        \node [anchor = north]      at (50:0.5) {$\phi$};
+    \end{scope}
+
+    \draw [->, blue] (0,-0.15, 1.2) arc (-90:180:0.15);
+
+    \begin{scope}[canvas is yz plane at x=1.2]
+        %\draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_z90_x90_rotate_intrinsic
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+    \node at (-0.2, 0.2, 1.2) {$\dot{\Psi}\vec{z}$};
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-1.5) grid (1.5,1.5);
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+    \end{scope}
+    \begin{scope}[rotate around x=90, canvas is yz plane at x=0]
+        \draw [ultra thin, step = 0.25, lightgray, dashed] (-0,0) grid (1.5,1.5);
+        \draw [->, cyan, ultra thick, dashed] (0,0) -- (0:1.5) node[black,
+        anchor=north west] at (0:1.5) {$\vec{y}^\prime$};
+        \draw [->, cyan, ultra thick, dashed] (0,0) -- (90:1.5) node[black,
+        anchor=north west] at(90:1.5) {$\vec{z}^\prime$};
+    \end{scope}
+
+    \begin{scope}[canvas is yz plane at x=0]
+        \draw [ultra thin, step = 0.25, lightgray, dashed] (-0.5, 0) grid (1.5,1.5);
+        \filldraw [fill=red!20, draw=red] (0,0) -- (0:0.4) arc (0:90:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (90:1);
+        \draw [->, fill=red!20, draw=red] (0:0.4) arc (0:90:0.4);
+        \node [anchor = north]      at (95:1) {$\vec{r}^{\prime\prime}$};
+        \node [anchor = north]      at (50:0.5) {$\phi$};
+    \end{scope}
+
+    \draw [->, blue] (0,-0.15, 1.2) arc (-90:180:0.15);
+
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_x45_rotate_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+    \node at (-0.2, 0.2, 1.2) {$\dot{\Psi}\vec{z}$};
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-1.5) grid (1.5,1.5);
+    \end{scope}
+    \begin{scope}[rotate around x=45]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (0,0) grid (1.5,1.5);
+        \draw [->, cyan, ultra thick, dashed] (0,0,0) -- (1.5,0,0) node[black,
+        anchor=east] at (1.5,0,0) {$\vec{x}^\prime$};
+        \draw [->, cyan, ultra thick, dashed] (0,0,0) -- (0,1.5,0) node[black,
+        anchor=north west] at (0,1.5,0) {$\vec{y}^\prime$};
+        \draw [->, cyan, ultra thick, dashed] (0,0,{sin(-45)}) -- (0,0,1.5) node[black,
+        anchor=north east] at(0,0,1.5) {$\vec{z}^\prime$};
+    \end{scope}
+
+    \begin{scope}[canvas is yz plane at x=0]
+        \draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5, 0) grid (1.5,1.5);
+        \filldraw [fill=cyan!20, draw=cyan] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \draw [magenta, thick, dashed] (0:1) -- (45:{cos(45)});
+        \draw [magenta, thick, dashed] (0:1) -- (-45:{cos(45)});
+        \draw [->, fill=cyan!20, draw=cyan] (0:0.4) arc (0:45:0.4);
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+        \node [anchor = north]      at (30:0.5) {$\phi=45^\circ$};
+    \end{scope}
+
+    \draw [->, blue] (0,-0.15, 1.2) arc (-90:180:0.15);
+
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_x45_z45_rotate_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+    \node at (-0.2, 0.2, 1.2) {$\dot{\Psi}\vec{z}$};
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5,-1.5) grid (1.5,1.5);
+    \end{scope}
+    \begin{scope}[rotate around x=45]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-0,0) grid (1.5,1.5);
+        \draw [->, cyan, ultra thick, dashed] (0,0,0) -- (1.5,0,0) node[black,
+        anchor=east] at (1.5,0,0) {$\vec{x}^\prime$};
+        \draw [->, cyan, ultra thick, dashed] (0,0,0) -- (0,1.5,0) node[black,
+        anchor=north west] at (0,1.5,0) {$\vec{y}^\prime$};
+        \draw [->, cyan, ultra thick, dashed] (0,0,0) -- (0,0,1.5) node[black,
+        anchor=north west] at(0,0,1.5) {$\vec{z}^\prime$};
+    \end{scope}
+    \begin{scope}[rotate around z=45, rotate around x=45]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-0.5,0) grid (1.5,1.5);
+        \draw [->, lime, ultra thick, dashed] (0,0,0) -- (1.5,0,0) node[black,
+        anchor=north west] at (1.5,0,0) {$\vec{x}^{\prime\prime}$};
+        \draw [->, lime, ultra thick, dashed] (0,0,0) -- (0,1.5,0) node[black,
+        anchor=south west] at (0,1.5,0) {$\vec{y}^{\prime\prime}$};
+        \draw [->, lime, ultra thick, dashed] (0,0,0) -- (0,0,1.5) node[black,
+        anchor=north west] at(0,0,1.5) {$\vec{z}^{\prime\prime}$};
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=0]
+        \draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5, 0) grid (1.5,1.5);
+        \filldraw [fill=cyan!20, draw=cyan] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        \draw [->, fill=cyan!20, draw=cyan] (0:0.4) arc (0:45:0.4);
+        \node [anchor = north]      at (0:1) {$\vec{r}$};
+        \node [anchor = north]      at (30:0.5) {$\phi=45^\circ$};
+    \end{scope}
+
+    \begin{scope}[canvas is xy plane at z=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5, 0) grid (1.5,1.5);
+        \filldraw [fill=lime!20, draw=lime] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        %\draw [->, magenta, ultra thick] (0,0) -- (0:1);
+        %\draw [magenta, thick, dashed] (0,1) -- (45:{cos(45)});
+        \draw [->, fill=lime!20, draw=lime] (0:0.4) arc (0:45:0.4);
+        \node [anchor = north]      at (30:0.5) {$\psi=45^\circ$};
+    \end{scope}
+
+    %\draw [magenta, thick, dashed] (0,1,0) -- ({cos(45)}, {sin(45)},0);
+    %\begin{scope}[rotate around z=45, rotate around x=45]
+    %    \draw [magenta, thick, dashed] (0, 0, 0) -- (0, 0.5, -0.5);
+    %    \draw [magenta, thick, dashed] (0, 0.5, -0.5) -- (0, 0.5, 0);
+    %    \draw [magenta, thick, dashed] (0, 0.5, -0.5) -- (0, 0, -0.5);
+    %    \draw [magenta, thick, dashed] ({cos(45)}, 0.5, -0.5) -- (0, 0.5, -0.5);
+    %\end{scope}
+
+    \draw [->, blue] (0,-0.15, 1.2) arc (-90:180:0.15);
+
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_az_el_rotate_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-0.5, -0.5) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is yz plane at x=0]
+        \draw [ultra thin, step = 0.25, lightgray, dashed] (-0.5,0) grid (1.5,1.5);
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=0]
+        \filldraw [fill=lime!20, draw=lime, fill opacity=0.8] (0,0) -- (0:0.4) arc (0:60:0.4) -- cycle;
+        \draw [->, fill=lime!20, draw=lime] (0:0.4) arc (0:60:0.4);
+        \node [anchor = north]      at (40:0.5) {$az$};
+    \end{scope}
+    \begin{scope}[rotate around z=60, canvas is xz plane at y=0]
+        \filldraw [fill=lime!20, draw=lime, fill opacity=0.8] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [->, fill=lime!20, draw=lime] (0:0.4) arc (0:45:0.4);
+        \node [anchor = north]      at (40:0.5) {$el$};
+    \end{scope}
+    \begin{scope}[rotate around z=60, rotate around y=-45]
+        \draw [->, lime, ultra thick, dashed] (0,0,0) -- (1.5,0,0) node[black,
+        anchor=north west] at (1.5,0,0) {$\vec{x}^{\prime}$};
+        \draw [->, lime, ultra thick, dashed] (0,0,0) -- (0,1.5,0) node[black,
+        anchor=south west] at (0,1.5,0) {$\vec{y}^{\prime}$};
+        \draw [->, lime, ultra thick, dashed] (0,0,0) -- (0,0,1.5) node[black,
+        anchor=north west] at(0,0,1.5) {$\vec{z}^{\prime}$};
+
+        \draw [->, magenta, ultra thick] (0,0,0) -- (1,0,0) node[black,
+        anchor=north west] at (1,0,0) {$\vec{r}$};
+    \end{scope}
+
+    \draw [magenta, thick, dashed] ({cos(45)*cos(60)}, {cos(45)*sin(60)}, {sin(45)}) -- ({cos(45)*cos(60)}, {cos(45)*sin(60)}, 0);
+    \draw [magenta, thick, dashed] (0, 0, 0) -- ({cos(45)*cos(60)}, {cos(45)*sin(60)}, 0);
+
+    \draw [->, blue] (0,-0.15, 1.2) arc (-90:180:0.15);
+    \draw [->, blue] (0,-0.15, 1.2) arc (-90:180:0.15);
+
+
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_ecef_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8, dashed] (0,0) -- (90:1) arc (90:270:1) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8] (0,0) -- (-90:1) arc (-90:90:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0) -- (0:1) arc (0:360:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0, dashed] (0,0) -- (0:-1) arc (180:360:1) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0) -- (0:1) arc (0:180:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.5) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is yz plane at x=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+    \end{scope}
+
+\end{tikzpicture}
+
+%%% image/rotate_gsc_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8, dashed] (0,0) -- (90:1.5) arc (90:270:1.5) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8] (0,0) -- (-90:1.5) arc (-90:90:1.5) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0)+(0:1.5 and 1) arc (0:360:1.5 and 1);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0, dashed] (0,0)+(180:1 and 1.5) arc (180:360:1 and 1.5);
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0)+(0:1 and 1.5) arc (0:180:1 and 1.5);
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.5) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is yz plane at x=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is xy plane at z=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [magenta, thick] (0,0) -- (45:1.5);
+        \node [anchor = north]      at (20:0.4) {$\lambda$};
+    \end{scope}
+    \begin{scope}[rotate around z=45, canvas is zx plane at y=0]
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0.05) -- (30:0.4 and 0.65) arc (30:90:0.4 and 0.65) -- cycle;
+        \draw [magenta, thick] (0,0)+(0:1 and 1.5) arc (0:90:1 and 1.5);
+        \draw [magenta, thick] (0,0.05) -- (30:1 and 1.5);
+        \draw [blue, thick] (30:1 and 1.5) -- (30:1.2 and 1.8);
+        \node [anchor = south west]      at (30: 1.2 and 1.8) {$A$};
+        \node [anchor = north]      at (50:0.6) {$\phi$};
+        \coordinate (A) at (30:1 and 1.5);
+        \coordinate (B) at (30:1.2 and 1.8);
+        \annC{A}{B}{-0.2mm}{0.5mm}{$h$};
+    \end{scope}
+
+\end{tikzpicture}
+
+%%% image/rotate_gsc_meridian
+% a = 1.5, b=1, phi=60, for the point on ellipse
+% x^2/a^2 + z^2/b^2 = 1
+% tan(phi) = za^2/xb^2
+% so
+\def\theta{90-37.58908946897494} % the angle between line (0,0)->p_o and z-axis
+\def\inter{0.545544725589981} % the intersection of line p->p_o and x-axis
+\def\xs{0.981980506061966} % x coordinate of point on ellipse
+\def\zs{0.7559289460184546} % z coordinate of point on ellipse
+\def\xe{1.181980506061966} %xs + 0.2
+\def\ze{1.10233910753223} %zs + 0.2*tan(60)
+\tdplotsetmaincoords{90}{0}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+    \begin{scope}[canvas is zx plane at y=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.75) grid (1.75,1.75);
+    \end{scope}
+
+    \begin{scope}[canvas is zx plane at y=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0)+(180:1 and 1.5) arc (180:360:1 and 1.5);
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0)+(0:1 and 1.5) arc (0:180:1 and 1.5);
+    \end{scope}
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north east] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \node [anchor = center, circle,draw=black, fill=white, inner sep=0pt,minimum size=3pt] at (0, 1.5, 0) {};
+    \draw [orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+    \begin{scope}[rotate around z=0, canvas is zx plane at y=0]
+        \begin{scope}[shift={(0,\inter)}]
+            \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (30:0.4) arc (30:90:0.4) -- cycle;
+            \node [anchor = north] at (50:0.6) {$\phi$};
+        \end{scope}
+        \draw [magenta, thick] (0,\inter) -- (\zs,\xs);
+        \draw [blue, thick] (\zs,\xs) -- (\ze, \xe);
+        \node [anchor = center, circle,draw=black, fill=white, inner sep=0pt,minimum size=3pt] at (\zs, \xs) {};
+        \node [anchor = west] at (\zs, \xs) {$p_o$};
+        \node [anchor = center, circle,draw=black, fill=white, inner sep=0pt,minimum size=3pt] at (\ze, \xe) {};
+        \node [anchor = west] at (\ze, \xe) {$p$};
+        \draw [dashed, magenta] (\zs, \xs) -- (\zs, 0);
+        \node [anchor = east] at (\zs, 0) {$z_{p_o}$};
+        \draw [dashed, magenta] (\zs, \xs) -- (0, \xs);
+        \node [anchor = north] at (0, \xs) {$x_{p_o}$};
+        \draw [dashed, magenta] (\ze, \xe) -- (\ze, 0);
+        \node [anchor = east] at (\ze, 0) {$z_{p}$};
+        \draw [dashed, magenta] (\ze, \xe) -- (0, \xe);
+        \node [anchor = north] at (0, \xe) {$x_{p}$};
+        \draw [dashed, gray] ({\zs+0.5773502691896257*0.5}, {\xs-1*0.5}) -- ({\zs-0.5773502691896257*0.5}, {\xs+1*0.5});
+        \coordinate (A) at (\zs, \xs);
+        \coordinate (B) at (\ze, \xe);
+        \annC{A}{B}{-0.2mm}{0.5mm}{$h$};
+    \end{scope}
+
+\end{tikzpicture}
+
+%%% image/rotate_ned_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8, dashed] (0,0) -- (90:1) arc (90:270:1) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8] (0,0) -- (-90:1) arc (-90:90:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0) -- (0:1) arc (0:360:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0, dashed] (0,0) -- (0:-1) arc (180:360:1) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0) -- (0:1) arc (0:180:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north west] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.5) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is xy plane at z=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [magenta, thick] (0,0) -- (45:1);
+        \node [anchor = north]      at (20:0.4) {$az$};
+    \end{scope}
+    \begin{scope}[rotate around z=45, canvas is zx plane at y=0]
+        \draw [magenta, thick] (1,0) arc (0:90:1);
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (30:0.4) arc (30:90:0.4) -- cycle;
+        \node [anchor = north]      at (50:0.6) {$el$};
+    \end{scope}
+
+    \tdplotsetrotatedcoords{45}{-150}{0} % start from xyz, 1st rotate around z 45 degree, then y' (180-30) degree
+    \coordinate (Shift) at ({cos(45)*sin(30)},{sin(45)*sin(30)},{cos(30)});
+    \tdplotsetrotatedcoordsorigin{(Shift)}
+    % draw NED
+    \begin{scope}[tdplot_rotated_coords, canvas is xy plane at z=0]
+        \filldraw [fill=white, draw=cyan] (-0.25,-0.25) rectangle (0.25,0.25);
+    \end{scope}
+    \draw[ultra thick,color=cyan,tdplot_rotated_coords,->] (0,0,0) --
+    (1,0,0) node[anchor=north east]{$x^\prime$};
+    \draw[ultra thick,color=cyan,tdplot_rotated_coords,->] (0,0,0) --
+    (0,1,0) node[anchor=north]{$y^\prime$};
+    \draw[ultra thick,color=cyan,tdplot_rotated_coords,->] (0,0,0) --
+    (0,0,1) node[anchor=north west]{$z^\prime$};
+\end{tikzpicture}
+
+%%% image/rotate_enu_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8, dashed] (0,0) -- (90:1) arc (90:270:1) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8] (0,0) -- (-90:1) arc (-90:90:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0) -- (0:1) arc (0:360:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0, dashed] (0,0) -- (0:-1) arc (180:360:1) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0) -- (0:1) arc (0:180:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north west] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.5) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is xy plane at z=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [magenta, thick] (0,0) -- (45:1);
+        \node [anchor = north]      at (20:0.4) {$az$};
+    \end{scope}
+    \begin{scope}[rotate around z=45, canvas is zx plane at y=0]
+        \draw [magenta, thick] (1,0) arc (0:90:1);
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (30:0.4) arc (30:90:0.4) -- cycle;
+        \node [anchor = north]      at (50:0.6) {$el$};
+    \end{scope}
+
+    \tdplotsetrotatedcoords{45}{30}{0} % start from xyz, 1st rotate around z 45 degree, then y' (180-30) degree
+    \coordinate (Shift) at ({cos(45)*sin(30)},{sin(45)*sin(30)},{cos(30)});
+    \tdplotsetrotatedcoordsorigin{(Shift)}
+
+    \draw[ultra thick,color=cyan,->] (0, 0, 0) -- (Shift);
+    \begin{scope}[tdplot_rotated_coords, rotate around z=90]
+        % draw ENU
+        \begin{scope}[canvas is xy plane at z=0]
+            \filldraw [fill=white, draw=cyan] (-0.25,-0.25) rectangle (0.25,0.25);
+        \end{scope}
+        \draw[ultra thick,color=cyan,->] (0,0,0) --
+        (1,0,0) node[anchor=north east]{$x^\prime$};
+        \draw[ultra thick,color=cyan,->] (0,0,0) --
+        (0,1,0) node[anchor=north]{$y^\prime$};
+        \draw[ultra thick,color=cyan,->] (0, 0, 0) --
+        (0,0,1) node[anchor=north west]{$z^\prime$};
+    \end{scope}
+\end{tikzpicture}
+
+%%% image/rotate_satellite_frame
+\tdplotsetmaincoords{70}{110}
+\begin{tikzpicture}[scale=3,line cap=round,tdplot_main_coords]
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8, dashed] (0,0) -- (90:1) arc (90:270:1) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0.8] (0,0) -- (-90:1) arc (-90:90:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0) -- (0:1) arc (0:360:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=0]
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0, dashed] (0,0) -- (0:-1) arc (180:360:1) -- cycle;
+        \filldraw [fill=lime!20, draw=orange, fill opacity=0] (0,0) -- (0:1) arc (0:180:1) -- cycle;
+    \end{scope}
+    \begin{scope}[canvas is xy plane at z=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is yz plane at x=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \begin{scope}[canvas is zx plane at y=1.2]
+        \draw [->, blue] (0,-0.15) arc (-90:180:0.15);
+    \end{scope}
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,0,1.5) node[black,
+    anchor=north west] at (0, 0, 1.5) {$\vec{z}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (1.5,0,0) node[black,
+    anchor=north east] at (1.5, 0, 0) {$\vec{x}$};
+    \draw [->, orange, ultra thick] (0,0,0) -- (0,1.5,0) node[black,
+    anchor=north east] at (0,1.5, 0) {$\vec{y}$};
+
+
+    \begin{scope}[canvas is xy plane at z=0]
+        \draw [ultra thin, step = 0.25, lightgray] (-1.5, -1.5) grid (1.5,1.5);
+    \end{scope}
+
+    \begin{scope}[canvas is xy plane at z=0]
+        %\draw [ultra thin, step = 0.25, lightgray, dashed] (-1.5,0) grid (1.5,1.5);
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (0:0.4) arc (0:45:0.4) -- cycle;
+        \draw [magenta, thick] (0,0) -- (45:1);
+        \node [anchor = north]      at (20:0.4) {$az$};
+    \end{scope}
+    \begin{scope}[rotate around z=45, canvas is zx plane at y=0]
+        \draw [magenta, thick] (1,0) arc (0:90:1);
+        \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (30:0.4) arc (30:90:0.4) -- cycle;
+        \node [anchor = north]      at (50:0.6) {$el$};
+    \end{scope}
+
+    \tdplotsetrotatedcoords{45}{-60} {0} % start from xyz, 1st rotate around z 45 degree, then y' (180-30) degree
+    \coordinate (Shift) at ({2*cos(45)*sin(30)},{2*sin(45)*sin(30)},{2*cos(30)});
+    \tdplotsetrotatedcoordsorigin{(Shift)}
+
+    \draw[ultra thick,color=cyan,->] (0, 0, 0) -- (Shift);
+    \begin{scope}[tdplot_rotated_coords, rotate around x=10]
+        \begin{scope}[rotate around x=10]
+        % draw ENU
+            \begin{scope}[canvas is yz plane at x=0]
+                \filldraw [fill=white, draw=cyan] (-0.25,-0.25) rectangle (0.25,0.25);
+            \end{scope}
+            \draw[ultra thick,color=cyan,->] (0,0,0) --
+            (1,0,0) node[anchor=north east]{$x^\prime$};
+            \draw[ultra thick,color=cyan,->] (0,0,0) --
+            (0,1,0) node[anchor=north]{$y^\prime$};
+            \draw[ultra thick,color=cyan,->] (0, 0, 0) --
+            (0,0,1) node[anchor=north west]{$z^\prime$};
+        \end{scope}
+         \draw[thick,color=cyan, dashed] (0,0,0) -- (0,1,0);
+         \draw[thick,color=cyan, dashed] (0,0,0) -- (0,0,1);
+         \begin{scope}[canvas is yz plane at x = 0]
+             \filldraw [fill=magenta!20, draw=orange, fill opacity=0.8] (0,0) -- (0:0.4) arc (0:10:0.4) -- cycle;
+             \node [anchor = north]      at (5:0.6) {$pol$};
+         \end{scope}
+    \end{scope}
+\end{tikzpicture}
+
+\end{document}

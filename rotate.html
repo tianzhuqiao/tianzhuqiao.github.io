@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="bsmdoc 0.0.8">
+<link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
+<link rel="stylesheet" href="css/menu.css" type="text/css">
+<script>
+MathJax = {
+loader: {
+load: ['[tex]/tagformat']
+},
+tex: {
+packages: {'[+]': ['tagformat']},
+inlineMath: [['\\(', '\\)']],
+tags: "all",
+tagformat: {
+id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
+}
+}
+};
+</script>
+<script src=" https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js "></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
+<script type="text/javascript" language="javascript" src="js/menu.js"></script>
+<title>A Tutorial on Rotation</title>
+</head>
+<body class="nomathjax">
+<div class="layout">
+<div class="menu">
+<ul>
+<li><a href="#sec-1">1 Rotation</a><ul>
+<li><a href="#sec-1-1">1.1 Rotate vector around axis</a><ul>
+<li><a href="#sec-1-1-1">1.1.1 Multiple rotations</a></li>
+</ul></li>
+<li><a href="#sec-1-2">1.2 Rotate vector around a vector</a></li>
+<li><a href="#sec-1-3">1.3 Vector coordinates in rotated coordinate systems</a></li>
+</ul></li>
+<li><a href="#sec-2">2 Frame</a><ul>
+<li><a href="#sec-2-1">2.1 ECEF</a></li>
+<li><a href="#sec-2-2">2.2 GSC</a></li>
+<li><a href="#sec-2-3">2.3 NED</a></li>
+<li><a href="#sec-2-4">2.4 ENU</a></li>
+<li><a href="#sec-2-5">2.5 Satellite</a></li>
+<li><a href="#sec-2-6">2.6 Body</a><ul>
+<li><a href="#sec-2-6-1">2.6.1 Estimate pitch and roll with accelerometer</a></li>
+<li><a href="#sec:gyroscope">2.6.2 Gyroscope</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#sec-3">3 Rotation representation</a><ul>
+<li><a href="#sec-3-1">3.1 Rotation matrix</a><ul>
+<li><a href="#sec-3-1-1">3.1.1 Rotation matrix to rotation vector and angle</a></li>
+</ul></li>
+<li><a href="#sec-3-2">3.2 Euler Angle [<a id="cite-3-1" href="#reference-3">3</a>]</a><ul>
+<li><a href="#sec-3-2-1">3.2.1 Euler Angle to Rotation Matrix</a></li>
+<li><a href="#sec-3-2-2">3.2.2 Rotation Matrix to Euler Angle</a></li>
+<li><a href="#sec-3-2-3">3.2.3 Gimbal Lock</a></li>
+</ul></li>
+<li><a href="#sec-3-3">3.3 Quaternion</a><ul>
+<li><a href="#sec-3-3-1">3.3.1 Quaternion to rotation matrix [<a id="cite-4-1" href="#reference-4">4</a>]</a></li>
+<li><a href="#sec-3-3-2">3.3.2 Rotation matrix to quaternion</a></li>
+<li><a href="#sec-3-3-3">3.3.3 Exponential</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+<div class="main">
+<div class="toptitle">
+A Tutorial on Rotation
+</div>
+<div class="content">
+<h1 id="sec-1">1 Rotation</h1>
+<p>Rotation is critical to many applications, e.g., navigation. For 2D rotation, it is trivial. However, for 3D case, it is much more complicated and confusing. This tutorial tries to show some important concept in 3D rotation.</p>
+<h2 id="sec-1-1">1.1 Rotate vector around axis</h2>
+<p>To rotate around the \(z\)-axis, point the thumb of right hand to the positive \(z\) direction, the curled fingers point to the positive rotation direction (i.e., right hand rule rotation; it is assumed in this tutorial, left hand rule rotation is very similar), i.e., from \(x\)-axis to \(y\)-axis, as show in following figure</p>
+<figure class="figure">
+<img src="./image/rotate_z.svg" alt="./image/rotate_z.svg">
+<figcaption class="caption"><span class="tag">Fig.1.</span> Rotate around \(z\) axis</figcaption>
+</figure>
+<p>Fig. (<a href="#img-rotate_z_xy">2</a>) shows the 2D projection of the 3D coordinate system on \(x\)-\(y\) plane, when look from positive \(z\) direction.</p>
+<figure id="img-rotate_z_xy" class="figure">
+<img src="./image/rotate_z_xy.svg" alt="./image/rotate_z_xy.svg">
+<figcaption class="caption"><span class="tag">Fig.2.</span> Rotate around \(z\) axis</figcaption>
+</figure>
+<p>For a unit vector on \(z\)-axis (i.e., \(\vec{r} = [0, 0, 1]^T\)), it is easy to see that its coordinate will be unchanged, after rotating around \(z\)-axis by arbitrary \(\psi\) degree (i.e., usually it is called yaw).</p>
+<p>For a unit vector on \(x\)-axis, i.e., \(\vec{r} = [1, 0, 0]^T\), after rotating around the \(z\)-axis by \(\psi\) degree, its new coordinates can be easily read from Fig. (<a href="#img-rotate_x_yz_rotate">5</a>) as \(\vec{r}^\prime = [\cos\psi, \sin\psi, 0]^T\).</p>
+<figure id="img-rotate_z_xy_rotate" class="figure">
+<img src="./image/rotate_z_xy_rotate.svg" alt="./image/rotate_z_xy_rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.3.</span> Rotate \(\vec{r}\) around \(z\) axis by \(\psi\) degree</figcaption>
+</figure>
+<p>Similarly, for a unit vector on \(y\)-axis (i.e,. \(\vec{r} = [0, 1, 0]^T\)), after rotating around \(z\)-axis by \(\psi\), its coordinate will be \(\vec{r}^\prime = [-\sin\psi, \cos\psi, 0]^T\).</p>
+<p>For an arbitrary vector \(\vec{r}\), what will its coordinate be in the original coordinate system (i.e., \(xyz\)) after rotation?</p>
+<p>Suppose the coordinates of a vector in \(xyz\) is \(\vec{r}=r_x\vec{i} + r_y\vec{j} + r_z\vec{k}\), when rotate it around \(z\)-axis by \(\psi\) degree, if the coordinate system is also rotated along with it (e.g., around \(z\)-axis by \(\psi\) degree) to \(x^\prime y^\prime z^\prime\), then its coordinates in \(x^\prime y^\prime z^\prime\) is same as before (it is straightforward as their relative location doesn't change), that is</p>
+<div class="mathjax">
+$$
+\vec{r}^\prime=r_x\vec{i}^\prime + r_y\vec{j}^\prime + r_z\vec{k}^\prime.
+\label{eqn:rotate_z_arbitrary}
+$$
+</div>
+<figure class="figure">
+<img src="./image/rotate_z_xy_rotate2.svg" alt="./image/rotate_z_xy_rotate2.svg">
+<figcaption class="caption"><span class="tag">Fig.4.</span> Rotate \(\vec{r}\) around \(z\) axis by \(\psi\) degree</figcaption>
+</figure>
+<p>If we know the coordinates of \(\vec{i}^\prime\), \(\vec{j}^\prime\) and \(\vec{k}^\prime\) in the original coordinate system \(xyz\), Eq. (\ref{eqn:rotate_z_arbitrary}) will tell us the corresponding coordinates of the rotated vector \(\vec{r}^\prime\) in \(xyz\). \(\vec{i}^\prime\) is just the rotated unit vector on \(x\)-axis (\([1,0, 0]^T\)). As discussed above, its coordinates in \(xyz\) is \([\cos\psi, \sin\psi, 0]^T\), that is</p>
+<div class="mathjax">
+$$
+\vec{i}^\prime = \begin{bmatrix}
+\cos\psi \\
+\sin\psi \\
+0 \\
+\end{bmatrix}.
+\label{eqn:rotate_z_x_axis}
+$$
+</div>
+<p>Similarly for \(\vec{j}^\prime\) and \(\vec{k}^\prime\),</p>
+<div class="mathjax">
+$$
+\vec{j}^\prime = \begin{bmatrix}
+-\sin\psi \\
+\cos\psi \\
+0 \\
+\end{bmatrix}
+,\,\vec{k}^\prime = \begin{bmatrix}
+0 \\
+0 \\
+1 \\
+\end{bmatrix}.
+\label{eqn:rotate_z_yz_axis}
+$$
+</div>
+<p>Substitute Eqs. (\ref{eqn:rotate_z_x_axis}) and (\ref{eqn:rotate_z_yz_axis}) in Eq. (\ref{eqn:rotate_z_arbitrary}), we have</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^\prime&=r_x\vec{i}^\prime + r_y\vec{j}^\prime + r_z\vec{k}^\prime \nonumber \\
+&=r_x\begin{bmatrix}\cos\psi \\ \sin\psi \\ 0 \end{bmatrix} +
+r_y\begin{bmatrix}-\sin\psi \\ \cos\psi \\ 0 \end{bmatrix} +
+r_z\begin{bmatrix}0 \\ 0 \\ 1 \end{bmatrix} \\\nonumber
+&= \begin{bmatrix}
+\cos\psi & -\sin\psi & 0 \\
+\sin\psi & \cos\psi & 0 \\
+0 & 0 & 1
+\end{bmatrix}\begin{bmatrix}r_x \\ r_y \\ r_z \end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Thus the rotation matrix around \(z\)-axis is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_z = \begin{bmatrix}
+\cos\psi & -\sin\psi & 0 \\
+\sin\psi & \cos\psi & 0 \\
+0 & 0 & 1
+\end{bmatrix}.
+\label{eqn:rotate_z}
+\end{align}
+$$
+</div>
+<p>It is easy to see that the \(1\)st column of \(\mathbf{R}_z\) is just the coordinate of rotated unit vector of \(x\)-axis, that is, after rotation, the coordinates of unit vector on \(x\)-axis (i.e.,\([1, 0, 0]^T\) before rotation) will become \([\cos\psi, \sin\psi, 0]^T\). Same for the \(2\)nd and \(3\)rd columns.</p>
+<p>The rotation around \(x\)-axis (i.e., \(\phi\), usually it is called as roll) is very similar, as shown in Fig. (<a href="#img-rotate_x_yz_rotate">5</a>).</p>
+<figure id="img-rotate_x_yz_rotate" class="figure">
+<img src="./image/rotate_x_yz_rotate.svg" alt="./image/rotate_x_yz_rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.5.</span> Rotate \(\vec{r}\) around \(x\) axis by \(\phi\) degree</figcaption>
+</figure>
+<p>Its rotation matrix is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_x = \begin{bmatrix}
+1 & 0 & 0 \\
+0 & \cos\phi & -\sin\phi\\
+0 & \sin\phi & \cos\phi\\
+\end{bmatrix}.
+\label{eqn:rotate_x}
+\end{align}
+$$
+</div>
+<p>It is easy to verify that its \(1\)st column is \([1, 0, 0]^T\), as rotation around \(x\)-axis doesn't impact the vector on \(x\)-axis; for the \(2\)nd column, rotate the unit vector on \(y\)-axis (i.e., \([0, 1, 0]^T\)) around \(x\)-axis by \(\phi\) degree, its coordinates will become \([0, \cos\phi, \sin\phi]^T\) as shown in Fig. (<a href="#img-rotate_x_yz_rotate">5</a>); and \(3\)rd means that after rotating unit vector on \(z\)-axis (i.e., \([0, 0, 1]^T\)) around \(x\)-axis by \(\phi\) degree, its coordinates will become \([0, -\sin\phi, \cos\phi]^T\).</p>
+<p>The rotation around \(y\) is also similar (\(\theta\), i.e., pitch), as shown in Fig. (<a href="#img-rotate_y_xz_rotate">6</a>).</p>
+<figure id="img-rotate_y_xz_rotate" class="figure">
+<img src="./image/rotate_y_xz_rotate.svg" alt="./image/rotate_y_xz_rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.6.</span> Rotate \(\vec{r}\) around \(y\) axis by \(\theta\) degree</figcaption>
+</figure>
+<p>Its rotation matrix is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_y = \begin{bmatrix}
+ \cos\theta & 0 & \sin\theta\\
+ 0 & 1 & 0 \\
+ -\sin\theta & 0 & \cos\theta\\
+\end{bmatrix}.
+\label{eqn:rotate_y}
+\end{align}
+$$
+</div>
+<p>You may notice that the format of Eq. (\ref{eqn:rotate_y}) is slightly different with Eqs. (\ref{eqn:rotate_z}) & (\ref{eqn:rotate_x}), e.g., its \(1\)st row is \([\cos\theta, 0, \sin\theta]^T\), instead of \([\cos\theta, 0, \textcolor{red}{-}\sin\theta]^T\). That's not a mistake, as it is easy to check that for a unit vector on \(z\)-axis (i.e., \(\vec{r} = [0, 0, 1]^T\)), rotate it around \(y\)-axis by \(\theta\) degree, its coordinate will be \([\sin\theta, 0, \cos\theta]^T\), which is the \(3\)rd column of \(\mathbf{R}_y\). Same for its \(1\)st column.</p>
+<p>For the discussion so far, we are rotating the vector \(\vec{r}\) to get the coordinates of \(\vec{r}^\prime\) in original coordinate system after rotation.
+Such rotation is called <b>active rotation</b> (or <b>active transformation</b>).</p>
+<p>On the other hand, we can also fix \(\vec{r}\), rotate the coordinate system, then calculate the coordinates of \(\vec{r}\) in the rotated coordinate system (i.e., \(x^\prime y^\prime z^\prime\)). Such rotation is called <b>passive rotation</b>. As show in Fig. (<a href="#img-rotate_z_xy_rotate_passive">7</a>), after rotating the coordinate system by \(-\psi\) degree, the coordinates of \(\vec{r}\) in the new coordinate system \(x^\prime y^\prime z^\prime\) is same as the one of \(\vec{r}^\prime\) in original coordinate system \(xyz\). In other words, for a vector \(\vec{r}\) in \(xyz\) coordinate system, the following two procedures are equivalent</p>
+<ol>
+<li>rotate the vector \(\vec{r}\) around some axis by degree \(\theta\),</li>
+<li>rotate the coordinate system \(xyz\) around some axis by degree \(-\theta\).</li>
+</ol>
+<figure id="img-rotate_z_xy_rotate_passive" class="figure">
+<img src="./image/rotate_z_xy_rotate_passive.svg" alt="./image/rotate_z_xy_rotate_passive.svg">
+<figcaption class="caption"><span class="tag">Fig.7.</span> Rotate coordinate system \(xyz\) around \(z\) axis by \(-\psi\) degree</figcaption>
+</figure>
+<h3 id="sec-1-1-1">1.1.1 Multiple rotations</h3>
+<p>It is easy to see that if we rotate \(\vec{r}\) around \(z\) by \(\psi_1\) (\(\vec{r}^\prime\)), then rotate \(\vec{r}^\prime\) again around \(z\) by \(\psi_2\) (\(\vec{r}^{\prime\prime}\)), it is equivalent to rotate \(\vec{r}\) around \(z\) by \(\psi_1 + \psi_2\).</p>
+<figure id="img-rotate_z_xy_rotate" class="figure">
+<img src="./image/rotate_z_xy_2rotate.svg" alt="./image/rotate_z_xy_2rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.8.</span> Rotate \(\vec{r}\) around \(z\) axis by \(\psi_1\) degree, then \(\psi_2\) degree</figcaption>
+</figure>
+<p>It can also been easily proved by matrix multiplication</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_z &= \mathbf{R}_z(\psi_2) \mathbf{R}_z(\psi_1) \nonumber \\
+&= \begin{bmatrix}
+\cos\psi_2 & -\sin\psi_2 & 0 \\
+\sin\psi_2 & \cos\psi_2 & 0 \\
+0 & 0 & 1
+\end{bmatrix} \begin{bmatrix}
+\cos\psi_1 & -\sin\psi_1 & 0 \\
+\sin\psi_1 & \cos\psi_1 & 0 \\
+0 & 0 & 1
+\end{bmatrix} \nonumber \\
+&= \begin{bmatrix}
+\cos(\psi_2 + \psi_1) & -\sin(\psi_1+\psi_2) & 0 \\
+\sin(\psi_2+\psi_1) & \cos(\psi_2+\psi_1) & 0 \\
+0 & 0 & 1
+\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Note when we do matrix multiplication, \(\mathbf{R}_z(\psi_2)\) is on the left side, and \(\mathbf{R}_z(\psi_1)\) is on the right side. This is because we rotate by \(\psi_1\) first, then \(\psi_2\). For this specific case, the order doesn't really matter as both rotation is around the same \(z\)-axis. However, in general, the rotation order matters as we will see shortly.</p>
+<p>As shown in Fig. (<a href="#img-rotate_z90_x90_rotate">9</a>), if \(\vec{r}=[1, 0, 0]^T\),</p>
+<ol>
+<li>first rotate it around \(z\)-axis by 90 degree, we will get \(\vec{r}^\prime = [0, 1, 0]^T\);</li>
+<li>then rotate \(\vec{r}^\prime\) around \(x\)-axis by 90 degree, we will get \(\vec{r}^{\prime\prime} = [0, 0, 1]^T\).</li>
+</ol>
+<p>However, if we switch the rotation order,</p>
+<ol>
+<li>first rotate \(\vec{r}\) around \(x\)-axis by 90 degree, we will get \(\vec{r}_2^\prime =[1, 0, 0]^T\);</li>
+<li>then rotate \(\vec{r}_2^\prime\) around \(z\)-axis by 90 degree, we will get \(\vec{r}_2^{\prime\prime} = [0, 1, 0]^T\).</li>
+</ol>
+<p>Apparently \(\vec{r}^{\prime\prime}\) is not equal to \(\vec{r}_2^{\prime\prime}\). Do you see why this is the case? One observation is that in general, \(\mathbf{R}_2\mathbf{R}_1 \neq \mathbf{R}_1\mathbf{R}_2\).</p>
+<figure id="img-rotate_z90_x90_rotate" class="figure">
+<img src="./image/rotate_z90_x90_rotate.svg" alt="./image/rotate_z90_x90_rotate.svg">
+<figcaption class="caption"><span class="tag">Fig.9.</span> Rotate \(\vec{r}\) around \(z\)-axis by 90 degree then around \(x\)-axis by 90 degree</figcaption>
+</figure>
+<p>The rotations in Fig. (<a href="#img-rotate_z90_x90_rotate">9</a>) are all around the axis in coordinate system \(xyz\). Such rotation is called <b>extrinsic rotation</b>. The other way is at each rotation, assume the coordinate system also rotate the same angle, and the next rotation will be around the corresponding axis of the rotated coordinate system. Such rotation is called <b>intrinsic rotation</b>.</p>
+<p>For intrinsic rotation to achieve the same final coordinates (in original \(xyz\) coordinate), we need to reverse the rotation order. For the previous example, in extrinsic rotation</p>
+<ol>
+<li>rotate around \(z\)-axis by 90 degree, then</li>
+<li>rotate around \(x\)-axis by 90 degree,</li>
+</ol>
+<p>and its rotation matrix is</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \mathbf{R}_x(90^\circ)\mathbf{R}_z(90^\circ).
+\label{eq:rotation_z90_x90_rotate}
+$$
+</div>
+<p>Notice that the order of the rotation matrix, that is the \(1\)st rotation is on the rightest side, then the matrix from the \(2\)nd rotation. If there are more rotations, they will also be ordered from right to left.</p>
+<p>While in intrinsic rotation, to get the same coordinates (\(\vec{r}^{\prime\prime}\)),</p>
+<ol>
+<li>rotate around \(x\)-axis by 90 degree, also rotate the coordinate system to get \(x^\prime y^\prime z^\prime\), as show in Fig. (<a href="#img-rotate_z90_x90_rotate_intrinsic">10</a>), then</li>
+<li>rotate around \(z^\prime\)-axis by 90 degree.</li>
+</ol>
+<figure id="img-rotate_z90_x90_rotate_intrinsic" class="figure">
+<img src="./image/rotate_z90_x90_rotate_intrinsic.svg" alt="./image/rotate_z90_x90_rotate_intrinsic.svg">
+<figcaption class="caption"><span class="tag">Fig.10.</span> Intrinsic rotation: rotate \(\vec{r}\) around \(x\)-axis by 90 degree then around \(z^\prime\)-axis by 90 degree</figcaption>
+</figure>
+<p>Fig. (<a href="#img-rotate_z90_x90_rotate_intrinsic">10</a>) shows that after the intrinsic rotations, the coordinate of \(\vec{r}^{\prime\prime}\) is same as the one in Fig. (<a href="#img-rotate_z90_x90_rotate">9</a>).</p>
+<p>The rotation matrix from intrinsic rotation is</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \mathbf{R}_x(90^\circ)\mathbf{R}_{z^\prime}(90^\circ).
+\label{eq:rotation_z90_x90_rotate_intrinsic}
+$$
+</div>
+<p>Eq. (\ref{eq:rotation_z90_x90_rotate_intrinsic}) is same as Eq. (\ref{eq:rotation_z90_x90_rotate}). It is expected as both rotation reached the same \(\vec{r}^{\prime\prime}\). However, different from extrinsic rotation, in intrinsic rotation, the rotation matrices are ordered from left to right, that is the \(1\)st intrinsic rotation is on the leftest side, then the \(2\)nd rotation matrix. If you are curious why the order is arranged this way, <a href="https://dominicplein.medium.com/extrinsic-intrinsic-rotation-do-i-multiply-from-right-or-left-357c38c1abfd">here</a> is a good tutorial.</p>
+<h2 id="sec-1-2">1.2 Rotate vector around a vector</h2>
+<p>For the discussion so far, we are talking about rotating a vector \(\vec{r}\) around some axis. How about rotating around arbitrary unit vector? Fortunately, there is a equation called <a href="https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula">Rodgrigues's rotation formula</a></p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^\prime &= \vec{r} + \sin(\theta)\vec{k}\times \vec{r} + (1-\cos\theta)\vec{k}\times\vec{k}\times\vec{r} \nonumber \\
+& = \mathbf{R}\vec{r},
+\end{align}
+$$
+</div>
+<p>where</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \mathbf{I} + \sin\theta\mathbf{K} + (1-\cos\theta)\mathbf{K}^2,
+\label{eqn:rotate_vector}
+$$
+</div>
+<p>and</p>
+<div class="mathjax">
+$$
+\mathbf{K} = \begin{bmatrix}
+0 & -k_z & k_y \\
+k_z & 0 & -k_x \\
+-k_y & k_x & 0 \\
+\end{bmatrix},
+$$
+</div>
+<div class="mathjax">
+$$
+\mathbf{K}^2 = \begin{bmatrix}
+-k_z^2 - k_y^2 & k_xk_y & k_xk_z \\
+k_xk_y & -k_z^2-k_x^2 & k_yk_z \\
+k_xk_z & k_yk_z & -k_y^2-k_x^2 \\
+\end{bmatrix}.
+$$
+</div>
+<p>So the rotation matrix can be written as</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \begin{bmatrix}
+k_x^2+(k_z^2 + k_y^2)\cos\theta & -k_z\sin\theta + k_xk_y (1-\cos\theta) & k_y\sin\theta+k_xk_z(1-\cos\theta) \\
+k_z\sin\theta + k_xk_y(1-\cos\theta)) & k_y^2 + (k_z^2+k_x^2)\cos\theta & -k_x\sin\theta + k_yk_z (1-\cos\theta) \\
+-k_y\sin\theta + k_xk_z(1-\cos\theta) & k_x\sin\theta + k_yk_z(1-\cos\theta) & k_z^2 + (k_y^2+k_x^2)\cos\theta \\
+\end{bmatrix}.
+\label{eqn:rodgrigues_matrix}
+$$
+</div>
+<p>For example if \(\vec{k}=[0, 0, 1]^T\) (i.e., rotate around \(z\)-axis), then</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{K} &= \begin{bmatrix}
+0 & -1 & 0 \\
+1 & 0 & 0 \\
+0 & 0 & 0 \\
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>and</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{K}^2 = \begin{bmatrix}
+ -1 & 0  & 0 \\
+  0 & -1 & 0 \\
+  0 & 0  & 0 \\
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R} &= \mathbf{I} + \sin\theta\mathbf{K} + (1-\cos\theta)\mathbf{K}^2 \nonumber \\
+&= \begin{bmatrix}
+\cos\theta & -\sin\theta & 0 \\
+\sin\theta & \cos\theta & 0 \\
+0 & 0 & 1\\
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>it is same as Eq. (\ref{eqn:rotate_z}).</p>
+<p>Eq. (\ref{eqn:rotate_vector}) is not the only way to represent the rotation with angle \(\theta\) around some unit vector \(\vec{k}\). Another way is the <a href="https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation">exponential map</a></p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R} &= \exp^{\theta \mathbf{K}},
+\end{align}
+$$
+</div>
+<p>which can be shown to be equivalent to Eq. (\ref{eqn:rotate_vector}) with Taylor expansion.</p>
+<h2 id="sec-1-3">1.3 Vector coordinates in rotated coordinate systems</h2>
+<p>For the discussion so far, we are talking about rotating a vector \(\vec{r}\) to \(\vec{r}^\prime\), and get its coordinate in the original coordinate system. Another important problem is if we have</p>
+<ol>
+<li>coordinate system \(xyz\),</li>
+<li>coordinate system \(x^\prime y^\prime z^\prime\), which is rotated from \(xyz\),</li>
+<li>a vector, i.e., \(\vec{r}\), and its coordinates in one coordinate system (e.g., \(xyz\)),</li>
+</ol>
+<p>how to get its coordinates in the other coordinate system (e.g., \(x^\prime y^\prime z^\prime\))?</p>
+<p>For example, in Fig. (<a href="#img-rotate_x45_rotate_frame">11</a>), coordinate system \(x^\prime y^\prime z^\prime\) is got by rotating \(xyz\) around \(x\)-axis by 45 degree. It is easy to see \(\vec{x}^\prime=\vec{x}\).</p>
+<figure id="img-rotate_x45_rotate_frame" class="figure">
+<img src="./image/rotate_x45_rotate_frame.svg" alt="./image/rotate_x45_rotate_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.11.</span> Rotate \(xyz\) coordinate system 45 degree around \(x\)-axis</figcaption>
+</figure>
+<p>Apparently, in \(xyz\) coordinate system, the coordinates of \(\vec{r}\) is \([0, 1, 0]^T\), and in \(x^\prime y^\prime z^\prime\) coordinate system, its coordinates are \([0, \frac{\sqrt{2}}{2}, -\frac{\sqrt{2}}{2}]^T\). For this toy example, it is trivial to get the coordinates in both coordinate systems. But in general, how do we get the coordinates in the other coordinate system?</p>
+<p>Start with \(xyz\) coordinate system (the coordinates \(\vec{r}\) are known), rotate \(xyz\) around \(x\)-axis by <b>45</b> degree, we get the new coordinate system \(x^\prime y^\prime z^\prime\) (passive rotation). To get the coordinates of \(\vec{r}\) in this new coordinate system, it is equivalent to keep the \(xyz\) fixed, then rotate \(\vec{r}\) around \(x\)-axis by <b>-45</b> degree (active rotation), that is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^\prime &= \mathbf{R}_x(-45^\circ)\vec{r} \\
+&= \begin{bmatrix} 1 & 0 & 0 \\
+0 & \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
+0 & -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2}\\
+\end{bmatrix} \begin{bmatrix} 0 \\ 1 \\ 0\end{bmatrix} \\
+& = \begin{bmatrix} 0 \\ \frac{\sqrt{2}}{2} \\ -\frac{\sqrt{2}}{2}\end{bmatrix}.
+\label{eqn:rotate_x45}
+\end{align}
+$$
+</div>
+<p>That matches with our observation.
+Another way to solve this problem is in \(x^\prime y^\prime z^\prime\) coordinate system, if we rotate \(\vec{r}\) around \(x\)-axis by 45 degree, then we know its coordinate will be \([0, 1, 0]^T\), that is</p>
+<div class="mathjax">
+$$
+\begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix} = \mathbf{R}_x(45^\circ)\vec{r}^\prime,
+$$
+</div>
+<p>which is same as Eq. (\ref{eqn:rotate_x45}).</p>
+<p>Let's see what happens for multiple rotations. In Fig. (<a href="#img-rotate_x45_z45_rotate_frame">12</a>), \(x^\prime y^\prime z^\prime\) from Fig. (<a href="#img-rotate_x45_rotate_frame">11</a>) is rotated 45 degree around \(z\)-axis to reach \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\). Apparently, in \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\), the coordinates of \(\vec{r}\) is \([\frac{\sqrt{2}}{2}, \frac{1}{2}, -\frac{1}{2}]^T\).</p>
+<figure id="img-rotate_x45_z45_rotate_frame" class="figure">
+<img src="./image/rotate_x45_z45_rotate_frame.svg" alt="./image/rotate_x45_z45_rotate_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.12.</span> Rotate \(xyz\) coordinate system 45 degree around \(x\)-axis, then 45 degree around \(z\)-axis</figcaption>
+</figure>
+<p>Same as before, let us start with \(x^\prime y^\prime z^\prime\) coordinate system (the coordinates in \(x^\prime y^\prime z^\prime\) (i.e., \(\vec{r}^\prime\)) are known as we shown above), rotate \(x^\prime y^\prime z^\prime\) around \(z\)-axis by <b>45</b> degree, we get the new coordinate system \(x^{\prime\prime} y^{\prime\prime} z^{\prime\prime}\). To get the coordinates of \(\vec{r}\) in this new coordinate system, it is equivalent to keep the \(x^\prime y^\prime z^\prime\) fixed, then rotate \(\vec{r}^\prime\) around \(z\)-axis by <b>-45</b> degree, that is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^{\prime\prime} &= \mathbf{R}_{z}(-45^\circ)\vec{r}^\prime \nonumber \\
+&= \begin{bmatrix} \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
+-\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
+0 & 0 & 1\\
+\end{bmatrix} \begin{bmatrix} 0 \\ \frac{\sqrt{2}}{2} \\ -\frac{\sqrt{2}}{2}\end{bmatrix} \nonumber \\
+& = \begin{bmatrix} \frac{1}{2} \\ \frac{1}{2} \\ -\frac{\sqrt{2}}{2}\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Or</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^{\prime\prime} &= \mathbf{R}_{z}(-90^\circ)\mathbf{R}_x(-90^\circ)\vec{r}.
+\end{align}
+$$
+</div>
+<p>However, such result doesn't match with our expectation. What's wrong here? The problem is that we want to get the coordinates of \(\vec{r}^\prime\) in \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\) coordinate system, to do that, we rotate \(x^\prime y^\prime z^\prime\) around \(z\)-axis, in \(x^\prime y^\prime z^\prime\), we are rotating the coordinate system around unit vector \(\vec{k}^\prime=[0, \frac{\sqrt{2}}{2}, \frac{\sqrt{2}}{2}]^T\) by 45 degree. Equivalently, if \(x^\prime y^\prime z^\prime\) is fixed, \(\vec{r}^\prime\) is rotated around \(\vec{k}^\prime\) by -45 degree. According to Eq. (\ref{eqn:rotate_vector}),</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{K} &= \begin{bmatrix}
+0 & -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
+\frac{\sqrt{2}}{2} & 0 & 0 \\
+-\frac{\sqrt{2}}{2} & 0 & 0 \\
+\end{bmatrix}, \\
+\mathbf{R} &= \mathbf{I} + \frac{-\sqrt{2}}{2}\mathbf{K} + (1-\frac{\sqrt{2}}{2})\mathbf{K}^2 \nonumber \\
+&= \mathbf{I} + \begin{bmatrix}
+0 & \frac{1}{2} & -\frac{1}{2} \\
+-\frac{1}{2} & 0 & 0 \\
+\frac{1}{2} & 0 & 0 \\
+\end{bmatrix} +
+(1-\frac{\sqrt{2}}{2}) \begin{bmatrix} -1 & 0 & 0 \\
+0 & -\frac{1}{2} & \frac{1}{2} \\
+0 & \frac{1}{2} & -\frac{1}{2}\\
+\end{bmatrix} \nonumber \\
+&= \begin{bmatrix}
+\frac{\sqrt{2}}{2} & \frac{1}{2} & -\frac{1}{2} \\
+-\frac{1}{2} & \frac{1}{2}+\frac{\sqrt{2}}{4} & \frac{1}{2}-\frac{\sqrt{2}}{4} \\
+\frac{1}{2} & \frac{1}{2}-\frac{\sqrt{2}}{4} & \frac{1}{2}+\frac{\sqrt{2}}{4} \\
+\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Then</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^{\prime\prime} &= \mathbf{R}\vec{r}^\prime \nonumber \\
+&= \begin{bmatrix}
+\frac{\sqrt{2}}{2} & \frac{1}{2} & -\frac{1}{2} \\
+-\frac{1}{2} & \frac{1}{2}+\frac{\sqrt{2}}{4} & \frac{1}{2}-\frac{\sqrt{2}}{4} \\
+\frac{1}{2} & \frac{1}{2}-\frac{\sqrt{2}}{4} & \frac{1}{2}+\frac{\sqrt{2}}{4} \\
+\end{bmatrix}\begin{bmatrix} 0 \\ \frac{\sqrt{2}}{2} \\ -\frac{\sqrt{2}}{2}\end{bmatrix} \nonumber \\
+&= \begin{bmatrix} \frac{\sqrt{2}}{2} \\ \frac{1}{2} \\ -\frac{1}{2}\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>which is same as the expected coordinates.</p>
+<p>The other way to start with \(xyz\) (Fig. (<a href="#img-rotate_x45_z45_rotate_frame">12</a>)), rotate it around \(z\)-axis 45 degree (along with \(\vec{r}\)), then rotate around the new \(x\)-axis (i.e, \(x^{\prime\prime}\)-axis) 45 degree (intrinsic rotation), after these rotations, \(xyz\) will overlap with \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\), and the coordinates of \(\vec{r}\) in \(x^{\prime\prime}y^{\prime\prime}z^{\prime\prime}\) is \([0, 1, 0]^T\),</p>
+<div class="mathjax">
+$$
+\begin{bmatrix}0 \\ 1 \\ 0 \end{bmatrix} = \mathbf{R}_z(45^\circ)\mathbf{R}_x(45^\circ) \vec{r}^{\prime\prime}.
+$$
+</div>
+<p>Equivalently,</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{r}^{\prime\prime} &= \mathbf{R}_{x}(-45^\circ)\mathbf{R}_z(-45^\circ)\begin{bmatrix}0 \\ 1 \\ 0 \end{bmatrix} \nonumber \\
+&= \begin{bmatrix} 1 & 0 & 0 \\
+0 & \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
+0 & -\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2}\\
+\end{bmatrix} \begin{bmatrix} \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
+-\frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\
+0 & 0 & 1\\
+\end{bmatrix}\begin{bmatrix} 0 \\ 1 \\ 0\end{bmatrix} \nonumber \\
+&= \begin{bmatrix} \frac{\sqrt{2}}{2} \\ \frac{1}{2} \\ -\frac{1}{2}\end{bmatrix}.
+\end{align}
+$$
+</div>
+<p>Let's see a real <a href="https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf">example</a>, as shown in Fig. (<a href="#img-rotate_az_el_rotate_frame">13</a>),</p>
+<ol>
+<li>the origin point is the earth center, \(xyz\) is the earth-centered, earth-fixed coordinate system (we will talk more about this coordinate system soon),</li>
+<li>an object (e.g., a satellite) is in the direction of \(\vec{r}\), which is represented by two angles (i.e., azimuth \(az\), and elevation \(el\)),</li>
+<li>the object has its own coordinate system \(x^\prime y^\prime z^\prime\) (rotate \(xyz\) around \(\vec{x}\)-axis by \(az\) degree, then rotate around the new \(y\)-axis by \(-el\) degree),</li>
+</ol>
+<p>if we know coordinates of some vector (e.g., \(\vec{r}\)) in one coordinate system (e.g., \(x^\prime y^\prime z^\prime\)), how to find its corresponding coordinates in the other (e.g., \(xyz\))?</p>
+<figure id="img-rotate_az_el_rotate_frame" class="figure">
+<img src="./image/rotate_az_el_rotate_frame.svg" alt="./image/rotate_az_el_rotate_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.13.</span> Rotate \(xyz\) coordinate system 45 degree around \(x\)-axis, then 45 degree around \(z\)-axis</figcaption>
+</figure>
+<p>For example for unit vector \(\vec{r}\), we know its coordinates in \(x^\prime y^\prime z^\prime\) is \([1, 0, 0]^T\). We can</p>
+<ol>
+<li>Rotate \(\vec{r}\) around \(y^\prime\) by \(el\) degree, after that, \(z\) will overlap with \(z^\prime\),</li>
+<li>Then rotate \(\vec{r}\) again around \(z\) (or the rotated \(z^\prime\)) by \(-az\) degree, after that, the \(xyz\) coordinate system will perfectly overlap with \(x^\prime y^\prime z^\prime\),</li>
+<li>So after these rotations, the coordinates of \(\vec{r}\) in \(xyz\) coordinate system is \([1,0,0]^T\) (or \(\vec{r}\) in \(x^\prime y^\prime z^\prime\), denoted it as \(\vec{r}^\prime\)).</li>
+</ol>
+<p>The process can be written as</p>
+<div class="mathjax">
+$$
+\vec{r}^\prime = \mathbf{R}_y(el)\mathbf{R}_z(-az) \vec{r},
+$$
+</div>
+<p>which is the mapping from a coordinates in \(xyz\) coordinates to \(x^\prime y^\prime z^\prime\) coordinate system.
+Do you see why we layout the rotations from left to right (i.e.,\(1\)st rotation on the leftest side)?</p>
+<p>And equivalently, to convert a coordinates in \(x^\prime y^\prime z^\prime\) to \(xyz\) coordinate system,</p>
+<div class="mathjax">
+$$
+\vec{r} = \mathbf{R}_z(az)\mathbf{R}_y(-el) \vec{r}^\prime,
+$$
+</div>
+<p>which is the same equation as <a href="https://www.eutelsat.pl/files/contributed/support/pdf/azimuth-elevation-polarisation.pdf">Eq. (2-2) here</a> (ignore the polarization).</p>
+<p>To get the coordinate of \(\vec{r}\) in \(xyz\) coordinate system, another way is to start with a vector in \(xyz\) coordinate system with same coordinates of \(\vec{r}\) in \(x^\prime y^\prime z^\prime\) (i.e., \(\vec{r}^\prime=[1, 0, 0]\)),</p>
+<ol>
+<li>rotate the vector around \(z\)-axis by \(az\) degree. After the rotation, the new \(x\)-axis will align with the projection of \(\vec{r}\) on \(xy\) plane (\(xy\) plane doesn't change in this rotation).</li>
+<li>then rotate the vector around the new/rotated \(y\)-axis by \(-el\) degree.</li>
+</ol>
+<p>After these rotations, the vector \([1,0,0]^T\) (same coordinates in \(x^\prime y^\prime z^\prime\), i.e., \(\vec{r}^\prime\)) in \(xyz\) will overlap with \(\vec{r}\), that is</p>
+<div class="mathjax">
+$$
+\vec{r} = \mathbf{R}_z(az)\mathbf{R}_y(-el)\vec{r}^\prime.
+$$
+</div>
+<h1 id="sec-2">2 Frame</h1>
+<p>Frame is just another word for coordinate system. In this section, we will introduce some common frames that are widely used in navigation.</p>
+<h2 id="sec-2-1">2.1 ECEF</h2>
+<p><a href="https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system">Earth-centered, Earth-fixed</a> (ECEF) coordinate system is a convenient way to location any point relative to earth</p>
+<ol>
+<li>\(z\)-axis is from earth center to the north pole,</li>
+<li>\(x\)-axis is on the equator plane, from earth center to the prime meridian (longitude is \(0^\circ\)),</li>
+<li>\(y\)-axis is also on the equator plane, from earth center to \(90^\circ\) longitude.</li>
+</ol>
+<figure id="img-rotate_ecef_frame" class="figure">
+<img src="./image/rotate_ecef_frame.svg" alt="./image/rotate_ecef_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.14.</span> Earth-centered, Earth-fixed (ECEF) frame</figcaption>
+</figure>
+<h2 id="sec-2-2">2.2 GSC</h2>
+<p><a href="https://en.wikipedia.org/wiki/Geodetic_coordinates">Geographic coordinate system</a> is to define locations on earth surface, which is used by satellite navigation (e.g., GPS), for example for some location \(A\)</p>
+<ol>
+<li>Longitude (\(\lambda\)) is the rotation angle between prime meridian plane and the meridian plane \(A\) is on,</li>
+<li>Latitude (\(\phi\)) is the angle between the equatorial plane and the line that passes \(A\) and is normal to the ellipsoid (note, the line may not point to the center of earth as the earth is not a sphere),</li>
+<li>Height (\(h\)) is the distance between the point of interest and the ellipsoid surface.</li>
+</ol>
+<figure id="img-rotate_gsc_frame" class="figure">
+<img src="./image/rotate_gsc_frame.svg" alt="./image/rotate_gsc_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.15.</span> Geographic coordinate system</figcaption>
+</figure>
+<p>As shown in [<a id="cite-1-1" href="#reference-1">1</a>], to convert GSC to ECEF frame</p>
+<div class="mathjax">
+$$
+\begin{align}
+x = (N(\phi) + h)\cos\phi\cos\lambda \nonumber \\
+y = (N(\phi) + h)\cos\phi\sin\lambda \nonumber \\
+z = (\frac{b^2}{a^2}N(\phi) + h)\sin\phi,
+\label{eqn:gsc_to_ecef}
+\end{align}
+$$
+</div>
+<p>where \(a\) and \(b\) are the equatorial radius (e.g., \(xz\) plane at \(y=0\)) and the polar radius (center to north/south polar), and</p>
+<div class="mathjax">
+$$
+N(\phi) = \frac{a^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}}.
+$$
+</div>
+<p>To see how the above conversion works, let's see a simplified case with \(\lambda=0\), as shown in Fig. (<a href="#img-rotate_gsc_meridian">16</a>).</p>
+<figure id="img-rotate_gsc_meridian" class="figure">
+<img src="./image/rotate_gsc_meridian.svg" alt="./image/rotate_gsc_meridian.svg">
+<figcaption class="caption"><span class="tag">Fig.16.</span> Geographic coordinate system with \(\lambda=0\)</figcaption>
+</figure>
+<p>As \(p_o\) is on the ellipse, so we have</p>
+<div class="mathjax">
+$$
+\frac{x^2_{p_o}}{a^2} + \frac{z^2_{p_o}}{b^2} = 1.
+\label{eqn:gcs_meridian_ellipse}
+$$
+</div>
+<p>Take the derivative over \(x\), we have</p>
+<div class="mathjax">
+$$
+\frac{2x_{p_o}}{a^2} + \frac{2z_{p_o}}{b^2} \frac{dz_{p_o}}{dx_{p_o}} = 0.
+$$
+</div>
+<p>So</p>
+<div class="mathjax">
+$$
+\frac{dz_{p_o}}{dx_{p_o}} = -\frac{x_{p_o}b^2}{z_{p_o}a^2}.
+$$
+</div>
+<p>That's the slope of the tangent line at \(p_0\) to the ellipse. And line \(p \rightarrow p_o\) is orthogonal to the tangent line, so its slope is \(\frac{z_{p_o}a^2}{x_{p_o}b^2}\), that is</p>
+<div class="mathjax">
+$$
+\tan{\phi} = \frac{z_{p_o}a^2}{x_{p_o}b^2}.
+\label{eqn:gcs_meridian_slope}
+$$
+</div>
+<p>With Eqs. (\ref{eqn:gcs_meridian_ellipse}) and (\ref{eqn:gcs_meridian_slope}), \(x_{p_o}\) and \(y_{p_o}\) can be calculated as</p>
+<div class="mathjax">
+$$
+\begin{align}
+x_{p_o} &= \frac{a^2\cos\phi}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}},\nonumber \\
+z_{p_o} &= \frac{b^2\sin\phi}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}}.
+\end{align}
+$$
+</div>
+<p>The coordinates of \(p\) is straightforward</p>
+<div class="mathjax">
+$$
+\begin{align}
+x_{p} &= x_{p_o} + h\cos\phi = (\frac{a^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}} + h)\cos\phi,\nonumber \\
+z_{p} &= z_{p_o} + h\sin\phi = (\frac{b^2}{\sqrt{a^2\cos^2\phi + b^2\sin^2\phi}} + h)\sin\phi.
+\label{eqn:gsc_to_ecef2}
+\end{align}
+$$
+</div>
+<p>It is easy to see that Eq. (\ref{eqn:gsc_to_ecef2}) is same as Eq. (\ref{eqn:gsc_to_ecef}) when \(\lambda=0\).</p>
+<p>The case when \(\lambda\) is not equal to \(0\) is straightforward, see <a href="https://math.stackexchange.com/questions/175191/normal-to-ellipse-and-angle-at-major-axis">here</a> for more details.</p>
+<p>The ellipsoid parameter for <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84</a> is,</p>
+<div class="mathjax">
+$$
+\begin{align}
+a &= 6378137.0 m, \nonumber \\
+b &= 6356752.314245 m.
+\end{align}
+$$
+</div>
+<h2 id="sec-2-3">2.3 NED</h2>
+<p>North, east, down (NED) coordinate system is shown in Fig. (<a href="#img-rotate_ned_frame">17</a>),</p>
+<ol>
+<li>\(x\)-axis is tangent to meridians (to north),</li>
+<li>\(y\)-axis is tangent to parallels (circles from same latitude) (to east),</li>
+<li>\(z\)-axis is down to the earth center (to down).</li>
+</ol>
+<figure id="img-rotate_ned_frame" class="figure">
+<img src="./image/rotate_ned_frame.svg" alt="./image/rotate_ned_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.17.</span> North, east, down (NED) frame</figcaption>
+</figure>
+<p>Rotation from NED frame to ECEF frame,</p>
+<div class="mathjax">
+$$
+\vec{r}_{ECEF} - \vec{o}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90^\circ) \vec{r}_{NED},
+$$
+</div>
+<p>where \(\vec{r}_{NED}\) is the coordinates in NED frame, \(\vec{r}_{ECEF}\) is the corresponding coordinates in ECEF frame, and \(\vec{o}_{ECEF}\) is the origin of the NED frame in ECEF frame. The rotation matrix can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_{NED}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el-90^\circ).
+\end{align}
+$$
+</div>
+<p>Or the rotation matrix from ECEF frame to NED frame is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_{ECEF}^{NED} &= \mathbf{R}_y(el+90^\circ)\mathbf{R}_z(-az) \nonumber \\
+& = \begin{bmatrix} -\sin(el)\cos(az) & -\sin(az)\sin(el) & \cos(el)\\
+ -\sin(az) & \cos(az) & 0 \\
+ -\cos(az)\cos(el) & -\sin(az)\cos(el) & -\sin(el)\\
+ \end{bmatrix}.
+\end{align}
+$$
+</div>
+<h2 id="sec-2-4">2.4 ENU</h2>
+<p>East, north, up (ENU) coordinate system, as shown in Fig. (<a href="#img-rotate_enu_frame">18</a>), is very close to NED coordinate system.</p>
+<ol>
+<li>\(x\)-axis is tangent to parallels (circles from same same latitude) (to east),</li>
+<li>\(y\)-axis is tangent to meridians (to north),</li>
+<li>\(z\)-axis is up from the earth center (to up).</li>
+</ol>
+<figure id="img-rotate_enu_frame" class="figure">
+<img src="./image/rotate_enu_frame.svg" alt="./image/rotate_enu_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.18.</span> East, north, up (ENU) frame</figcaption>
+</figure>
+<p>Rotation from ENU frame to ECEF frame,</p>
+<div class="mathjax">
+$$
+\vec{r}_{ECEF} - \vec{o}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(90^\circ-el) \mathbf{R}_{z^{\prime\prime}}(90^\circ)\vec{r}_{ENU},
+$$
+</div>
+<p>where \(\vec{r}_{ENU}\) is the coordinates in ENU frame, \(\vec{r}_{ECEF}\) is the corresponding coordinates in ECEF frame, and \(\vec{o}_{ECEF}\) is the origin of the NED frame in ECEF frame. The rotation matrix can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_{ENU}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(90^\circ-el)\mathbf{R}_{z^{\prime\prime}}(90^\circ).
+\end{align}
+$$
+</div>
+<p>Or the rotation matrix from ECEF frame to ENU frame is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_{ECEF}^{ENU} &= \mathbf{R}_z(-90^\circ) \mathbf{R}_y(el-90^\circ)\mathbf{R}_z(-az) \nonumber \\
+& = \begin{bmatrix} \sin(az) & \cos(az) & 0 \\
+ -\sin(el)\cos(az) & -\sin(az)\sin(el) & \cos(el) \\
+ \cos(az)\cos(el) & \sin(az)\cos(el) & \sin(el) \\
+ \end{bmatrix}.
+\end{align}
+$$
+</div>
+<h2 id="sec-2-5">2.5 Satellite</h2>
+<p>Satellite frame is shown in Fig. (<a href="#img-rotate_satellite_frame">19</a>),</p>
+<ol>
+<li>\(x\)-axis is up from the earth center (to satellite),</li>
+<li>\(y\)-axis is in the polarization plane and along the electric field vector direction,</li>
+<li>\(z\)-axis is in the polarization plane and orthogonal to the \(y\)-axis (along the magnetic filed vector direction).</li>
+</ol>
+<figure id="img-rotate_satellite_frame" class="figure">
+<img src="./image/rotate_satellite_frame.svg" alt="./image/rotate_satellite_frame.svg">
+<figcaption class="caption"><span class="tag">Fig.19.</span> Satellite frame</figcaption>
+</figure>
+<p>Rotation from satellite frame to ECEF frame,</p>
+<div class="mathjax">
+$$
+\vec{r}_{ECEF} - \vec{o}_{ECEF}  = \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el) \mathbf{R}_{x^{\prime\prime}}(pol)\vec{r}_{satellite},
+$$
+</div>
+<p>where \(\vec{r}_{satellite}\) is the coordinates in satellite frame, \(\vec{r}_{ECEF}\) is the corresponding coordinates in ECEF frame, and \(\vec{o}_{ECEF}\) is the origin of the satellite frame in ECEF frame. The rotation matrix can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_{satellite}^{ECEF} &= \mathbf{R}_z(az)\mathbf{R}_{y^\prime}(-el)\mathbf{R}_{x^{\prime\prime}}(pol).
+\end{align}
+$$
+</div>
+<p>Or the rotation matrix from ECEF frame to satellite frame is</p>
+<div class="mathjax">
+$$
+\begin{align}
+\mathbf{R}_{ECEF}^{satellite} &= \mathbf{R}_x(-pol) \mathbf{R}_y(el)\mathbf{R}_z(-az).
+\end{align}
+$$
+</div>
+<h2 id="sec-2-6">2.6 Body</h2>
+<p>Body frame is the user coordinate system, usually user can arbitrarily choose the coordinate system, e.g., when it is leveled on ground, and facing north, the body frame is same as NED frame, that is</p>
+<ol>
+<li>\(x\)-axis points to the nose of the body (or heading direction),</li>
+<li>\(y\)-axis points to the right of the \(x\)-axis (when facing forward),</li>
+<li>\(z\)-axis points down through the bottom of the body.</li>
+</ol>
+<p>In other words, in this case, when the body is facing north and leveled (yaw, pitch, roll are all \(0\)), its \(x\)-axis points north, \(y\)-axis points east, and \(z\)-axis points down to the earth center.</p>
+<p>The main task for many applications is to estimate the body orientation (i.e., yaw, pitch and roll) (e.g., with reference to NED frame). And inertial measurement unit (IMU) is usually attached to the body to help estimating the body orientation. In many cases, the body frame may be same as the IMU frame.</p>
+<h3 id="sec-2-6-1">2.6.1 Estimate pitch and roll with accelerometer</h3>
+<p>When the IMU is leveled, its reading in NED frame is</p>
+<div class="mathjax">
+$$
+\vec{g}_{NED} = [0, 0, g],
+$$
+</div>
+<p>where \(g\) is the gravitational acceleration (e.g., \(\sim 9.81m/s^2\) on earth surface). It is easy to see that rotate around NED \(z\)-axis doesn't change the measured signal. The measurement is in IMU frame (or body frame)</p>
+<div class="mathjax">
+$$
+\vec{g}_{body} = \begin{bmatrix} a_x & a_y & a_z\end{bmatrix}.
+$$
+</div>
+<p>And define the rotation from IMU frame (body frame) to NED frame as (assume no more acceleration besides gravitational acceleration \(g\))</p>
+<div class="mathjax">
+$$
+\vec{g}_{NED} = \mathbf{R}_y(\theta) \mathbf{R}_x(\phi) \vec{g}_{body}.
+$$
+</div>
+<p>Or equivalently,</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{g}_{body} &= (\mathbf{R}_y(\theta) \mathbf{R}_x(\phi))^T \vec{g}_{NED} \nonumber \\
+&=\begin{bmatrix}
+\cos(\theta) & 0  & -\sin(\theta)\\
+\sin(\phi)\sin(\theta)& \cos(\phi) & \sin(\phi)\cos(\theta)\\
+\sin(\theta)\cos(\phi) & -\sin(\phi) & \cos(\phi)\cos(\theta)
+\end{bmatrix} \begin{bmatrix}
+0 \\ 0 \\ g
+\end{bmatrix},
+\end{align}
+$$
+</div>
+<p>then \(\theta\), \(\phi\) can be estimated as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\theta &= \arcsin(\frac{-a_x}{g}), \\
+\phi &= \arctan(\frac{a_y}{a_z}).
+\end{align}
+$$
+</div>
+<h3 id="sec:gyroscope">2.6.2 Gyroscope</h3>
+<p>Gyroscope measures the angular velocity (e.g., \(deg/s\)), e.g.,</p>
+<div class="mathjax">
+$$
+\hat{\vec{\omega}} = \vec{\omega} + \vec{b} + \vec{n},
+$$
+</div>
+<p>where \(\vec{\omega}\) is the true angular velocity, \(\vec{b}\) is the bias, and \(\vec{n}\) is the additive noise.</p>
+<p>In practice, the gyroscope may send the measured angular velocity at some fixed rate (e.g., 200Hz), that is, every \(\delta_t\) seconds. How to use such information to update the orientation of the body/IMU frame?
+For example, at time index \(t-1\), we have the rotation matrix \(\mathbf{R}_{t-1}\), that maps arbitrary vector in body frame (\(\vec{r}_{t-1, body}\)) to NED frame (\(\vec{r}_{t-1, NED}\)),</p>
+<div class="mathjax">
+$$
+\vec{r}_{t-1, NED} = \mathbf{R}_{t-1} \vec{r}_{t-1, body},
+$$
+</div>
+<p>or</p>
+<div class="mathjax">
+$$
+\vec{r}_{t-1, body} = \mathbf{R}_{t-1}^T \vec{r}_{t-1, NED},
+$$
+</div>
+<p>And at time index \(t\) (i.e., \(\delta_t\) seconds after time index \(t-1\)), gyroscope sends out the angular velocity measurement \(\hat{\vec{w}}_t\). As \(\delta_t\) is so small, it is not unreasonable to think that \(\hat{\vec{w}}_t\) is constant over the last \(\delta_t\) seconds. And if we ignore the gryo bias \(\vec{b}\) for simplicity now, during the last \(\delta_t\) seconds, the body/IMU frame rotates with angle \(\hat{\vec{w}}_t \delta_t\). Thus the rotation from body/IMU frame of time \(t-1\) to \(t\) is</p>
+<div class="mathjax">
+$$
+\vec{r}_{t, body} = \mathbf{R}(-\hat{\vec{w}}_t \delta_t) \vec{r}_{t-1, body}.
+$$
+</div>
+<p>You may notice the negative sign before the rotation angle in the above equation. That's because the measured rotation is on the frame (coordination system) (i.e., passive rotation), if we want to apply the same rotation on the vector, it needs to be rotated in negative angle (active rotation).</p>
+<div class="mathjax">
+$$
+\vec{r}_{t, body} = \mathbf{R}(-\hat{\vec{w}}_t \delta_t)\mathbf{R}_{t-1}^T \vec{r}_{t, NED},
+\label{eqn:rotate_gyro_ned2body}
+$$
+</div>
+<p>or</p>
+<div class="mathjax">
+$$
+\vec{r}_{t, NED} = \mathbf{R}_{t-1}\mathbf{R}(\hat{\vec{w}}_t \delta_t) \vec{r}_{t, body}.
+$$
+</div>
+<p>The only remaining question is how to get the rotation matrix (e.g., \(\mathbf{R}(-\hat{\vec{w}}_t \delta_t)\)) from the gyro measurement. As shown in [<a id="cite-2-1" href="#reference-2">2</a>], for the measurement \(\hat{\vec{\omega}} = [\hat{\omega}_x, \hat{\omega}_y, \hat{\omega}_z]\), the corresponding rotation can be viewed as rotating around unit vector \(\frac{\hat{\vec{\omega}}}{\lVert \hat{\vec{\omega}}\rVert}\) by \(\lVert \hat{\vec{\omega}}\rVert \delta_t\) degree. The rotation matrix can be got with Eq. (\ref{eqn:rotate_vector}).</p>
+<h1 id="sec-3">3 Rotation representation</h1>
+<h2 id="sec-3-1">3.1 Rotation matrix</h2>
+<p>Rotation matrix is a straightforward way to represent a rotation</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \begin{bmatrix}
+m_{00} & m_{01} & m_{02} \\
+m_{10} & m_{11} & m_{12} \\
+m_{20} & m_{21} & m_{22} \\
+\end{bmatrix}.
+\label{eqn:rotation_matrix_general}
+$$
+</div>
+<p>It clearly states that its a mapping from one coordinate system to the other.
+For the discussion so far, we adopt the convention of expressing vectors a column. In this case, the vector is rotated by pre-multiplying the rotation matrix, that is</p>
+<div class="mathjax">
+$$
+\vec{r}^\prime = \mathbf{R} \vec{r}.
+$$
+</div>
+<p>Rotation matrix has some nice <a href="https://en.wikipedia.org/wiki/Rotation_matrix">properties</a>.
+From Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that</p>
+<div class="mathjax">
+$$
+\mathbf{R}^{-1} = \mathbf{R}^T,
+$$
+</div>
+<p>as \(\mathbf{R}(\theta)\mathbf{R}(-\theta) = \vec{I}\), and \(\mathbf{R}(\theta) = \mathbf{R}(-\theta)^T\).</p>
+<p>In some literature, the vector is expressed as a row, and the rotation is applied by post-multiplying the rotation matrix,</p>
+<div class="mathjax">
+$$
+\vec{r}^{\prime T} = \vec{r}^T \mathbf{R}^T.
+$$
+</div>
+<p>In this case, the rotation matrix is transposed.</p>
+<p><a href="https://stevendumble.com/attitude-representations-understanding-direct-cosine-matrices-euler-angles-and-quaternions">Direct cosine matrix</a> is also very close to the rotation matrix defined above. The only difference is that it rotates the coordinate system, instead of the vector, that is</p>
+<div class="mathjax">
+$$
+\mathbf{R}_{DCM} = \mathbf{R}^T.
+$$
+</div>
+<h3 id="sec-3-1-1">3.1.1 Rotation matrix to rotation vector and angle</h3>
+<p>Eq. (\ref{eqn:rodgrigues_matrix}) shows how to get the rotation matrix from the unit vector and the rotation angle. To get the rotation vector (rotation axis, i.e., \(\vec{k}\)) and the corresponding rotation angel (\(\theta\)) from the rotation matrix, you may observe that, if we rotate around the rotation vector, then its coordinates will not change,</p>
+<div class="mathjax">
+$$
+\mathbf{R}\vec{k} = \vec{k},
+$$
+</div>
+<p>which means that \(\vec{k}\) is the eigenvector of \(\mathbf{R}\), corresponding to eigenvalue 1.</p>
+<p>And the trace of Eq. (\ref{eqn:rodgrigues_matrix}) is</p>
+<div class="mathjax">
+$$
+\DeclareMathOperator{\tr}{Tr}
+\tr(\mathbf{R}) = 1+2\cos\theta.
+\label{eqn:rotation_matrix_angle}
+$$
+</div>
+<div class="bs-example">
+<div class="mathjax">
+$$
+\mathbf{R} = \begin{bmatrix}
+1& 0& 0 \\
+0& \cos(30^\circ)& -\sin(30^\circ) \\
+0& \sin(30^\circ)& \cos(30^\circ) \\
+\end{bmatrix} \nonumber
+$$
+</div>
+Its eigenvector corresponding to eigenvalue 1 is \([1, 0, 0]^T\), so the rotation vector is \([1, 0, 0]^T\). It matches the expectation as it is the rotation matrix around \(x\)-axis. From Eq. (\ref{eqn:rotation_matrix_angle}), the rotation angle is \(\pm 30^\circ\). Put \(\pm 30^\circ\) and the rotation vector into Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that \(\theta=30^\circ\).
+</div>
+<h2 id="sec-3-2">3.2 Euler Angle [<a id="cite-3-1" href="#reference-3">3</a>]</h2>
+<h3 id="sec-3-2-1">3.2.1 Euler Angle to Rotation Matrix</h3>
+<p>Suppose we have Euler angle \(\phi\), \(\theta\) and \(\psi\) that are rotation around \(x\), \(y\), and \(z\)-axis respectively. And if the rotation is in \(xyz\) order (i.e., \(x\)-axis first), then the rotation matrix can be written as</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \begin{bmatrix}
+\cos\psi & -\sin\psi & 0 \\
+\sin\psi & \cos\psi & 0 \\
+0 & 0 & 1
+\end{bmatrix} \begin{bmatrix}
+ \cos\theta & 0 & \sin\theta\\
+ 0 & 1 & 0 \\
+ -\sin\theta & 0 & \cos\theta\\
+\end{bmatrix} \begin{bmatrix}
+1 & 0 & 0 \\
+0 & \cos\phi & -\sin\phi\\
+0 & \sin\phi & \cos\phi\\
+\end{bmatrix}.
+$$
+</div>
+<p>After simplification, it is</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \begin{bmatrix}
+\cos\psi\cos\theta & \cos\psi\sin\theta\sin\phi - \sin\psi\cos\phi & \sin\psi\sin\phi + \cos\psi\sin\theta\cos\phi \\
+\sin\psi\cos\theta & \sin\psi\sin\theta\sin\phi + \cos\psi\cos\phi & -\cos\psi\sin\phi + \sin\psi\sin\theta\cos\phi \\
+-\sin\theta & \cos\theta\sin\phi & \cos\theta\cos\phi
+\end{bmatrix}.
+\label{eqn:rotation_euler}
+$$
+</div>
+<h3 id="sec-3-2-2">3.2.2 Rotation Matrix to Euler Angle</h3>
+<p>With Eq. (\ref{eqn:rotation_euler}), if \(\mathbf{R}\) is known, \(\theta\) can be estimated with</p>
+<div class="mathjax">
+$$
+m_{20} = -\sin\theta,
+$$
+</div>
+<p>that is \(\theta = -\arcsin(m_{20})\).
+And when \(\cos\theta\) is not \(0\), \(\phi\) and \(\psi\) can be estimated with</p>
+<div class="mathjax">
+$$
+\begin{align}
+\frac{m_{21}}{m_{22}} &= \tan\phi, \nonumber \\
+\frac{m_{10}}{m_{00}} &= \tan\psi.
+\end{align}
+$$
+</div>
+<p>If \(\cos\theta\) is \(0\) (i.e., \(\theta=\pm 90^\circ\)), \(\phi\) and \(\psi\) will not have unique solution as we will show shortly.</p>
+<h3 id="sec-3-2-3">3.2.3 Gimbal Lock</h3>
+<p>In Eq. (\ref{eqn:rotation_euler}), if \(\theta=90^\circ\), the rotation matrix becomes</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \begin{bmatrix}
+0 & \sin(\phi - \psi)& \cos(\phi - \psi) \\
+0 & \cos(\phi - \psi)& -\sin(\phi - \psi) \\
+-1 & 0 & 0
+\end{bmatrix}.
+$$
+</div>
+<p>In this case, from the rotation matrix \(\mathbf{R}\), there is no way to identify both \(\phi\) and \(\psi\), and all we have is \(\phi-\psi\). In this case, we basically lose one degree of freedom (we can arbitrarily set <a href="https://github.com/PX4/PX4-Autopilot/blob/main/src/lib/matrix/matrix/Euler.hpp#L96">\(\phi\) to be \(0\)</a>, then get the corresponding \(\psi\)).</p>
+<p>Similarly when \(\theta=-90^\circ\), the rotation matrix becomes</p>
+<div class="mathjax">
+$$
+\mathbf{R} = \begin{bmatrix}
+0 & -\sin(\phi + \psi) & -\cos(\phi + \psi) \\
+0 & \cos(\phi + \psi) & -\sin(\phi + \psi) \\
+1 & 0 & 0
+\end{bmatrix}.
+$$
+</div>
+<h2 id="sec-3-3">3.3 Quaternion</h2>
+<p>The concept of <a href="https://github.com/memsindustrygroup/Open-Source-Sensor-Fusion/blob/master/docs/Quaternions1.docx">quaternion</a> is very close to complex number. The only difference is that it has 4 components, i.e.,</p>
+<div class="mathjax">
+$$
+\vec{q}=q_0 + q_1\mathbf{i} + q_2\mathbf{j} + q_3\mathbf{k}.
+$$
+</div>
+<p>Its conjugate is</p>
+<div class="mathjax">
+$$
+\vec{q}^*=q_0 - q_1\mathbf{i} - q_2\mathbf{j} - q_3\mathbf{k}.
+$$
+</div>
+<p>Its norm is</p>
+<div class="mathjax">
+$$
+\lVert\vec{q}\rVert=\sqrt{q_0^2 + q_1^2 + q_2^2 + q_3^2}.
+$$
+</div>
+<p>Its inverse is</p>
+<div class="mathjax">
+$$
+\vec{q}^{-1} = \frac{\vec{q}^*}{\lVert\vec{q}\rVert^2}.
+$$
+</div>
+<p>Rotation around a unit vector \(\vec{k} = [k_x, k_y, k_z]^T\) by angle \(\theta\) can be represented by a quaternion as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{q} &= [\cos(\frac{\theta}{2}), k_x\sin(\frac{\theta}{2}), k_y\sin(\frac{\theta}{2}), k_z\sin(\frac{\theta}{2})]^T \nonumber \\
+& = \cos(\frac{\theta}{2}) + k_x\sin(\frac{\theta}{2}) \mathbf{i} + k_y\sin(\frac{\theta}{2}) \mathbf{j} + k_z\sin(\frac{\theta}{2}) \mathbf{k}.
+\end{align}
+$$
+</div>
+<p>It is easy to show that \(\lVert\vec{q}\rVert=1\). Let's see what we get by applying \(\vec{q}\vec{r}\vec{q}^*\),</p>
+<div class="mathjax">
+$$
+\begin{alignat}{6}
+\vec{q}\vec{r}\vec{q}^* = &(&\cos(\frac{\theta}{2}) && + k_x\sin(\frac{\theta}{2}) &\mathbf{i}& + k_y\sin(\frac{\theta}{2}) &\mathbf{j}& + k_z\sin(\frac{\theta}{2}) &\mathbf{k})& \times \nonumber \\
+  &(& 0 && + r_x&\mathbf{i}& + r_y&\mathbf{j}& + r_z&\mathbf{k})& \times \nonumber \\
+  &(&\cos(\frac{\theta}{2}) && - k_x\sin(\frac{\theta}{2}) &\mathbf{i}& - k_y\sin(\frac{\theta}{2}) &\mathbf{j}& - k_z\sin(\frac{\theta}{2}) &\mathbf{k})&  .\nonumber \\
+\end{alignat}
+$$
+</div>
+<p>Here we align the components of each quaternion, so we can apply the quaternion multiplication easily.
+After simplification, it can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{q}\vec{r}\vec{q}^* &= \begin{bmatrix}
+k_x^2+(k_z^2 + k_y^2)\cos\theta & -k_z\sin\theta + k_xk_y (1-\cos\theta) & k_y\sin\theta+k_xk_z(1-\cos\theta) \\
+k_z\sin\theta + k_xk_y(1-\cos\theta)) & k_y^2 + (k_z^2+k_x^2)\cos\theta & -k_x\sin\theta + k_yk_z (1-\cos\theta) \\
+-k_y\sin\theta + k_xk_z(1-\cos\theta) & k_x\sin\theta + k_yk_z(1-\cos\theta) & k_x^2 + (k_y^2+k_x^2)\cos\theta \\
+\end{bmatrix} \begin{bmatrix}
+r_x \\ r_y \\ r_z
+\end{bmatrix}.
+\label{eqn:rodgrigues_matrix_quat}
+\end{align}
+$$
+</div>
+<p>For example, for the top left item in the rotation matrix (the item corresponds to \(r_x\mathbf{i}\)),</p>
+<div class="mathjax">
+$$
+\begin{align}
+&\cos(\frac{\theta}{2})^2 + (k_x^2-k_y^2 - k_z^2)\sin(\frac{\theta}{2})^2 \nonumber \\
+&= 1 - 2\sin(\frac{\theta}{2})^2(k_y^2+k_z^2) \nonumber \\
+& = 1 - (1-\cos\theta)(k_y^2+k_z^2) \nonumber \\
+& = k_x^2 + (k_y^2+k_z^2)\cos\theta.
+\end{align}
+$$
+</div>
+<p>It is easy to see that Eq. (\ref{eqn:rodgrigues_matrix_quat}) is same as the rotation matrix in Eq. (\ref{eqn:rodgrigues_matrix}).</p>
+<h3 id="sec-3-3-1">3.3.1 Quaternion to rotation matrix [<a id="cite-4-1" href="#reference-4">4</a>]</h3>
+<p>For a general rotation quaternion \(\vec{q}=q_0 + q_1\mathbf{i} + q_2\mathbf{j} + q_3\mathbf{k}\),</p>
+<div class="mathjax">
+$$
+\begin{alignat}{6}
+\vec{q}\vec{r}\vec{q}^* = &(&q_0 && + q_1 &\mathbf{i}& + q_2 &\mathbf{j}& + q_3 &\mathbf{k})& \times \nonumber \\
+  &(& 0 && + r_x&\mathbf{i}& + r_y&\mathbf{j}& + r_z&\mathbf{k})& \times \nonumber \\
+  &(&q_0 && - q_1 &\mathbf{i}& - q_2 &\mathbf{j}& - q_3 &\mathbf{k})& \nonumber \\
+\end{alignat}
+$$
+</div>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{q}\vec{r}\vec{q}^* &= \begin{bmatrix}
+q_0^2+q_1^2 - q_2^2 - q_3^2 & -2q_0q_3+2q_1q_2 & 2q_0q_2 + q_1q_3 \\
+2q_0q_3 + 2q_1q_2 & q_0^2 -q_1^2+ q_2^2 - q_3^2 & -2q_0q_1+2q_2q_3 \\
+-2q_0q_2+2q_1q_3 & 2q_0q_1 + 2q_2q_3 & q_0^2-q_1^2-q_2^2+q_3^2 \\
+\end{bmatrix} \begin{bmatrix}
+r_x \\ r_y \\ r_z
+\end{bmatrix}.
+\label{eqn:rotation_matrix_quat}
+\end{align}
+$$
+</div>
+<h3 id="sec-3-3-2">3.3.2 Rotation matrix to quaternion</h3>
+<p>For general rotation matrix Eq. (\ref{eqn:rotation_matrix_general}), when compared it with Eq. (\ref{eqn:rotation_matrix_quat}), it is easy to see</p>
+<div class="mathjax">
+$$
+\DeclareMathOperator{\Tr}{Tr}
+\begin{align}
+m_{00} + m_{11} + m_{22} &= 4q_0^2 - 1, \nonumber \\
+m_{21}-m_{12} &= 4q_0q_1, \nonumber \\
+m_{02}-m_{20} &= 4q_0q_2, \nonumber \\
+m_{10}-m_{01} &= 4q_0q_3,
+\end{align}
+$$
+</div>
+<p>Or</p>
+<div class="mathjax">
+$$
+\begin{align}
+q_0 &= \frac{\sqrt{m_{00} + m_{11} + m_{22} +1}}{2}, \nonumber \\
+q_1 &= \frac{m_{21}-m_{12}}{4q_0}, \nonumber \\
+q_2 &= \frac{m_{02}-m_{20}}{4q_0}, \nonumber \\
+q_3 &= \frac{m_{10}-m_{01}}{4q_0}.
+\label{eqn:rotation_matrix_to_quat_q0}
+\end{align}
+$$
+</div>
+<p>The specific case is \(q_0=0\). In this case, we can try some other solutions</p>
+<div class="mathjax">
+$$
+\begin{align}
+m_{00} - m_{11} - m_{22} &= 4q_1^2 - 1, \nonumber \\
+m_{21}-m_{12} &= 4q_1q_0, \nonumber \\
+m_{10}+m_{01} &= 4q_1q_2, \nonumber \\
+m_{02}+m_{20} &= 4q_1q_3.
+\label{eqn:rotation_matrix_to_quat_q1}
+\end{align}
+$$
+</div>
+<p>Or</p>
+<div class="mathjax">
+$$
+\begin{align}
+-m_{00} + m_{11} - m_{22} &= 4q_2^2 - 1, \nonumber \\
+m_{02}-m_{20} &= 4q_2q_0, \nonumber \\
+m_{10}+m_{01} &= 4q_2q_1, \nonumber \\
+m_{21}+m_{12} &= 4q_2q_3.
+\label{eqn:rotation_matrix_to_quat_q2}
+\end{align}
+$$
+</div>
+<p>Or</p>
+<div class="mathjax">
+$$
+\begin{align}
+-m_{00} - m_{11} + m_{22} &= 4q_3^2 - 1, \nonumber \\
+m_{10}-m_{01} &= 4q_3q_0, \nonumber \\
+m_{02}+m_{20} &= 4q_3q_1, \nonumber \\
+m_{21}+m_{12} &= 4q_3q_2.
+\label{eqn:rotation_matrix_to_quat_q3}
+\end{align}
+$$
+</div>
+<p>Since for rotation quaternion, \(\lVert\vec{q}\rVert=1\), so \(q_0\), \(q_1\), \(q_2\) and \(q_3\) can't be all zero, so it is guaranteed that at least one of Eqs. (\ref{eqn:rotation_matrix_to_quat_q0}), (\ref{eqn:rotation_matrix_to_quat_q1}), (\ref{eqn:rotation_matrix_to_quat_q2}) and (\ref{eqn:rotation_matrix_to_quat_q3}) will work.</p>
+<h3 id="sec-3-3-3">3.3.3 Exponential</h3>
+<p>For an imaginary quaternion, i.e., \(\vec{q}=q_1\mathbf{i} + q_2\mathbf{j} + q_3\mathbf{k}\), its exponential can be written as</p>
+<div class="mathjax">
+$$
+\exp^\vec{q} = \cos(\lVert \vec{q}\rVert) + \sin(\lVert\vec{q}\rVert) \frac{\vec{q}}{\lVert\vec{q}\rVert}.
+$$
+</div>
+<p>The proof can be found <a href="https://math.stackexchange.com/questions/1030737/exponential-function-of-quaternion-derivation">here</a>.</p>
+<p>In Sec. <a href="#sec:gyroscope">2.6.2</a>, we mentioned that rotation according to the gyroscope measurement can be represented as rotating around unit vector \(\frac{\hat{\vec{\omega}}}{\lVert \hat{\vec{\omega}}\rVert}\) by \(\lVert \hat{\vec{\omega}}\rVert \delta_t\) degree. With quaternion, such rotation (i.e.,\(\mathbf{R}(-\hat{\vec{w}}_t \delta_t)\) in Eq. (\ref{eqn:rotate_gyro_ned2body})) can be written as</p>
+<div class="mathjax">
+$$
+\begin{align}
+\vec{q} &= \exp^{-\frac{\hat{\vec{\omega}} \delta_t}{2}} \nonumber \\
+&= \cos(\lVert\frac{\hat{\vec{\omega}}\delta_t}{2}\rVert) + \sin(\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert) \frac{-\frac{\hat{\vec{\omega}} \delta_t}{2}}{\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert} \nonumber \\
+&= \cos(\lVert\frac{\hat{\vec{\omega}}\delta_t}{2}\rVert) - \sin(\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert) \frac{\hat{\vec{\omega}}}{\lVert\hat{\vec{\omega}}\rVert}.
+\end{align}
+$$
+</div>
+</div>
+</div>
+<div class="reference">
+<ol>
+<li><div id="reference-1">
+Geographic coordinate conversion <a href="https://en.wikipedia.org/wiki/Geographic_coordinate_conversion">https://en.wikipedia.org/wiki/Geographic_coordinate_conversion</a> <a href="#cite-1-1">&#8617;</a>
+</div></li>
+<li><div id="reference-2">
+Stan&#x010d;in, S.; Toma&#x017e;i&#x010d;, S. "Angle Estimation of Simultaneous Orthogonal Rotations from 3D Gyroscope Measurements". Sensors 2011, 11, 8536-8549. <a href="https://doi.org/10.3390/s110908536">https://doi.org/10.3390/s110908536</a> <a href="#cite-2-1">&#8617;</a>
+</div></li>
+<li><div id="reference-3">
+Gregory G. Slabaugh, "Computing Euler angles from a rotation matrix" <a href="https://eecs.qmul.ac.uk/~gslabaugh/publications/euler.pdf">pdf</a> <a href="#cite-3-1">&#8617;</a>
+</div></li>
+<li><div id="reference-4">
+Mike Day, "Converting a Rotation Matrix to a Quaternion", <a href="https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf">pdf</a> <a href="#cite-4-1">&#8617;</a>
+</div></li>
+</ol>
+</div>
+
+<div class="footer">
+<div class="footer-text"> Last updated 2023-12-25 20:32:11 UTC by
+<a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>.</div>
+</div>
+</div>
+</body>
+</html>
