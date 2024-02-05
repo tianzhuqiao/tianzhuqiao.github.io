@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="bsmdoc 0.0.8">
+<meta name="generator" content="bsmdoc 0.0.9">
 <link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
 <link rel="stylesheet" href="css/menu.css" type="text/css">
 <script>
@@ -53,16 +53,17 @@ id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
 <li><a href="#sec-3-1">3.1 Rotation matrix</a><ul>
 <li><a href="#sec-3-1-1">3.1.1 Rotation matrix to rotation vector and angle</a></li>
 </ul></li>
-<li><a href="#sec-3-2">3.2 Euler Angle [<a id="cite-3-1" href="#reference-3">3</a>]</a><ul>
-<li><a href="#sec-3-2-1">3.2.1 Euler Angle to Rotation Matrix</a></li>
-<li><a href="#sec-3-2-2">3.2.2 Rotation Matrix to Euler Angle</a></li>
-<li><a href="#sec-3-2-3">3.2.3 Gimbal Lock</a></li>
+<li><a href="#sec-3-2">3.2 Euler angle</a><ul>
+<li><a href="#sec-3-2-1">3.2.1 Euler angle to rotation matrix</a></li>
+<li><a href="#sec-3-2-2">3.2.2 Rotation matrix to Euler angle</a></li>
+<li><a href="#sec-3-2-3">3.2.3 Gimbal lock</a></li>
 </ul></li>
 <li><a href="#sec-3-3">3.3 Quaternion</a><ul>
 <li><a href="#sec-3-3-1">3.3.1 Quaternion to rotation matrix [<a id="cite-4-1" href="#reference-4">4</a>]</a></li>
 <li><a href="#sec-3-3-2">3.3.2 Rotation matrix to quaternion</a></li>
 <li><a href="#sec-3-3-3">3.3.3 Exponential</a></li>
 </ul></li>
+<li><a href="#sec-3-4">3.4 Rotation axis and angle</a></li>
 </ul></li>
 </ul>
 </div>
@@ -918,8 +919,8 @@ $$
 </div>
 Its eigenvector corresponding to eigenvalue 1 is \([1, 0, 0]^T\), so the rotation vector is \([1, 0, 0]^T\). It matches the expectation as it is the rotation matrix around \(x\)-axis. From Eq. (\ref{eqn:rotation_matrix_angle}), the rotation angle is \(\pm 30^\circ\). Put \(\pm 30^\circ\) and the rotation vector into Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that \(\theta=30^\circ\).
 </div>
-<h2 id="sec-3-2">3.2 Euler Angle [<a id="cite-3-1" href="#reference-3">3</a>]</h2>
-<h3 id="sec-3-2-1">3.2.1 Euler Angle to Rotation Matrix</h3>
+<h2 id="sec-3-2">3.2 Euler angle</h2>
+<h3 id="sec-3-2-1">3.2.1 Euler angle to rotation matrix</h3>
 <p>Suppose we have Euler angle \(\phi\), \(\theta\) and \(\psi\) that are rotation around \(x\), \(y\), and \(z\)-axis respectively. And if the rotation is in \(xyz\) order (i.e., \(x\)-axis first), then the rotation matrix can be written as</p>
 <div class="mathjax">
 $$
@@ -938,7 +939,7 @@ $$
 \end{bmatrix}.
 $$
 </div>
-<p>After simplification, it is</p>
+<p>After simplification, it is [<a id="cite-3-1" href="#reference-3">3</a>]</p>
 <div class="mathjax">
 $$
 \mathbf{R} = \begin{bmatrix}
@@ -949,7 +950,7 @@ $$
 \label{eqn:rotation_euler}
 $$
 </div>
-<h3 id="sec-3-2-2">3.2.2 Rotation Matrix to Euler Angle</h3>
+<h3 id="sec-3-2-2">3.2.2 Rotation matrix to Euler angle</h3>
 <p>With Eq. (\ref{eqn:rotation_euler}), if \(\mathbf{R}\) is known, \(\theta\) can be estimated with</p>
 <div class="mathjax">
 $$
@@ -967,7 +968,7 @@ $$
 $$
 </div>
 <p>If \(\cos\theta\) is \(0\) (i.e., \(\theta=\pm 90^\circ\)), \(\phi\) and \(\psi\) will not have unique solution as we will show shortly.</p>
-<h3 id="sec-3-2-3">3.2.3 Gimbal Lock</h3>
+<h3 id="sec-3-2-3">3.2.3 Gimbal lock</h3>
 <p>In Eq. (\ref{eqn:rotation_euler}), if \(\theta=90^\circ\), the rotation matrix becomes</p>
 <div class="mathjax">
 $$
@@ -1020,6 +1021,7 @@ $$
 \begin{align}
 \vec{q} &= [\cos(\frac{\theta}{2}), k_x\sin(\frac{\theta}{2}), k_y\sin(\frac{\theta}{2}), k_z\sin(\frac{\theta}{2})]^T \nonumber \\
 & = \cos(\frac{\theta}{2}) + k_x\sin(\frac{\theta}{2}) \mathbf{i} + k_y\sin(\frac{\theta}{2}) \mathbf{j} + k_z\sin(\frac{\theta}{2}) \mathbf{k}.
+\label{eqn:angle_vector_to_quat}
 \end{align}
 $$
 </div>
@@ -1166,6 +1168,26 @@ $$
 \end{align}
 $$
 </div>
+<h2 id="sec-3-4">3.4 Rotation axis and angle</h2>
+<p>Obviously, rotation can be represented with a unit rotation vector (rotation axis, \(\vec{k}\)) and rotation angle (\(\theta\)). Put them together, the rotation can be represented as \([\theta, \vec{k}]\). Since
+\(\lVert \vec{k} \rVert = 1\), \(\theta\) can be combined into \(\vec{k}\), that is \(\theta\vec{k}\).</p>
+<p>It is easy to convert it to quaternion</p>
+<div class="mathjax">
+$$
+\begin{align}
+\theta^\prime &= \lVert \theta\vec{k}\rVert = \lVert\theta\rVert , \\ \nonumber
+\vec{k}^\prime &= \frac{\theta\vec{k}}{\lVert \theta\rVert},
+\end{align}
+$$
+</div>
+<p>and according to Eq. (\ref{eqn:angle_vector_to_quat}), the quaternion can be constructed as</p>
+<div class="mathjax">
+$$
+\vec{q} = [\cos(\frac{\theta^\prime}{2}), k_x\sin(\frac{\theta^\prime}{2}), k_y\sin(\frac{\theta^\prime}{2}), k_z\sin(\frac{\theta^\prime}{2})]^T.
+$$
+</div>
+<p>If \(\theta\) is positive, then \(\theta^\prime = \theta\) and \(\vec{k}^\prime = \vec{k}\), so the constructed rotation is exactly same as the original one.</p>
+<p>If \(\theta\) is negative, then \(\theta^\prime = -\theta\) and \(\vec{k}^\prime = -\vec{k}\), it is easy to see that the constructed rotation is also same as the original one.</p>
 </div>
 </div>
 <div class="reference">
@@ -1186,7 +1208,7 @@ Mike Day, "Converting a Rotation Matrix to a Quaternion", <a href="https://d3cw3
 </div>
 
 <div class="footer">
-<div class="footer-text"> Last updated 2023-12-25 20:32:11 UTC by
+<div class="footer-text"> Last updated 2024-02-05 01:33:05 UTC by
 <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>.</div>
 </div>
 </div>

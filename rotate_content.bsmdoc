@@ -760,8 +760,8 @@ $$
 Its eigenvector corresponding to eigenvalue 1 is $[1, 0, 0]^T$, so the rotation vector is $[1, 0, 0]^T$. It matches the expectation as it is the rotation matrix around $x$-axis. From Eq. (\ref{eqn:rotation_matrix_angle}), the rotation angle is $\pm 30^\circ$. Put $\pm 30^\circ$ and the rotation vector into Eq. (\ref{eqn:rodgrigues_matrix}), it is easy to see that $\theta=30^\circ$.
 !}
 
-== Euler Angle \cite{EulerAngle}
-=== Euler Angle to Rotation Matrix
+== Euler angle
+=== Euler angle to rotation matrix
 \reference{EulerAngle|Gregory G. Slabaugh, "Computing Euler angles from a rotation matrix" [https://eecs.qmul.ac.uk/~gslabaugh/publications/euler.pdf|pdf]}
 Suppose we have Euler angle $\phi$, $\theta$ and $\psi$ that are rotation around $x$, $y$, and $z$-axis respectively. And if the rotation is in $xyz$ order (i.e., $x$-axis first), then the rotation matrix can be written as
 $$
@@ -779,7 +779,8 @@ $$
 0 & \sin\phi & \cos\phi\\
 \end{bmatrix}.
 $$
-After simplification, it is
+After simplification, it is \cite{EulerAngle}
+
 $$
 \mathbf{R} = \begin{bmatrix}
 \cos\psi\cos\theta & \cos\psi\sin\theta\sin\phi - \sin\psi\cos\phi & \sin\psi\sin\phi + \cos\psi\sin\theta\cos\phi \\
@@ -789,7 +790,7 @@ $$
 \label{eqn:rotation_euler}
 $$
 
-=== Rotation Matrix to Euler Angle
+=== Rotation matrix to Euler angle
 With Eq. (\ref{eqn:rotation_euler}), if $\mathbf{R}$ is known, $\theta$ can be estimated with
 $$
 m_{20} = -\sin\theta,
@@ -803,7 +804,7 @@ $$
 \end{align}
 $$
 If $\cos\theta$ is $0$ (i.e., $\theta=\pm 90^\circ$), $\phi$ and $\psi$ will not have unique solution as we will show shortly.
-=== Gimbal Lock
+=== Gimbal lock
 In Eq. (\ref{eqn:rotation_euler}), if $\theta=90^\circ$, the rotation matrix becomes
 $$
 \mathbf{R} = \begin{bmatrix}
@@ -846,6 +847,7 @@ $$
 \begin{align}
 \vec{q} &= [\cos(\frac{\theta}{2}), k_x\sin(\frac{\theta}{2}), k_y\sin(\frac{\theta}{2}), k_z\sin(\frac{\theta}{2})]^T \nonumber \\
 & = \cos(\frac{\theta}{2}) + k_x\sin(\frac{\theta}{2}) \mathbf{i} + k_y\sin(\frac{\theta}{2}) \mathbf{j} + k_z\sin(\frac{\theta}{2}) \mathbf{k}.
+\label{eqn:angle_vector_to_quat}
 \end{align}
 $$
 It is easy to show that $\lVert\vec{q}\rVert=1$. Let's see what we get by applying $\vec{q}\vec{r}\vec{q}^*$,
@@ -970,3 +972,21 @@ $$
 &= \cos(\lVert\frac{\hat{\vec{\omega}}\delta_t}{2}\rVert) - \sin(\lVert\frac{\hat{\vec{\omega}} \delta_t}{2}\rVert) \frac{\hat{\vec{\omega}}}{\lVert\hat{\vec{\omega}}\rVert}.
 \end{align}
 $$
+== Rotation axis and angle
+Obviously, rotation can be represented with a unit rotation vector (rotation axis, $\vec{k}$) and rotation angle ($\theta$). Put them together, the rotation can be represented as $[\theta, \vec{k}]$. Since
+$\lVert \vec{k} \rVert = 1$, $\theta$ can be combined into $\vec{k}$, that is $\theta\vec{k}$.
+
+It is easy to convert it to quaternion
+$$
+\begin{align}
+\theta^\prime &= \lVert \theta\vec{k}\rVert = \lVert\theta\rVert , \\ \nonumber
+\vec{k}^\prime &= \frac{\theta\vec{k}}{\lVert \theta\rVert},
+\end{align}
+$$
+and according to Eq. (\ref{eqn:angle_vector_to_quat}), the quaternion can be constructed as
+$$
+\vec{q} = [\cos(\frac{\theta^\prime}{2}), k_x\sin(\frac{\theta^\prime}{2}), k_y\sin(\frac{\theta^\prime}{2}), k_z\sin(\frac{\theta^\prime}{2})]^T.
+$$
+If $\theta$ is positive, then $\theta^\prime = \theta$ and $\vec{k}^\prime = \vec{k}$, so the constructed rotation is exactly same as the original one.
+
+If $\theta$ is negative, then $\theta^\prime = -\theta$ and $\vec{k}^\prime = -\vec{k}$, it is easy to see that the constructed rotation is also same as the original one.
