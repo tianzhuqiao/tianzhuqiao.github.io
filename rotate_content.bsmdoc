@@ -564,6 +564,8 @@ $$
 \end{align}
 $$
 
+NED frame is not well-defined at the poles. For example, at north pole, any direction is south, so no way to define \tag{b|x}-axis that points to north.
+
 == ENU
 East, north, up (ENU) coordinate system, as shown in Fig. (\ref{img-rotate_enu_frame}), is very close to NED coordinate system.
 * $x$-axis is tangent to parallels (circles from same same latitude) (to east),
@@ -595,6 +597,8 @@ $$
  \end{bmatrix}.
 \end{align}
 $$
+
+Similar to NED frame, ENU frame is also not well-defined at the poles. For example, at north pole, any direction is south, so no way to define \tag{b|x}-axis that points to east.
 
 == Satellite
 Satellite frame is shown in Fig. (\ref{img-rotate_satellite_frame}),
