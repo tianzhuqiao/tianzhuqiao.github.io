@@ -1,5 +1,5 @@
 = Synchronization
-Synchronization is critical to communications system. It helps the system to establish a shared sense of time and frequency between transmitter and receiver. In this section, we will introduce some basic ideas. As we mentioned in all the other sections, we will not plan to list all the algorithms (how could that even be possible?), instead, we will show some basic ideas and wish you will know how to start when you need to deal with a real problem. The code used in this section can be found [./downloads/sync.py|here].
+Synchronization is critical to communications system. It helps the system to establish a shared sense of time and frequency between transmitter and receiver. In this section, we will introduce some basic ideas. As we mentioned in all the other sections, we will not plan to list all the algorithms (how could that even be possible?), instead, we will show some basic ideas and wish you will know how to start when you need to deal with a real problem. The code used in this section can be found [./downloads/sync.py|here] and [./downloads/common.py|here].
 == Frequency Synchronization
 We will use a QPSK signal as an example to show the basic idea of frequency synchronization. The transmitted signal can be written as
 $$
@@ -200,7 +200,7 @@ a_n &= \frac{a}{\sqrt{a^2+b^2}},\nonumber\\
 b_n &= \frac{b}{\sqrt{a^2+b^2}}.
 \end{align}
 $$
-Apparently, $\angle(a_n+b_nj)$ is same as $\angle(a+jb)$, since scaling a complex value wil not change its direction (angle).
+Apparently, $\angle(a_n+b_nj)$ is same as $\angle(a+jb)$, since scaling a complex value will not change its direction (angle).
 
 \tag{b|Phase Approximation.} If the phase error $\phi_e$ is small,
 $$
