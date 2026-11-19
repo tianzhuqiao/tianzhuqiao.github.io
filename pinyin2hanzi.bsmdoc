@@ -1,8 +1,9 @@
-\config{title|Æ´Òô×ªºº×Ö}
-\config{doctitle|Æ´Òô×ªºº×Ö}
+\config{title|æ‹¼éŸ³è½¬æ±‰å­—}
+\config{doctitle|æ‹¼éŸ³è½¬æ±‰å­—}
 \config{head_tag|1}
 \config{head_tag_start|2}
 \config{bsmdoc_conf|bsmdoc.cfg}
+\config{use_jquery|1}
 \config{header:content|{%
 <style>
 .main {
@@ -13,10 +14,10 @@
 %}
 }
 
-ËµÃ÷£º
-* Õâ¸öÆ´Òô×ªºº×Ö³ÌĞòµÄÁé¸ĞÀ´×Ô Laurence Gonsalves µÄ [http://xenomachina.com/toys/pinyin2hanzi.html |  Hanyu Pinyin to Hanzi converter]
-* ºº×Ö×Ö¿âÀ´Ô´ÓÚ£º[http://lingua.mtsu.edu/chinese\-computing/statistics/char/list.php?Which\=TO | ºº×Öµ¥×Ö×ÖÆµ×Ü±í]
-* ´Ê¿âÀ´Ô´ÓÚ£º[http://ngcg.dyndns.org:2222/ngcgwl.htm |ÏÖ´úººÓï³£ÓÃ´Ê±í£¨²İ°¸)]
+è¯´æ˜ï¼š
+* è¿™ä¸ªæ‹¼éŸ³è½¬æ±‰å­—ç¨‹åºçš„çµæ„Ÿæ¥è‡ª Laurence Gonsalves çš„ [http://xenomachina.com/toys/pinyin2hanzi.html |  Hanyu Pinyin to Hanzi converter]
+* æ±‰å­—å­—åº“æ¥æºäºï¼š[http://lingua.mtsu.edu/chinese\-computing/statistics/char/list.php?Which\=TO | æ±‰å­—å•å­—å­—é¢‘æ€»è¡¨]
+* è¯åº“æ¥æºäºï¼š[http://ngcg.dyndns.org:2222/ngcgwl.htm |ç°ä»£æ±‰è¯­å¸¸ç”¨è¯è¡¨ï¼ˆè‰æ¡ˆ)]
 
 {%
 <textarea id="Inputs" wrap="virtual" style="height: 300px; width: 500px; margin-top : 5px; margin-bottom : 0px" maxlength=500></textarea>

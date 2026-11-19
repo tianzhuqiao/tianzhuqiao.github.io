@@ -15,6 +15,23 @@ def bsmdoc_ccodesnippet(data, *args, **kwargs):
             if s >=0 and line == '}\n':
                 return ''.join(lines[s:i+1])
     return ""
+
+@BFunction('diagram')
+def bsmdoc_diagram(data, *args, **kwargs):
+    data = data.strip()
+    cfg = kwargs.get('cfg')
+    inline = kwargs.get('inline', False)
+    txt = BFunction().tag('', 'div', *args)
+    if inline:
+        return txt
+    caption = cfg['v:caption']
+    label = cfg['v:label']
+
+    tag, label = _bsmdoc_prepare_numbering('image', label, **kwargs)
+    if caption:
+        caption = BFunction().tag(tag + ' ' + caption, 'figcaption', "caption")
+        txt = '\n'.join([txt, caption])
+    return BFunction().tag(txt, 'figure', label, 'figure')
 %}!}
 = Basics
 In this section, we will review some basic principles in digital signal processing, which will be widely used in the following sections.
@@ -612,7 +629,7 @@ In such case, the computation complexity can be further decrease by
 So far, we are focusing on reducing the number of multiplications. It makes sense for many hardware implementations (e.g., ASIC or FPGA), where multiplications is expensive (e.g., area, time). Occasionally, you may also needs to implement the filter in pure software. Here software is not something like Matlab, Scilab, or scipy, where you may always have access to some efficient pre-defined functions. For example, you may need to implement an FIR filter on a ARM MCU. As shown in Fig. \ref{img-fir_flow}, at each input sample, you will need to calculate the multiplications between input samples $x[n]$ and filter coefficients $h[n]$, then shift the current input to the buffer.
 \config{js|add|js/raphael.min.js js/flowchart.js}
 {!div|figure||
-{!image|id="diagram"||
+{!diagram|id="diagram"||
 \label{img-fir_flow}
 \caption{Operations for FIR filter at each input sample.}
 !}
@@ -630,7 +647,7 @@ So far, we are focusing on reducing the number of multiplications. It makes sens
 %}
 For some implementations, \tag{b|Shift input to buffer} operation may also be expensive. For example, for a filter with length $N$, at $n^{th}$ sample, $x[n]$ is move to $b[0]$, $x[n-1]$ is moved from $b[0]$ to $b[1]$, $\cdots$, $x[n-N+1]$ is moved to $x[N-1]$, while $x[n-N]$ is discarded.
 
-As shown in [https://github.com/gregnordin/LIFSrProj_F15/blob/master/DSP/digital_filter_explore/ScopeFIR-example%20files/fir_algs/FirAlgs.c|FirAlgs.c], there are several ways to handle this.
+As shown in [./downloads/FirAlgs.c|FirAlgs.c], there are several ways to handle this.
 The naive solution may look like\footnote{Here we use C code in [https://github.com/gregnordin/LIFSrProj_F15/blob/master/DSP/digital_filter_explore/ScopeFIR-example%20files/fir_algs/FirAlgs.c|FirAlgs.c] as example.}
 {!div|bs-demo||highlight|c++||ccodesnippet||{%
 ./downloads/FirAlgs.c|fir_basic

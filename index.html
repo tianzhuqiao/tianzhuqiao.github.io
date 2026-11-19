@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="bsmdoc 0.0.8">
+<meta name="generator" content="bsmdoc 0.1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css" integrity="sha384-cg6SkqEOCV1NbJoCu11+bm0NvBRc8IYLRGXkmNrqUBfTjmMYwNKPWBTIKyw9mHNJ" crossorigin="anonymous">
 <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/grids-responsive-min.css">
@@ -11,15 +11,20 @@
 <link rel="stylesheet" href="css/blog.css" type="text/css">
 <script>
 MathJax = {
+loader: {
+load: ['[tex]/tagformat']
+},
 tex: {
+packages: {'[+]': ['tagformat']},
 inlineMath: [['\\(', '\\)']],
-tags: "none"
+tags: "all",
+tagformat: {
+id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
+}
 }
 };
 </script>
-<script id="MathJax-script" async
-src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
-</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
 <script type="text/javascript" language="javascript" src="https://use.fontawesome.com/62e0af05fc.js"></script>
 <title>feiyilin</title>
 </head>
@@ -157,13 +162,14 @@ Ronald H. Coase, Essays on Economics and Economists
 <li>re-compile the program;</li>
 <li>check the results.</li>
 </ol>
-<p>And occasionally, I would need to add some debugging code. For example, printing some value (e.g., <code>printf</code>) to the terminal or dumping the data to a file, so that I can use other tools (e.g., Matlab) to visualize and analyze it.</p>
+<p>And occasionally, I would need to add some debugging code. For example, printing some value (e.g., <b>printf</b>) to the terminal or dumping the data to a file, so that I can use other tools (e.g., Matlab) to visualize and analyze it.</p>
 <p>bsmedit aims to simplify this procedure. With bsmedit, we can</p>
 <ul>
-<li>control the simulation</li>
-<li>monitor the signals in real-time</li>
-<li>plot/dump the signals</li>
-<li>......</li>
+<li>control C/C++/SystemC simulation</li>
+<li>monitor/visualize signals in real-time</li>
+<li>visualize VCD (value change dump) files</li>
+<li>visualize ulog files</li>
+<li>...</li>
 </ul>
 <p><a href="http://bsmedit.feiyilin.com">More...</a></p>
 </div>
@@ -256,7 +262,7 @@ Ronald H. Coase, Essays on Economics and Economists
 </div>
 <div class="pure-u-1 pure-u-lg-2-3">
 <div class="text-post">
-<p>Synchronization is critical to communications system. It helps the system to establish a shared sense of time and frequency between transmitter and receiver. In this section, we will introduce some basic ideas. As we mentioned in all the other sections, we will not plan to list all the algorithms (how could that even be possible?), instead, we will show some basic ideas and wish you will know how to start when you need to deal with a real problem. The code used in this section can be found <a href="./downloads/sync.py">here</a>.</p>
+<p>Synchronization is critical to communications system. It helps the system to establish a shared sense of time and frequency between transmitter and receiver. In this section, we will introduce some basic ideas. As we mentioned in all the other sections, we will not plan to list all the algorithms (how could that even be possible?), instead, we will show some basic ideas and wish you will know how to start when you need to deal with a real problem. The code used in this section can be found <a href="./downloads/sync.py">here</a> and <a href="./downloads/common.py">here</a>.</p>
 <p><a href="sync.html">More...</a></p>
 </div>
 </div>
@@ -274,7 +280,7 @@ Simple C functions to easily process the console program arguments.</p></li>
 </div>
 </div>
 <div class="footer">
-<div class="footer-text"> Last updated 2023-12-11 05:52:51 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2026-11-19 22:13:12 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </body>
 </html>

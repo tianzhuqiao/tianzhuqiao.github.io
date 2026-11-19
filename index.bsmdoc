@@ -1,10 +1,9 @@
-﻿\config{title|feiyilin}
+\config{title|feiyilin}
 \config{bsmdoc_conf|index.cfg}
 \config{css|add|css/blog.css}
 \config{js|add|https://use.fontawesome.com/62e0af05fc.js}
 
 {!exec|firstRunOnly||unescape||{%
-import bsmdoc
 @BFunction('emph')
 def bsmdoc_emph(data, *args, **kwargs):
     return BFunction().tag(data, ['i'], **kwargs)
@@ -16,7 +15,7 @@ def bsmdoc_post(data, *args, **kwargs):
     src = args[0]
     title = ""
     if src.endswith('.bsmdoc'):
-        bdoc = bsmdoc.BDoc(False, False)
+        bdoc = BDoc(False, False)
         bdoc.gen(src, output=True)
 
         # title

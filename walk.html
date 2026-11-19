@@ -3,25 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="bsmdoc 0.0.8">
+<meta name="generator" content="bsmdoc 0.1.0">
 <link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
 <link rel="stylesheet" href="css/menu.css" type="text/css">
 <script>
 MathJax = {
+loader: {
+load: ['[tex]/tagformat']
+},
 tex: {
+packages: {'[+]': ['tagformat']},
 inlineMath: [['\\(', '\\)']],
-tags: "all"
+tags: "all",
+tagformat: {
+id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
+}
 }
 };
 </script>
-<script id="MathJax-script" async
-src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
-</script>
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"
-integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
-crossorigin="anonymous"></script>
-<script src="js/bsmdoc.js"></script>
-<script src="js/menu.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+<script src="https://code.jquery.com/jquery-4.1.0.min.js" integrity="sha256-hjRvPkFLO1JGZFMXGrzdpG6TlsHDyjp4PQeqLWRcMzk=" crossorigin="anonymous"></script>
+<script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
+<script type="text/javascript" language="javascript" src="js/menu.js"></script>
 <title>A tutorial on time series with neural network</title>
 </head>
 <body class="nomathjax">
@@ -84,9 +87,9 @@ $$
 First, download the data</p>
 <div class="syntax"><pre><span></span><span class="c1"># download data file if necessary</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
-    <span class="n">dataurl</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/wchill/HMP_Dataset/archive/master.zip&quot;</span>
-    <span class="n">filename</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">dataurl</span><span class="p">,</span> <span class="s2">&quot;HMP_Dataset.zip&quot;</span><span class="p">)</span>
-    <span class="k">with</span>  <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
+    <span class="n">dataurl</span> <span class="o">=</span> <span class="s2">"https://github.com/wchill/HMP_Dataset/archive/master.zip"</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">dataurl</span><span class="p">,</span> <span class="s2">"HMP_Dataset.zip"</span><span class="p">)</span>
+    <span class="k">with</span>  <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
         <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">()</span>
 </pre></div>
 <p>Fig. (<a href="#img-walk">2</a>) and (<a href="#img-climb_chair">3</a>) show a sample accelerometer data for <b>walk</b> and <b>climb chair</b> event. Here are some observations</p>
@@ -176,19 +179,19 @@ $$
 <p>Next step is to determine the value of \(N\). Each step of walk can be viewed as roughly same; in this case, the reading from accelerometer shall also roughly periodic (based on how long each step lasts). We may want to choose \(N\) such that the data will cover the whole period. A reasonable walk speed is usually larger than 3600m/hour; that is \(3600m/3600s = 1m/s\). And if the step length (either left or right step) is roughly <a href="https://www.healthline.com/health/stride-length#average-step-and-stride-length">0.75m</a>, which will take \(0.75m/(1m/s) = 0.75s\). Thus, a stride (two steps, one left, one right) will take \(0.75s*2=1.5s\) to finish. In this case, we can take \(2s\) accelerator data as features (i.e., \(N=2s*32samples/s=64samples\)).</p>
 <p>In reality, the above assumption may not be true. For example, older people may walk more slowly with smaller stride length. We may need to find some way to train each group separately. Or we can treat \(N\) as an hyper-parameter to be determined with cross validation.</p>
 <p>Now we have all the information to load the data: \(\textbf{x}[:, 64, 3]\), \(y \in [0, 1]\)</p>
-<div class="syntax"><pre><span></span><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; load data in folder</span>
+<div class="syntax"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">""" load data in folder</span>
 <span class="sd">        return (x[:, steps, 3], y)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">walk_through_files</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; walk trhough all files in &#39;path&#39; with extension &#39;ext&#39; &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/*</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="p">))):</span>
+<span class="sd">    """</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">walk_through_files</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">'.txt'</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" walk trhough all files in 'path' with extension 'ext' """</span>
+        <span class="k">for</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2">/*</span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="p">))):</span>
             <span class="k">yield</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">load_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; load data file, and return (x[steps], y) &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" load data file, and return (x[steps], y) """</span>
         <span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">32</span> <span class="c1"># 32 samples/sec</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">" "</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>
         <span class="c1"># ignore the first and last 2 sec data, as the user may not start event</span>
@@ -208,8 +211,8 @@ $$
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">(</span><span class="n">x_all</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_all</span><span class="p">)</span>
 
 <span class="n">steps</span> <span class="o">=</span> <span class="mi">64</span>
-<span class="n">x_walk</span><span class="p">,</span> <span class="n">y_walk</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">&#39;walk&#39;</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">x_climb_chair</span><span class="p">,</span> <span class="n">y_climb_chair</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">&#39;Climb_stairs&#39;</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">x_walk</span><span class="p">,</span> <span class="n">y_walk</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">'walk'</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">x_climb_chair</span><span class="p">,</span> <span class="n">y_climb_chair</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">'Climb_stairs'</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
 <p>As usual, to test our model, the data loaded shall be split into two parts: training and test.
 Here for both <b>walk</b> and <b>climb chair</b> data, \(80\%\) data is used for training and remaining is for test.</p>
@@ -227,25 +230,25 @@ Here for both <b>walk</b> and <b>climb chair</b> data, \(80\%\) data is used for
 <div class="syntax"><pre><span></span><span class="n">n_timesteps</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 <span class="n">n_outputs</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv1D</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_timesteps</span><span class="p">,</span> <span class="n">n_features</span><span class="p">)))</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv1D</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv1D</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">'relu'</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_timesteps</span><span class="p">,</span> <span class="n">n_features</span><span class="p">)))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv1D</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">'relu'</span><span class="p">))</span>
 <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
 <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Flatten</span><span class="p">())</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">n_outputs</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;softmax&#39;</span><span class="p">))</span>
-<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;categorical_crossentropy&#39;</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">'relu'</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">n_outputs</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">'softmax'</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">'categorical_crossentropy'</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">'adam'</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">'accuracy'</span><span class="p">])</span>
 </pre></div>
 <p>Now it's time to train the model</p>
-<div class="syntax"><pre><span></span><span class="k">class</span> <span class="nc">TestCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_data</span><span class="p">):</span>
+<div class="syntax"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TestCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_data</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">test_data</span> <span class="o">=</span> <span class="n">test_data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span>  <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">{}):</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_data</span>
         <span class="n">loss</span><span class="p">,</span> <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Testing loss: </span><span class="si">{}</span><span class="s1">, acc: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">acc</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">logs</span><span class="p">[</span><span class="s2">&quot;accuracy&quot;</span><span class="p">],</span> <span class="n">acc</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">Testing loss: </span><span class="si">{}</span><span class="s1">, acc: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">acc</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">logs</span><span class="p">[</span><span class="s2">"accuracy"</span><span class="p">],</span> <span class="n">acc</span><span class="p">])</span>
 <span class="n">test</span> <span class="o">=</span> <span class="n">TestCallback</span><span class="p">((</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">))</span>
 
 <span class="n">h</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
@@ -274,7 +277,7 @@ $$
 </div>
 </div>
 <div class="footer">
-<div class="footer-text"> Last updated 2020-07-20 18:24:44 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2022-02-10 22:05:34 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>

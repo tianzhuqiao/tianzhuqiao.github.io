@@ -141,7 +141,7 @@ It is easy to see that if we rotate $\vec{r}$ around $z$ by $\psi_1$ ($\vec{r}^\
 {!image||
 \caption{Rotate $\vec{r}$ around $z$ axis by $\psi_1$ degree, then $\psi_2$ degree}
 ./image/rotate_z_xy_2rotate.svg
-\label{img-rotate_z_xy_rotate}
+\label{img-rotate_z_xy_2rotate}
 !}
 It can also been easily proved by matrix multiplication
 $$

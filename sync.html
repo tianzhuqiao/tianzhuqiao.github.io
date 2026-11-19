@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="bsmdoc 0.0.9">
+<meta name="generator" content="bsmdoc 0.1.0">
 <link rel="stylesheet" href="css/bsmdoc.css" type="text/css">
 <link rel="stylesheet" href="css/menu.css" type="text/css">
 <script>
@@ -21,8 +21,8 @@ id: (id) => 'mjx-eqn-' + id.replace(/\s/g, '_'),
 }
 };
 </script>
-<script src=" https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js "></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+<script src="https://code.jquery.com/jquery-4.1.0.min.js" integrity="sha256-hjRvPkFLO1JGZFMXGrzdpG6TlsHDyjp4PQeqLWRcMzk=" crossorigin="anonymous"></script>
 <script type="text/javascript" language="javascript" src="js/bsmdoc.js"></script>
 <script type="text/javascript" language="javascript" src="js/menu.js"></script>
 <title>Synchronization</title>
@@ -297,9 +297,9 @@ $$
 <span class="o">&gt;&gt;&gt;</span> <span class="n">alpha_e</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="o">/</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.2815</span><span class="o">*</span><span class="p">(</span><span class="n">b</span><span class="o">/</span><span class="n">a</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">alpha</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="p">(</span><span class="n">alpha</span><span class="o">-</span><span class="n">alpha_e</span><span class="p">)</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;angle (in degree)&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;estimation error (in degree)&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">'on'</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">':'</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'angle (in degree)'</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'estimation error (in degree)'</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="bs-demo-rst">
@@ -393,11 +393,11 @@ $$
 <p>For the phase in \([0, \pi/4]\), the iteration may look like</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_cordic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    return the phase of complex value a+jb</span>
 
 <span class="sd">    the phase must be in [0, pi/4]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">alpha</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="n">atan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mf">2.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iteration</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
@@ -414,11 +414,11 @@ $$
 <p>Then, the arbitrary phase (\([-\pi, \pi]\)) can be got by applying the symmetric properties mentioned above</p>
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">cordic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    return the phase of complex value a+jb</span>
 
 <span class="sd">    return the phase (-pi, pi]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">a_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
     <span class="n">b_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
     <span class="n">alpha</span> <span class="o">=</span> <span class="n">_cordic</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">b_m</span><span class="p">,</span> <span class="n">iteration</span><span class="p">)</span>
@@ -443,10 +443,10 @@ $$
 <span class="o">...</span>         <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cordic</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">iteration</span><span class="p">)</span>
 <span class="o">...</span>     <span class="n">alpha_err</span><span class="p">[</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">alpha</span><span class="p">))</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="n">alpha_err</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;iterations&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;max estimation error (in degree)&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="n">alpha_err</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="s1">'-o'</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'iterations'</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'max estimation error (in degree)'</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">'on'</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">':'</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="bs-demo-rst">
@@ -823,7 +823,7 @@ Its frequency and impulse responses are shown in Fig. <a href="#img-sync_clk_bps
 <div class="bs-demo">
 <div class="syntax"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="n">rx_src</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="mf">24e6</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">100e-6</span><span class="p">),</span> <span class="mf">24e6</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">100</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">)]</span><span class="o">-</span><span class="n">s3</span><span class="p">[</span><span class="mi">100</span><span class="p">:]))</span>
-<span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">2.3175959194913788e-05</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">2.317595919487454e-05</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The received signal is then down-sampled by a factor of 8, so the clock synchronization is done at sampling rate of \(152/8=19\) kHz (or 16 times of the symbol rate). Such choice is kind of 'arbitrary', and should base on the application. Generally, the higher the sampling rate, the better the clock synchronization performance.</p>
@@ -844,7 +844,7 @@ Its frequency and impulse responses are shown in Fig. <a href="#img-sync_clk_bps
 <span class="o">&gt;&gt;&gt;</span> <span class="n">hf8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">hf8</span><span class="p">,</span> <span class="n">hf8</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">ht8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">hf8</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">ht8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">ht8</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ht8</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ht8</span><span class="p">[:(</span><span class="nb">len</span><span class="p">(</span><span class="n">ht8</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">]))</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="c1"># filter the signal from bit &#39;1&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># filter the signal from bit '1'</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ht8</span><span class="p">))))</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">fir_match</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">ht8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">fir_match</span> <span class="o">=</span> <span class="n">fir_match</span><span class="p">[</span><span class="mi">246</span><span class="p">:</span><span class="mi">285</span><span class="p">]</span><span class="o">.</span><span class="n">real</span>
@@ -906,13 +906,13 @@ Its frequency and impulse responses are shown in Fig. <a href="#img-sync_clk_bps
 <span class="o">&gt;&gt;&gt;</span> <span class="n">sync_corr</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">rx_bits_diff</span><span class="o">*</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">pn</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sync_corr</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="o">...</span>     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Frame Header error!&#39;</span><span class="p">)</span>
+<span class="o">...</span>     <span class="nb">print</span><span class="p">(</span><span class="s1">'Frame Header error!'</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="k">else</span><span class="p">:</span>
-<span class="o">...</span>     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Frame Header: </span><span class="si">%d</span><span class="s1"> at </span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">sync_corr</span><span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="o">...</span>     <span class="nb">print</span><span class="p">(</span><span class="s1">'Frame Header: </span><span class="si">%d</span><span class="s1"> at </span><span class="si">%d</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">sync_corr</span><span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 <span class="o">...</span>     <span class="n">msg_rx</span> <span class="o">=</span> <span class="n">rx_bits_diff</span><span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
 <span class="o">...</span>     <span class="n">lenmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">msg_bits</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg_rx</span><span class="p">))</span>
 <span class="o">...</span>     <span class="n">err</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">msg_bits</span><span class="p">[:</span><span class="n">lenmin</span><span class="p">]</span> <span class="o">-</span> <span class="n">msg_rx</span><span class="p">[:</span><span class="n">lenmin</span><span class="p">]))</span>
-<span class="o">...</span>     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;BER: </span><span class="si">%f</span><span class="s1"> (</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="o">/</span><span class="n">lenmin</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">lenmin</span><span class="p">))</span>
+<span class="o">...</span>     <span class="nb">print</span><span class="p">(</span><span class="s1">'BER: </span><span class="si">%f</span><span class="s1"> (</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">)'</span><span class="o">%</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="o">/</span><span class="n">lenmin</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">lenmin</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The methods discussed above require multiple samples per symbol. Thus, it is suitable for the low symbol rate system; while for the high symbol rate system, the required sampling rate may be too large to be feasible. Fortunately, there are algorithms that can work on symbols directly.
@@ -1261,7 +1261,7 @@ You may also need to change the compensation step accordingly. <a href="#footnot
 </ol>
 </div>
 
-<div class="footer-text"> Last updated 2026-10-23 22:32:09 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
+<div class="footer-text"> Last updated 2026-10-23 22:50:29 UTC, by <a href="http://bsmdoc.feiyilin.com/">bsmdoc</a>  | <a href="mailto:tq@feiyilin.com">Contact</a></div>
 </div>
 </div>
 </body>
